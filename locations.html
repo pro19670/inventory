@@ -1,0 +1,489 @@
+@'
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>위치 관리</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .header h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .nav-links a {
+            margin-right: 15px;
+            color: #3498db;
+            text-decoration: none;
+        }
+        
+        .nav-links a:hover {
+            text-decoration: underline;
+        }
+        
+        .location-manager {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .section h2 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        button {
+            background-color: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+        }
+        
+        .delete-btn {
+            background-color: #e74c3c;
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+        
+        .delete-btn:hover {
+            background-color: #c0392b;
+        }
+        
+        .location-tree {
+            margin-top: 15px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .tree-item {
+            padding: 8px;
+            margin: 2px 0;
+            background: #f8f9fa;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 3px solid transparent;
+        }
+        
+        .tree-item.level-0 {
+            background: #e3f2fd;
+            font-weight: 600;
+            border-left-color: #2196f3;
+        }
+        
+        .tree-item.level-1 {
+            margin-left: 30px;
+            background: #f3e5f5;
+            border-left-color: #9c27b0;
+        }
+        
+        .tree-item.level-2 {
+            margin-left: 60px;
+            background: #fff3e0;
+            border-left-color: #ff9800;
+        }
+        
+        .tree-item.level-3 {
+            margin-left: 90px;
+            background: #e8f5e9;
+            border-left-color: #4caf50;
+        }
+        
+        .location-number {
+            font-family: 'Courier New', monospace;
+            color: #666;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        
+        .location-name {
+            flex: 1;
+        }
+        
+        .location-path {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .message {
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .info-box {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: #1565c0;
+        }
+        
+        .tree-structure {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 15px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .tree-line {
+            color: #999;
+        }
+        
+        @media (max-width: 768px) {
+            .location-manager {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📍 위치 관리</h1>
+            <div class="nav-links">
+                <a href="index-v5.html">물건 관리</a>
+                <a href="locations.html">위치 관리</a>
+                <a href="upload.html">이미지 업로드</a>
+            </div>
+        </div>
+        
+        <div id="message" class="message"></div>
+        
+        <div class="location-manager">
+            <div class="section">
+                <h2>새 위치 추가</h2>
+                
+                <div class="info-box">
+                    💡 위치는 최대 4단계까지 만들 수 있습니다.<br>
+                    예: 우리집 > 안방 > 선반 > 상단
+                </div>
+                
+                <form id="locationForm">
+                    <div class="form-group">
+                        <label for="parentLocation">상위 위치</label>
+                        <select id="parentLocation">
+                            <option value="">최상위 위치로 추가</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="locationName">위치 이름 *</label>
+                        <input type="text" id="locationName" required placeholder="예: 우리집, 안방, 선반, 상단 등">
+                    </div>
+                    
+                    <button type="submit">위치 추가</button>
+                </form>
+            </div>
+            
+            <div class="section">
+                <h2>등록된 위치 목록</h2>
+                <div id="locationTree" class="location-tree"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3001/api';
+        let allLocations = [];
+        let locationNumbers = {};
+        
+        // 페이지 로드시 초기화
+        async function init() {
+            await loadLocations();
+        }
+        
+        // 위치 데이터 로드
+        async function loadLocations() {
+            try {
+                const response = await fetch(API_URL + '/locations');
+                const data = await response.json();
+                allLocations = data.locations;
+                assignLocationNumbers();
+                updateParentLocationOptions();
+                renderLocationTree();
+            } catch (error) {
+                showMessage('위치 목록을 불러오는데 실패했습니다.', 'error');
+            }
+        }
+        
+        // 위치 번호 할당
+        function assignLocationNumbers() {
+            locationNumbers = {};
+            
+            // 최상위 위치들
+            const rootLocations = allLocations.filter(loc => !loc.parentId);
+            rootLocations.sort((a, b) => a.id - b.id);
+            
+            rootLocations.forEach((root, index) => {
+                const rootNumber = (index + 1).toString();
+                locationNumbers[root.id] = rootNumber;
+                assignChildNumbers(root.id, rootNumber);
+            });
+        }
+        
+        // 하위 위치 번호 할당 (재귀)
+        function assignChildNumbers(parentId, parentNumber) {
+            const children = allLocations.filter(loc => loc.parentId === parentId);
+            children.sort((a, b) => a.id - b.id);
+            
+            children.forEach((child, index) => {
+                const childNumber = parentNumber + '.' + (index + 1);
+                locationNumbers[child.id] = childNumber;
+                assignChildNumbers(child.id, childNumber);
+            });
+        }
+        
+        // 상위 위치 옵션 업데이트
+        function updateParentLocationOptions() {
+            const select = document.getElementById('parentLocation');
+            select.innerHTML = '<option value="">최상위 위치로 추가</option>';
+            
+            // 3단계 미만인 위치만 상위 위치로 선택 가능
+            const selectableLocations = allLocations.filter(loc => loc.level < 3);
+            
+            selectableLocations.forEach(loc => {
+                const option = document.createElement('option');
+                option.value = loc.id;
+                const number = locationNumbers[loc.id] || '';
+                const path = getLocationFullPath(loc.id);
+                option.textContent = number ? `${number}. ${path}` : path;
+                select.appendChild(option);
+            });
+        }
+        
+        // 위치의 전체 경로 가져오기
+        function getLocationFullPath(locationId) {
+            const location = allLocations.find(loc => loc.id === locationId);
+            if (!location) return '';
+            
+            const path = [location.name];
+            let currentLocation = location;
+            
+            while (currentLocation.parentId) {
+                const parent = allLocations.find(loc => loc.id === currentLocation.parentId);
+                if (parent) {
+                    path.unshift(parent.name);
+                    currentLocation = parent;
+                } else {
+                    break;
+                }
+            }
+            
+            return path.join(' > ');
+        }
+        
+        // 위치 트리 렌더링
+        function renderLocationTree() {
+            const treeEl = document.getElementById('locationTree');
+            
+            if (allLocations.length === 0) {
+                treeEl.innerHTML = '<p style="text-align: center; color: #7f8c8d;">등록된 위치가 없습니다.</p>';
+                return;
+            }
+            
+            // 트리 구조로 정렬
+            const rootLocations = allLocations.filter(loc => !loc.parentId);
+            rootLocations.sort((a, b) => a.id - b.id);
+            
+            let html = '<div class="tree-structure">';
+            rootLocations.forEach(root => {
+                html += renderLocationNode(root, '');
+            });
+            html += '</div>';
+            
+            treeEl.innerHTML = html;
+        }
+        
+        // 위치 노드 렌더링 (재귀)
+        function renderLocationNode(location, prefix) {
+            const children = allLocations.filter(loc => loc.parentId === location.id);
+            children.sort((a, b) => a.id - b.id);
+            const hasItems = checkLocationHasItems(location.id);
+            const number = locationNumbers[location.id] || '';
+            
+            let html = `
+                <div class="tree-item level-${location.level}">
+                    <div class="location-name">
+                        <span class="location-number">${number}</span>
+                        <strong>${location.name}</strong>
+                        ${hasItems ? '<span class="location-path"> (물건 있음)</span>' : ''}
+                    </div>
+                    <button class="delete-btn" onclick="deleteLocation(${location.id})" 
+                        ${hasItems || children.length > 0 ? 'disabled title="하위 위치나 물건이 있어 삭제할 수 없습니다"' : ''}>
+                        삭제
+                    </button>
+                </div>
+            `;
+            
+            // 하위 위치들 렌더링
+            children.forEach((child, index) => {
+                const isLast = index === children.length - 1;
+                html += renderLocationNode(child, prefix + (isLast ? '  ' : '│ '));
+            });
+            
+            return html;
+        }
+        
+        // 위치에 물건이 있는지 확인 (실제로는 API 호출 필요)
+        function checkLocationHasItems(locationId) {
+            // TODO: 실제 구현시 API를 통해 확인
+            return false;
+        }
+        
+        // 메시지 표시
+        function showMessage(text, type) {
+            const messageEl = document.getElementById('message');
+            messageEl.textContent = text;
+            messageEl.className = 'message ' + type;
+            messageEl.style.display = 'block';
+            setTimeout(() => {
+                messageEl.style.display = 'none';
+            }, 3000);
+        }
+        
+        // 위치 삭제
+        async function deleteLocation(id) {
+            if (!confirm('이 위치를 삭제하시겠습니까?')) return;
+            
+            try {
+                const response = await fetch(`${API_URL}/locations/${id}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    showMessage('위치가 삭제되었습니다.', 'success');
+                    loadLocations();
+                } else {
+                    const error = await response.json();
+                    showMessage(error.message || '삭제에 실패했습니다.', 'error');
+                }
+            } catch (error) {
+                showMessage('서버 연결에 실패했습니다.', 'error');
+            }
+        }
+        
+        // 폼 제출 처리
+        document.getElementById('locationForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const parentId = document.getElementById('parentLocation').value;
+            const name = document.getElementById('locationName').value.trim();
+            
+            if (!name) {
+                showMessage('위치 이름을 입력하세요.', 'error');
+                return;
+            }
+            
+            const formData = {
+                name: name,
+                parentId: parentId ? parseInt(parentId) : null
+            };
+            
+            try {
+                const response = await fetch(API_URL + '/locations', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showMessage('위치가 추가되었습니다!', 'success');
+                    document.getElementById('locationForm').reset();
+                    loadLocations();
+                } else {
+                    showMessage(data.error || '위치 추가에 실패했습니다.', 'error');
+                }
+            } catch (error) {
+                showMessage('서버 연결에 실패했습니다.', 'error');
+            }
+        });
+        
+        // 초기화
+        init();
+    </script>
+</body>
+</html>
+'@ | Out-File -FilePath frontend\locations.html -Encoding UTF8

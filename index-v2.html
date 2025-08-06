@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>내 물건 관리 v2.0</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .header h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .nav-links a {
+            margin-right: 15px;
+            color: #3498db;
+            text-decoration: none;
+        }
+        
+        .nav-links a:hover {
+            text-decoration: underline;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 20px;
+        }
+        
+        .form-section, .list-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        
+        .location-selects {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+        }
+        
+        .quantity-group {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 10px;
+        }
+        
+        button {
+            background-color: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+        }
+        
+        .delete-btn {
+            background-color: #e74c3c;
+            padding: 5px 10px;
+            font-size: 14px;
+        }
+        
+        .delete-btn:hover {
+            background-color: #c0392b;
+        }
+        
+        .edit-btn {
+            background-color: #f39c12;
+            padding: 5px 10px;
+            font-size: 14px;
+            margin-right: 5px;
+        }
+        
+        .edit-btn:hover {
+            background-color: #e67e22;
+        }
+        
+        .item-card {
+            background: #f8f9fa;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 6px;
+            border: 1px solid #e9ecef;
+            transition: transform 0.2s;
+        }
+        
+        .item-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 10px;
+        }
+        
+        .item-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .item-quantity {
+            background: #3498db;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .item-location {
+            color: #7f8c8d;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        
+        .item-description {
+            color: #555;
+            margin-bottom: 10px;
+        }
+        
+        .item-meta {
+            font-size: 12px;
+            color: #95a5a6;
+        }
+        
+        .item-actions {
+            margin-top: 10px;
+        }
+        
+        .message {
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #3498db;
+        }
+        
+        .stat-label {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+        
+        .no-locations-message {
+            background: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            border: 1px solid #ffeeba;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📦 내 물건 관리 시스템 v2.0</h1>
+            <div class="nav-links">
+                <a href="index-v2.html">물건 관리</a>
+                <a href="locations.html">위치 관리</a>
+                <a href="upload.html">이미지 업로드</a>
+                <a href="#" onclick="showStats()">통계</a>
+            </div>
+        </div>
+        
+        <div class="stats" id="stats">
+            <div class="stat-card">
+                <div class="stat-number" id="totalItems">0</div>
+                <div class="stat-label">전체 물건</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalQuantity">0</div>
+                <div class="stat-label">총 수량</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalLocations">0</div>
+                <div class="stat-label">등록 위치</div>
+            </div>
+        </div>
+        
+        <div id="message" class="message"></div>
+        
+        <div class="main-content">
+            <div class="form-section">
+                <h2>물건 등록</h2>
+                
+                <div id="noLocationsMessage" class="no-locations-message" style="display: none;">
+                    ⚠️ 등록된 위치가 없습니다. 
+                    <a href="locations.html">위치 관리</a>에서 먼저 위치를 추가해주세요.
+                </div>
+                
+                <form id="itemForm">
+                    <div class="form-group">
+                        <label for="name">물건 이름 *</label>
+                        <input type="text" id="name" required placeholder="예: 겨울 코트">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>위치 선택</label>
+                        <div class="location-selects">
+                            <select id="location1" onchange="updateLocationOptions(2)">
+                                <option value="">장소 선택</option>
+                            </select>
+                            <select id="location2" onchange="updateLocationOptions(3)" style="display:none">
+                                <option value="">세부 위치</option>
+                            </select>
+                            <select id="location3" onchange="updateLocationOptions(4)" style="display:none">
+                                <option value="">구역</option>
+                            </select>
+                            <select id="location4" style="display:none">
+                                <option value="">상세 위치</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>수량</label>
+                        <div class="quantity-group">
+                            <input type="number" id="quantity" min="1" value="1">
+                            <select id="unit">
+                                <option value="개">개</option>
+                                <option value="벌">벌</option>
+                                <option value="권">권</option>
+                                <option value="병">병</option>
+                                <option value="박스">박스</option>
+                                <option value="세트">세트</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="description">설명</label>
+                        <textarea id="description" rows="3" placeholder="물건에 대한 상세 설명을 입력하세요"></textarea>
+                    </div>
+                    
+                    <button type="submit">물건 등록</button>
+                </form>
+            </div>
+            
+            <div class="list-section">
+                <h2>물건 목록</h2>
+                <div id="items"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3001/api';
+        let allLocations = [];
+        let allItems = [];
+        let editingItemId = null;
+        
+        // 페이지 로드시 초기화
+        async function init() {
+            await loadLocations();
+            await loadItems();
+            updateStats();
+        }
+        
+        // 위치 데이터 로드
+        async function loadLocations() {
+            try {
+                const response = await fetch(API_URL + '/locations');
+                const data = await response.json();
+                allLocations = data.locations;
+                
+                // 위치가 없으면 메시지 표시
+                if (allLocations.length === 0) {
+                    document.getElementById('noLocationsMessage').style.display = 'block';
+                } else {
+                    document.getElementById('noLocationsMessage').style.display = 'none';
+                }
+                
+                updateLocationOptions(1);
+            } catch (error) {
+                console.error('Failed to load locations:', error);
+            }
+        }
+        
+        // 위치 선택 옵션 업데이트
+        function updateLocationOptions(level) {
+            const select = document.getElementById('location' + level);
+            const parentSelect = level > 1 ? document.getElementById('location' + (level - 1)) : null;
+            const parentId = parentSelect ? parentSelect.value : null;
+            
+            // 현재 레벨의 select 초기화
+            select.innerHTML = '<option value="">선택하세요</option>';
+            
+            // 다음 레벨들 숨기기 및 초기화
+            for (let i = level + 1; i <= 4; i++) {
+                const nextSelect = document.getElementById('location' + i);
+                if (nextSelect) {
+                    nextSelect.style.display = 'none';
+                    nextSelect.innerHTML = '<option value="">선택하세요</option>';
+                }
+            }
+            
+            // 현재 레벨에 맞는 위치들 필터링
+            const locations = allLocations.filter(loc => {
+                if (level === 1) return loc.parentId === null;
+                return loc.parentId === parseInt(parentId);
+            });
+            
+            // 옵션 추가
+            locations.forEach(loc => {
+                const option = document.createElement('option');
+                option.value = loc.id;
+                option.textContent = loc.name;
+                select.appendChild(option);
+            });
+            
+            // 옵션이 있으면 select 표시
+            if (locations.length > 0) {
+                select.style.display = 'block';
+            }
+        }
+        
+        // 최종 선택된 위치 ID 가져오기
+        function getSelectedLocationId() {
+            for (let i = 4; i >= 1; i--) {
+                const select = document.getElementById('location' + i);
+                if (select && select.value) {
+                    return parseInt(select.value);
+                }
+            }
+            return null;
+        }
+        
+        // 메시지 표시
+        function showMessage(text, type) {
+            const messageEl = document.getElementById('message');
+            messageEl.textContent = text;
+            messageEl.className = 'message ' + type;
+            messageEl.style.display = 'block';
+            setTimeout(() => {
+                messageEl.style.display = 'none';
+            }, 3000);
+        }
+        
+        // 물건 목록 로드
+        async function loadItems() {
+            try {
+                const response = await fetch(API_URL + '/items');
+                const data = await response.json();
+                allItems = data.items;
+                renderItems();
+                updateStats();
+            } catch (error) {
+                showMessage('물건 목록을 불러오는데 실패했습니다.', 'error');
+            }
+        }
+        
+        // 물건 목록 렌더링
+        function renderItems() {
+            const itemsEl = document.getElementById('items');
+            
+            if (allItems.length === 0) {
+                itemsEl.innerHTML = '<p style="text-align: center; color: #7f8c8d;">등록된 물건이 없습니다.</p>';
+                return;
+            }
+            
+            itemsEl.innerHTML = allItems.map(item => `
+                <div class="item-card">
+                    <div class="item-header">
+                        <div>
+                            <div class="item-title">${item.name}</div>
+                            <div class="item-location">📍 ${item.locationName || '위치 미지정'}</div>
+                        </div>
+                        <div class="item-quantity">${item.quantity} ${item.unit}</div>
+                    </div>
+                    <div class="item-description">${item.description || ''}</div>
+                    <div class="item-meta">등록일: ${new Date(item.createdAt).toLocaleString()}</div>
+                    <div class="item-actions">
+                        <button class="edit-btn" onclick="editItem(${item.id})">수정</button>
+                        <button class="delete-btn" onclick="deleteItem(${item.id})">삭제</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // 통계 업데이트
+        function updateStats() {
+            const totalItems = allItems.length;
+            const totalQuantity = allItems.reduce((sum, item) => sum + (item.quantity || 0), 0);
+            const uniqueLocations = new Set(allItems.map(item => item.locationId).filter(id => id)).size;
+            
+            document.getElementById('totalItems').textContent = totalItems;
+            document.getElementById('totalQuantity').textContent = totalQuantity;
+            document.getElementById('totalLocations').textContent = uniqueLocations;
+        }
+        
+        // 물건 삭제
+        async function deleteItem(id) {
+            if (!confirm('정말 삭제하시겠습니까?')) return;
+            
+            try {
+                const response = await fetch(`${API_URL}/items/${id}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    showMessage('물건이 삭제되었습니다.', 'success');
+                    loadItems();
+                } else {
+                    showMessage('삭제에 실패했습니다.', 'error');
+                }
+            } catch (error) {
+                showMessage('서버 연결에 실패했습니다.', 'error');
+            }
+        }
+        
+        // 물건 수정
+        function editItem(id) {
+            const item = allItems.find(i => i.id === id);
+            if (!item) return;
+            
+            editingItemId = id;
+            document.getElementById('name').value = item.name;
+            document.getElementById('quantity').value = item.quantity || 1;
+            document.getElementById('unit').value = item.unit || '개';
+            document.getElementById('description').value = item.description || '';
+            
+            // 위치 설정 (나중에 구현)
+            
+            document.querySelector('button[type="submit"]').textContent = '수정하기';
+            document.getElementById('name').focus();
+        }
+        
+        // 폼 제출 처리
+        document.getElementById('itemForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = {
+                name: document.getElementById('name').value,
+                locationId: getSelectedLocationId(),
+                quantity: parseInt(document.getElementById('quantity').value) || 1,
+                unit: document.getElementById('unit').value,
+                description: document.getElementById('description').value
+            };
+            
+            try {
+                const url = editingItemId ? 
+                    `${API_URL}/items/${editingItemId}` : 
+                    `${API_URL}/items`;
+                    
+                const method = editingItemId ? 'PUT' : 'POST';
+                
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showMessage(
+                        editingItemId ? '물건이 수정되었습니다!' : '물건이 추가되었습니다!', 
+                        'success'
+                    );
+                    document.getElementById('itemForm').reset();
+                    document.querySelector('button[type="submit"]').textContent = '물건 등록';
+                    editingItemId = null;
+                    loadItems();
+                } else {
+                    showMessage('작업에 실패했습니다.', 'error');
+                }
+            } catch (error) {
+                showMessage('서버 연결에 실패했습니다.', 'error');
+            }
+        });
+        
+        // 초기화
+        init();
+    </script>
+</body>
+</html>

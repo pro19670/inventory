@@ -1,0 +1,2127 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>내 물건 관리 v5.1 - AI 검색 & 영수증 분석</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .header h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .version-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            display: inline-block;
+            margin-left: 10px;
+        }
+        
+        .nav-links a {
+            margin-right: 15px;
+            color: #3498db;
+            text-decoration: none;
+        }
+        
+        .nav-links a:hover {
+            text-decoration: underline;
+        }
+        
+        /* AI 검색 스타일 */
+        .ai-search-container {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            border-radius: 12px;
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .ai-search-input {
+            width: 100%;
+            padding: 12px 45px 12px 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 25px;
+            font-size: 16px;
+            background: rgba(255,255,255,0.95);
+            color: #333;
+        }
+
+        .ai-search-input:focus {
+            outline: none;
+            border-color: white;
+            background: white;
+        }
+
+        .ai-badge {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .ai-search-btn {
+            background: white;
+            color: #667eea;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ai-search-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .voice-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.3);
+            padding: 12px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            transition: all 0.3s;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .voice-btn:hover {
+            background: rgba(255,255,255,0.3);
+            border-color: white;
+        }
+
+        .voice-btn.listening {
+            animation: pulse 1.5s infinite;
+            background: rgba(255,0,0,0.3);
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .search-examples {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .search-examples span {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .example-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 6px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.3s;
+        }
+
+        .example-btn:hover {
+            background: rgba(255,255,255,0.3);
+            border-color: white;
+        }
+
+        .ai-response {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(255,255,255,0.95);
+            color: #333;
+            border-radius: 8px;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .ai-response.thinking {
+            background: rgba(255,255,255,0.9);
+            color: #666;
+            font-style: italic;
+        }
+
+        .interpretation-box {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .interpretation-box strong {
+            color: #333;
+        }
+
+        .suggested-queries {
+            background: rgba(255,255,255,0.1);
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .suggested-queries h4 {
+            font-size: 12px;
+            margin-bottom: 8px;
+            opacity: 0.9;
+        }
+
+        .suggested-query {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 4px 10px;
+            border-radius: 15px;
+            margin: 2px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+
+        .suggested-query:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .suggested-query .count {
+            opacity: 0.7;
+            font-size: 11px;
+        }
+        
+        /* 영수증 분석 스타일 */
+        .receipt-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .receipt-upload-area {
+            border: 2px dashed #3498db;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            background: #f8f9fa;
+            transition: all 0.3s;
+        }
+        
+        .receipt-upload-area:hover {
+            background: #e3f2fd;
+            border-color: #2196f3;
+        }
+        
+        .receipt-upload-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 25px;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .receipt-upload-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        @keyframes loading {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(200%); }
+        }
+
+        .receipt-item {
+            background: #f8f9fa;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+            transition: all 0.3s;
+        }
+
+        .receipt-item:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .receipt-item.selected {
+            background: #e3f2fd;
+            border-color: #2196f3;
+        }
+
+        .receipt-item-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            gap: 10px;
+        }
+
+        .receipt-item-header input[type="text"] {
+            flex: 1;
+            font-weight: 600;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            padding: 8px;
+            border-radius: 4px;
+            transition: border-color 0.3s;
+        }
+
+        .receipt-item-header input[type="text"]:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+
+        .receipt-item-header button {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .receipt-item-header button:hover {
+            background: #c0392b;
+        }
+
+        .receipt-item label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 3px;
+            display: block;
+        }
+
+        .receipt-item input[type="number"] {
+            width: 100%;
+            padding: 6px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .receipt-item input[type="number"]:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+
+        .receipt-item-quantity {
+            background: #3498db;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 14px;
+        }
+
+        .receipt-item-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .receipt-item-controls select, .receipt-item-controls input {
+            padding: 6px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .search-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .search-controls {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr auto auto;
+            gap: 10px;
+            align-items: center;
+            margin-top: 10px;
+        }
+        
+        .search-input {
+            padding: 10px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        
+        .filter-select {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .search-btn {
+            background-color: #3498db;
+            color: white;
+            padding: 10px 25px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+        
+        .search-btn:hover {
+            background-color: #2980b9;
+        }
+        
+        .clear-btn {
+            background-color: #95a5a6;
+            color: white;
+            padding: 10px 25px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+        
+        .clear-btn:hover {
+            background-color: #7f8c8d;
+        }
+        
+        .search-results {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 20px;
+        }
+        
+        .form-section, .list-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        
+        .image-upload-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 2px dashed #e0e0e0;
+            border-radius: 8px;
+            background: #fafafa;
+        }
+        
+        .image-upload-label {
+            display: block;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            color: #666;
+            transition: all 0.3s;
+        }
+        
+        .image-upload-label:hover {
+            background: #f0f0f0;
+            border-color: #3498db;
+        }
+        
+        .image-upload-input {
+            display: none;
+        }
+        
+        .image-preview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .image-preview-item {
+            position: relative;
+            width: 100%;
+            padding-bottom: 100%;
+            background: #f5f5f5;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .image-preview-item img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .image-preview-item .remove-btn {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            background: rgba(244, 67, 54, 0.9);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .image-preview-item:hover .remove-btn {
+            opacity: 1;
+        }
+        
+        .location-selects {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+        }
+        
+        .quantity-group {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 10px;
+        }
+        
+        button {
+            background-color: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+        }
+        
+        .delete-btn {
+            background-color: #e74c3c;
+            padding: 5px 10px;
+            font-size: 14px;
+        }
+        
+        .delete-btn:hover {
+            background-color: #c0392b;
+        }
+        
+        .edit-btn {
+            background-color: #f39c12;
+            padding: 5px 10px;
+            font-size: 14px;
+            margin-right: 5px;
+        }
+        
+        .edit-btn:hover {
+            background-color: #e67e22;
+        }
+        
+        .image-btn {
+            background-color: #9b59b6;
+            padding: 5px 10px;
+            font-size: 14px;
+            margin-right: 5px;
+        }
+        
+        .image-btn:hover {
+            background-color: #8e44ad;
+        }
+        
+        .item-card {
+            background: #f8f9fa;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 6px;
+            border: 1px solid #e9ecef;
+            transition: transform 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .item-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .item-card.highlight {
+            background: #fff9e6;
+            border-color: #ffc107;
+        }
+        
+        .item-thumbnail {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            background: #f0f0f0;
+        }
+        
+        .no-image-placeholder {
+            width: 100%;
+            height: 180px;
+            background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            color: #999;
+            font-size: 48px;
+        }
+        
+        .item-image-count {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 10px;
+        }
+        
+        .item-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .item-quantity {
+            background: #3498db;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .item-category {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            color: white;
+            margin-right: 8px;
+        }
+        
+        .item-location {
+            color: #7f8c8d;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        
+        .item-description {
+            color: #555;
+            margin-bottom: 10px;
+        }
+        
+        .item-meta {
+            font-size: 12px;
+            color: #95a5a6;
+        }
+        
+        .item-actions {
+            margin-top: 10px;
+            display: flex;
+            gap: 5px;
+        }
+        
+        .message {
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #3498db;
+        }
+        
+        .stat-label {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+        
+        .no-locations-message {
+            background: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            border: 1px solid #ffeeba;
+        }
+        
+        .highlight-text {
+            background-color: #ffeb3b;
+            padding: 2px 4px;
+            border-radius: 2px;
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.show {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+        
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+        }
+        
+        .modal-close:hover {
+            color: #333;
+        }
+        
+        .image-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .gallery-item {
+            position: relative;
+            border-radius: 4px;
+            overflow: hidden;
+            background: #f5f5f5;
+        }
+        
+        .gallery-item img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+        }
+        
+        .gallery-item-actions {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.7);
+            padding: 5px;
+            display: flex;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .gallery-item:hover .gallery-item-actions {
+            opacity: 1;
+        }
+        
+        .gallery-delete-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        details summary {
+            cursor: pointer;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            transition: background 0.3s;
+        }
+        
+        details summary:hover {
+            background: #e9ecef;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            .search-controls {
+                grid-template-columns: 1fr;
+            }
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📦 내 물건 관리 시스템 <span class="version-badge">v5.1 AI & 영수증</span></h1>
+            <div class="nav-links">
+                <a href="index-v5.html">물건 관리</a>
+                <a href="locations.html">위치 관리</a>
+                <a href="categories.html">카테고리 관리</a>
+            </div>
+        </div>
+        
+        <div class="stats" id="stats">
+            <div class="stat-card">
+                <div class="stat-number" id="totalItems">0</div>
+                <div class="stat-label">전체 물건</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalQuantity">0</div>
+                <div class="stat-label">총 수량</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalLocations">0</div>
+                <div class="stat-label">등록 위치</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalCategories">0</div>
+                <div class="stat-label">카테고리</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalImages">0</div>
+                <div class="stat-label">총 이미지</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="searchResultCount">0</div>
+                <div class="stat-label">검색 결과</div>
+            </div>
+        </div>
+        
+        <!-- 영수증 분석 섹션 -->
+        <div class="receipt-section">
+            <h2 style="margin-bottom: 15px;">🧾 영수증으로 물건 추가</h2>
+            
+            <div class="receipt-upload-area">
+                <div style="margin-bottom: 20px;">
+                    <span style="font-size: 48px;">📸</span>
+                    <h3>영수증 사진을 업로드하세요</h3>
+                    <p style="color: #666; margin-top: 10px;">영수증을 분석하여 자동으로 물건을 등록합니다</p>
+                </div>
+                
+                <input type="file" id="receiptImage" accept="image/*" style="display: none;" onchange="analyzeReceipt()">
+                <button class="receipt-upload-btn" onclick="document.getElementById('receiptImage').click()">
+                    영수증 선택
+                </button>
+                
+                <div id="receiptPreview" style="margin-top: 20px; display: none;">
+                    <img id="receiptImg" style="max-width: 300px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                </div>
+            </div>
+            
+            <div id="receiptAnalyzing" style="display: none; text-align: center; padding: 20px;">
+                <div style="font-size: 24px; margin-bottom: 10px;">🔍</div>
+                <div>영수증을 분석 중입니다...</div>
+                <div style="margin-top: 10px;">
+                    <div style="display: inline-block; width: 200px; height: 4px; background: #e0e0e0; border-radius: 2px; overflow: hidden;">
+                        <div style="width: 50%; height: 100%; background: linear-gradient(90deg, #667eea, #764ba2); animation: loading 1.5s infinite;"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="receiptResults" style="display: none; margin-top: 20px;">
+                <h3>📋 인식된 물건들</h3>
+                <div id="recognizedItems" style="margin-top: 15px;"></div>
+                <div style="margin-top: 20px; text-align: center;">
+                    <button onclick="addAllRecognizedItems()" style="background: #27ae60; color: white; padding: 10px 25px; border-radius: 4px; border: none; cursor: pointer; margin-right: 10px;">
+                        모두 추가
+                    </button>
+                    <button onclick="clearReceiptResults()" style="background: #95a5a6; color: white; padding: 10px 25px; border-radius: 4px; border: none; cursor: pointer;">
+                        취소
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="search-section">
+            <h2 style="margin-bottom: 15px;">🔍 물건 검색</h2>
+            
+            <!-- AI 자연어 검색 -->
+            <div class="ai-search-container">
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <div style="flex: 1; position: relative;">
+                        <input type="text" 
+                               id="aiSearchInput" 
+                               class="ai-search-input" 
+                               placeholder="자연어로 검색해보세요. 예: '부엌에 뭐가 있지?' '전자제품 보여줘' '재고 부족한 물건'"
+                               onkeypress="if(event.key==='Enter') aiSearch()">
+                        <span class="ai-badge">AI</span>
+                    </div>
+                    <button class="ai-search-btn" onclick="aiSearch()">
+                        <span>🤖 AI 검색</span>
+                    </button>
+                    <button class="voice-btn" id="voiceBtn" onclick="startVoiceSearch()" title="음성 검색">
+                        🎤
+                    </button>
+                </div>
+                <div id="aiSearchExamples" class="search-examples">
+                    <span>예시:</span>
+                    <button class="example-btn" onclick="setAISearchExample('부엌에 있는 물건 보여줘')">부엌 물건</button>
+                    <button class="example-btn" onclick="setAISearchExample('전자제품 몇 개 있어?')">전자제품 개수</button>
+                    <button class="example-btn" onclick="setAISearchExample('재고가 부족한 물건')">재고 부족</button>
+                    <button class="example-btn" onclick="setAISearchExample('거실에 있는 가구')">거실 가구</button>
+                    <button class="example-btn" onclick="setAISearchExample('냉장고에 뭐가 있지?')">냉장고 확인</button>
+                </div>
+                <div id="suggestedQueries" class="suggested-queries" style="display: none;">
+                    <h4>자주 검색한 내용:</h4>
+                    <div id="suggestedList"></div>
+                </div>
+                <div id="aiResponse" class="ai-response" style="display: none;"></div>
+            </div>
+            
+            <!-- 기존 검색 (접을 수 있게) -->
+            <details>
+                <summary>📋 상세 검색 옵션</summary>
+                <div class="search-controls">
+                    <input type="text" 
+                           id="searchInput" 
+                           class="search-input" 
+                           placeholder="물건 이름 또는 설명으로 검색..."
+                           onkeypress="if(event.key==='Enter') searchItems()">
+                    <select id="locationFilter" class="filter-select">
+                        <option value="">모든 위치</option>
+                    </select>
+                    <select id="categoryFilter" class="filter-select">
+                        <option value="">모든 카테고리</option>
+                    </select>
+                    <button class="search-btn" onclick="searchItems()">검색</button>
+                    <button class="clear-btn" onclick="clearSearch()">초기화</button>
+                </div>
+            </details>
+            
+            <div id="searchResults" class="search-results" style="display: none;"></div>
+        </div>
+        
+        <div id="message" class="message"></div>
+        
+        <div class="main-content">
+            <div class="form-section">
+                <h2>물건 등록</h2>
+                
+                <div id="noLocationsMessage" class="no-locations-message" style="display: none;">
+                    ⚠️ 등록된 위치가 없습니다. 
+                    <a href="locations.html">위치 관리</a>에서 먼저 위치를 추가해주세요.
+                </div>
+                
+                <form id="itemForm">
+                    <div class="form-group">
+                        <label for="name">물건 이름 *</label>
+                        <input type="text" id="name" required placeholder="예: 겨울 코트">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="category">카테고리</label>
+                        <select id="category">
+                            <option value="">카테고리 선택</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>위치 선택</label>
+                        <div class="location-selects">
+                            <select id="location1" onchange="updateLocationOptions(2)">
+                                <option value="">장소 선택</option>
+                            </select>
+                            <select id="location2" onchange="updateLocationOptions(3)" style="display:none">
+                                <option value="">세부 위치</option>
+                            </select>
+                            <select id="location3" onchange="updateLocationOptions(4)" style="display:none">
+                                <option value="">구역</option>
+                            </select>
+                            <select id="location4" style="display:none">
+                                <option value="">상세 위치</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>수량</label>
+                        <div class="quantity-group">
+                            <input type="number" id="quantity" min="1" value="1">
+                            <select id="unit">
+                                <option value="개">개</option>
+                                <option value="벌">벌</option>
+                                <option value="권">권</option>
+                                <option value="병">병</option>
+                                <option value="박스">박스</option>
+                                <option value="세트">세트</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="description">설명</label>
+                        <textarea id="description" rows="3" placeholder="물건에 대한 상세 설명을 입력하세요"></textarea>
+                    </div>
+                    
+                    <!-- 이미지 업로드 섹션 -->
+                    <div class="image-upload-section">
+                        <label>이미지 추가</label>
+                        <label for="itemImages" class="image-upload-label">
+                            📷 클릭하여 이미지 선택 (여러 장 가능)
+                        </label>
+                        <input type="file" id="itemImages" class="image-upload-input" accept="image/*" multiple>
+                        <div id="imagePreview" class="image-preview-grid"></div>
+                    </div>
+                    
+                    <button type="submit">물건 등록</button>
+                </form>
+            </div>
+            
+            <div class="list-section">
+                <h2>물건 목록</h2>
+                <div id="items"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 이미지 관리 모달 -->
+    <div id="imageModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeImageModal()">×</button>
+            <h2>이미지 관리</h2>
+            <div class="image-upload-section">
+                <label for="modalImageUpload" class="image-upload-label">
+                    📷 새 이미지 추가
+                </label>
+                <input type="file" id="modalImageUpload" class="image-upload-input" accept="image/*" multiple>
+            </div>
+            <div id="imageGallery" class="image-gallery"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3001/api';
+        let allLocations = [];
+        let allCategories = [];
+        let allItems = [];
+        let editingItemId = null;
+        let currentSearchQuery = '';
+        let currentLocationFilter = null;
+        let currentCategoryFilter = null;
+        let selectedImages = [];
+        let currentModalItemId = null;
+        let recognition = null;
+        let recognizedItems = [];
+        
+        // 페이지 로드시 초기화
+        async function init() {
+            await loadCategories();
+            await loadLocations();
+            await loadItems();
+            updateStats();
+            setupFilters();
+            setupImageUpload();
+            loadSuggestedQueries();
+            setupVoiceRecognition();
+        }
+        
+        // 영수증 분석
+        async function analyzeReceipt() {
+            const fileInput = document.getElementById('receiptImage');
+            const file = fileInput.files[0];
+            
+            if (!file) return;
+            
+            // 미리보기 표시
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('receiptImg').src = e.target.result;
+                document.getElementById('receiptPreview').style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+            
+            // 분석 중 표시
+            document.getElementById('receiptAnalyzing').style.display = 'block';
+            document.getElementById('receiptResults').style.display = 'none';
+            
+            // 서버로 영수증 전송
+            const formData = new FormData();
+            formData.append('receipt', file);
+            
+            try {
+                const response = await fetch(API_URL + '/analyze-receipt', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    recognizedItems = data.items;
+                    displayRecognizedItems(data.items);
+                    document.getElementById('receiptAnalyzing').style.display = 'none';
+                    document.getElementById('receiptResults').style.display = 'block';
+                    showMessage(`${data.items.length}개의 물건을 인식했습니다.`, 'success');
+                } else {
+                    showMessage('영수증 분석에 실패했습니다.', 'error');
+                    document.getElementById('receiptAnalyzing').style.display = 'none';
+                }
+            } catch (error) {
+                console.error('영수증 분석 오류:', error);
+                showMessage('영수증 분석 중 오류가 발생했습니다.', 'error');
+                document.getElementById('receiptAnalyzing').style.display = 'none';
+            }
+        }
+        
+        // 인식된 물건 표시 (수정된 버전)
+        function displayRecognizedItems(items) {
+            const container = document.getElementById('recognizedItems');
+            
+            if (items.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #999;">인식된 물건이 없습니다.</p>';
+                return;
+            }
+            
+            container.innerHTML = `
+                <div style="margin-bottom: 15px; text-align: right;">
+                    <button onclick="addNewReceiptItem()" style="background: #4CAF50; color: white; padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer;">
+                        ➕ 새 항목 추가
+                    </button>
+                </div>
+            ` + items.map((item, index) => `
+                <div class="receipt-item" id="receipt-item-${index}">
+                    <div class="receipt-item-header">
+                        <input type="text" 
+                               id="name-${index}" 
+                               value="${item.name}" 
+                               placeholder="상품명 입력"
+                               style="font-weight: 600; font-size: 16px; border: 1px solid #ddd; padding: 5px; border-radius: 4px; flex: 1;"
+                               onchange="updateReceiptItem(${index}, 'name', this.value)">
+                        <button onclick="removeReceiptItem(${index})" 
+                                style="background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; margin-left: 10px;">
+                            삭제
+                        </button>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0;">
+                        <div>
+                            <label style="font-size: 12px; color: #666;">가격</label>
+                            <input type="number" 
+                                   id="price-${index}" 
+                                   value="${item.price || ''}" 
+                                   placeholder="가격 입력"
+                                   style="width: 100%; padding: 5px; border: 1px solid #ddd; border-radius: 4px;"
+                                   onchange="updateReceiptItem(${index}, 'price', parseInt(this.value))">
+                        </div>
+                        <div>
+                            <label style="font-size: 12px; color: #666;">수량</label>
+                            <input type="number" 
+                                   id="quantity-${index}" 
+                                   value="${item.quantity}" 
+                                   min="1" 
+                                   placeholder="수량"
+                                   style="width: 100%; padding: 5px; border: 1px solid #ddd; border-radius: 4px;"
+                                   onchange="updateReceiptItem(${index}, 'quantity', parseInt(this.value))">
+                        </div>
+                    </div>
+                    <div class="receipt-item-controls">
+                        <select id="category-${index}" onchange="updateReceiptItem(${index}, 'category', this.value)">
+                            <option value="">카테고리 선택</option>
+                            ${allCategories.map(cat => 
+                                `<option value="${cat.id}" ${item.category === cat.id ? 'selected' : ''}>
+                                    ${cat.icon} ${cat.name}
+                                </option>`
+                            ).join('')}
+                        </select>
+                        <select id="location-${index}" onchange="updateReceiptItem(${index}, 'suggestedLocation', this.value)">
+                            <option value="">위치 선택</option>
+                            ${allLocations.filter(loc => !loc.parentId).map(loc => 
+                                `<option value="${loc.id}" ${item.suggestedLocation === loc.id ? 'selected' : ''}>
+                                    ${loc.name}
+                                </option>`
+                            ).join('')}
+                        </select>
+                        <label style="display: flex; align-items: center; justify-content: center; grid-column: span 2;">
+                            <input type="checkbox" id="select-${index}" checked style="margin-right: 5px;">
+                            추가할 항목
+                        </label>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 새 항목 추가 함수
+        function addNewReceiptItem() {
+            const newItem = {
+                name: '',
+                quantity: 1,
+                price: null,
+                category: null,
+                suggestedLocation: null
+            };
+            
+            recognizedItems.push(newItem);
+            displayRecognizedItems(recognizedItems);
+        }
+
+        // 항목 삭제 함수
+        function removeReceiptItem(index) {
+            if (confirm('이 항목을 삭제하시겠습니까?')) {
+                recognizedItems.splice(index, 1);
+                displayRecognizedItems(recognizedItems);
+            }
+        }
+
+        // 항목 업데이트 함수
+        function updateReceiptItem(index, field, value) {
+            if (recognizedItems[index]) {
+                recognizedItems[index][field] = value;
+                console.log(`항목 ${index} 업데이트: ${field} = ${value}`);
+            }
+        }
+
+        // 인식된 물건 모두 추가 (수정된 버전)
+        async function addAllRecognizedItems() {
+            let addedCount = 0;
+            let skippedCount = 0;
+            
+            for (let i = 0; i < recognizedItems.length; i++) {
+                const checkbox = document.getElementById(`select-${i}`);
+                if (!checkbox.checked) {
+                    skippedCount++;
+                    continue;
+                }
+                
+                const item = recognizedItems[i];
+                
+                // 상품명이 비어있으면 건너뛰기
+                if (!item.name || item.name.trim() === '') {
+                    alert(`${i + 1}번째 항목의 상품명이 비어있습니다.`);
+                    continue;
+                }
+                
+                const categoryId = document.getElementById(`category-${i}`).value;
+                const locationId = document.getElementById(`location-${i}`).value;
+                const quantity = document.getElementById(`quantity-${i}`).value;
+                const price = document.getElementById(`price-${i}`).value;
+                
+                const itemData = {
+                    name: item.name.trim(),
+                    description: `영수증에서 추가 (${new Date().toLocaleDateString()})${price ? ` - ${parseInt(price).toLocaleString()}원` : ''}`,
+                    categoryId: categoryId ? parseInt(categoryId) : null,
+                    locationId: locationId ? parseInt(locationId) : null,
+                    quantity: parseInt(quantity) || 1,
+                    unit: '개'
+                };
+                
+                try {
+                    const response = await fetch(API_URL + '/items', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(itemData)
+                    });
+                    
+                    if (response.ok) {
+                        addedCount++;
+                    }
+                } catch (error) {
+                    console.error('물건 추가 오류:', error);
+                }
+            }
+            
+            if (addedCount > 0) {
+                showMessage(`${addedCount}개의 물건이 추가되었습니다! (${skippedCount}개 건너뜀)`, 'success');
+                clearReceiptResults();
+                loadItems();
+            } else if (skippedCount > 0) {
+                showMessage('선택된 항목이 없거나 유효하지 않습니다.', 'error');
+            }
+        }
+        
+        // 영수증 결과 초기화
+        function clearReceiptResults() {
+            document.getElementById('receiptImage').value = '';
+            document.getElementById('receiptPreview').style.display = 'none';
+            document.getElementById('receiptResults').style.display = 'none';
+            document.getElementById('recognizedItems').innerHTML = '';
+            recognizedItems = [];
+        }
+        
+        // 음성 인식 설정
+        function setupVoiceRecognition() {
+            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                recognition = new SpeechRecognition();
+                recognition.lang = 'ko-KR';
+                recognition.interimResults = false;
+                recognition.maxAlternatives = 1;
+                
+                recognition.onstart = function() {
+                    document.getElementById('voiceBtn').classList.add('listening');
+                    document.getElementById('aiSearchInput').placeholder = '🎤 듣고 있습니다...';
+                };
+                
+                recognition.onresult = function(event) {
+                    const transcript = event.results[0][0].transcript;
+                    document.getElementById('aiSearchInput').value = transcript;
+                    aiSearch();
+                };
+                
+                recognition.onerror = function(event) {
+                    console.error('음성 인식 오류:', event.error);
+                    showMessage('음성 인식에 실패했습니다.', 'error');
+                };
+                
+                recognition.onend = function() {
+                    document.getElementById('voiceBtn').classList.remove('listening');
+                    document.getElementById('aiSearchInput').placeholder = '자연어로 검색해보세요...';
+                };
+            }
+        }
+        
+        // 음성 검색 시작
+        function startVoiceSearch() {
+            if (recognition) {
+                recognition.start();
+            } else {
+                alert('이 브라우저는 음성 인식을 지원하지 않습니다.');
+            }
+        }
+        
+        // AI 검색 실행
+        async function aiSearch() {
+            const query = document.getElementById('aiSearchInput').value.trim();
+            if (!query) {
+                showMessage('검색어를 입력해주세요.', 'error');
+                return;
+            }
+            
+            learnSearchPattern(query);
+            
+            const responseDiv = document.getElementById('aiResponse');
+            responseDiv.style.display = 'block';
+            responseDiv.className = 'ai-response thinking';
+            responseDiv.innerHTML = '🤔 생각 중...';
+            
+            try {
+                const response = await fetch(API_URL + '/ai-search', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ query: query })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    responseDiv.className = 'ai-response';
+                    responseDiv.innerHTML = `
+                        <div style="margin-bottom: 10px;">
+                            <strong>🤖 AI 응답:</strong> ${data.aiResponse}
+                        </div>
+                        ${data.interpretation ? `
+                            <div class="interpretation-box">
+                                <strong>이해한 내용:</strong>
+                                ${data.interpretation.locations.length > 0 ? `<br>📍 위치: ${data.interpretation.locations.join(', ')}` : ''}
+                                ${data.interpretation.categories.length > 0 ? `<br>📂 카테고리: ${data.interpretation.categories.join(', ')}` : ''}
+                                ${data.interpretation.keywords.length > 0 ? `<br>🔑 키워드: ${data.interpretation.keywords.join(', ')}` : ''}
+                                ${data.interpretation.quantity ? `<br>📊 수량 조건: ${
+                                    data.interpretation.quantity.operator === 'low' ? '부족' :
+                                    data.interpretation.quantity.operator === 'high' ? '충분' :
+                                    data.interpretation.quantity.operator === 'zero' ? '없음' : ''
+                                }` : ''}
+                            </div>
+                        ` : ''}
+                    `;
+                    
+                    allItems = data.items;
+                    renderItems();
+                    
+                    document.getElementById('searchResultCount').textContent = data.count;
+                    
+                    const resultsDiv = document.getElementById('searchResults');
+                    resultsDiv.style.display = 'block';
+                    resultsDiv.textContent = `AI 검색 결과: ${data.count}개 물건 발견`;
+                    
+                    updateSearchSuccess(query, data.count > 0);
+                }
+            } catch (error) {
+                responseDiv.className = 'ai-response';
+                responseDiv.innerHTML = '❌ 검색 중 오류가 발생했습니다.';
+                console.error('AI 검색 오류:', error);
+            }
+        }
+        
+        // 예시 검색어 설정
+        function setAISearchExample(text) {
+            document.getElementById('aiSearchInput').value = text;
+            aiSearch();
+        }
+        
+        // 검색 패턴 학습
+        function learnSearchPattern(query) {
+            const patterns = JSON.parse(localStorage.getItem('searchPatterns') || '{}');
+            
+            if (!patterns[query]) {
+                patterns[query] = {
+                    count: 0,
+                    successful: false,
+                    lastUsed: null
+                };
+            }
+            
+            patterns[query].count++;
+            patterns[query].lastUsed = new Date().toISOString();
+            
+            localStorage.setItem('searchPatterns', JSON.stringify(patterns));
+            
+            setTimeout(loadSuggestedQueries, 100);
+        }
+        
+        // 검색 성공 여부 업데이트
+        function updateSearchSuccess(query, successful) {
+            const patterns = JSON.parse(localStorage.getItem('searchPatterns') || '{}');
+            if (patterns[query]) {
+                patterns[query].successful = successful;
+                localStorage.setItem('searchPatterns', JSON.stringify(patterns));
+            }
+        }
+        
+        // 자주 사용하는 검색어 로드
+        function loadSuggestedQueries() {
+            const patterns = JSON.parse(localStorage.getItem('searchPatterns') || '{}');
+            const sorted = Object.entries(patterns)
+                .filter(([query, data]) => data.count > 1)
+                .sort((a, b) => b[1].count - a[1].count)
+                .slice(0, 5);
+            
+            if (sorted.length > 0) {
+                const suggestedDiv = document.getElementById('suggestedQueries');
+                const listDiv = document.getElementById('suggestedList');
+                
+                suggestedDiv.style.display = 'block';
+                listDiv.innerHTML = sorted.map(([query, data]) => `
+                    <span class="suggested-query" onclick="setAISearchExample('${query}')">
+                        ${query} <span class="count">(${data.count}회)</span>
+                    </span>
+                `).join('');
+            }
+        }
+        
+        // 이미지 업로드 설정
+        function setupImageUpload() {
+            document.getElementById('itemImages').addEventListener('change', handleImageSelect);
+            document.getElementById('modalImageUpload').addEventListener('change', async function(e) {
+                if (currentModalItemId) {
+                    await uploadModalImages(e.target.files);
+                }
+            });
+        }
+        
+        // 이미지 선택 처리
+        function handleImageSelect(e) {
+            const files = Array.from(e.target.files);
+            files.forEach(file => {
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        addImagePreview(e.target.result, file);
+                    };
+                    reader.readAsDataURL(file);
+                    selectedImages.push(file);
+                }
+            });
+        }
+        
+        // 이미지 미리보기 추가
+        function addImagePreview(src, file) {
+            const preview = document.getElementById('imagePreview');
+            const item = document.createElement('div');
+            item.className = 'image-preview-item';
+            item.innerHTML = `
+                <img src="${src}" alt="미리보기">
+                <button type="button" class="remove-btn" onclick="removeImage(this, '${file.name}')">×</button>
+            `;
+            preview.appendChild(item);
+        }
+        
+        // 이미지 제거
+        function removeImage(btn, fileName) {
+            btn.parentElement.remove();
+            selectedImages = selectedImages.filter(f => f.name !== fileName);
+        }
+        
+        // 카테고리 데이터 로드
+        async function loadCategories() {
+            try {
+                const response = await fetch(API_URL + '/categories');
+                const data = await response.json();
+                allCategories = data.categories;
+                updateCategoryOptions();
+            } catch (error) {
+                console.error('Failed to load categories:', error);
+            }
+        }
+        
+        // 카테고리 옵션 업데이트
+        function updateCategoryOptions() {
+            const select = document.getElementById('category');
+            const filter = document.getElementById('categoryFilter');
+            
+            select.innerHTML = '<option value="">카테고리 선택</option>';
+            filter.innerHTML = '<option value="">모든 카테고리</option>';
+            
+            allCategories.forEach(cat => {
+                select.innerHTML += `<option value="${cat.id}">${cat.icon} ${cat.name}</option>`;
+                filter.innerHTML += `<option value="${cat.id}">${cat.icon} ${cat.name}</option>`;
+            });
+        }
+        
+        // 위치 데이터 로드
+        async function loadLocations() {
+            try {
+                const response = await fetch(API_URL + '/locations');
+                const data = await response.json();
+                allLocations = data.locations;
+                
+                if (allLocations.length === 0) {
+                    document.getElementById('noLocationsMessage').style.display = 'block';
+                } else {
+                    document.getElementById('noLocationsMessage').style.display = 'none';
+                }
+                
+                updateLocationOptions(1);
+            } catch (error) {
+                console.error('Failed to load locations:', error);
+            }
+        }
+        
+        // 필터 설정
+        function setupFilters() {
+            setupLocationFilter();
+        }
+        
+        // 위치 필터 설정
+        function setupLocationFilter() {
+            const filter = document.getElementById('locationFilter');
+            filter.innerHTML = '<option value="">모든 위치</option>';
+            
+            const rootLocations = allLocations.filter(loc => !loc.parentId);
+            rootLocations.forEach(loc => {
+                addLocationToFilter(loc, '');
+            });
+        }
+        
+        // 위치 필터에 옵션 추가 (재귀)
+        function addLocationToFilter(location, prefix) {
+            const filter = document.getElementById('locationFilter');
+            const option = document.createElement('option');
+            option.value = location.id;
+            option.textContent = prefix + location.name;
+            filter.appendChild(option);
+            
+            const children = allLocations.filter(loc => loc.parentId === location.id);
+            children.forEach(child => {
+                addLocationToFilter(child, prefix + '　');
+            });
+        }
+        
+        // 검색 실행
+        async function searchItems() {
+            const searchQuery = document.getElementById('searchInput').value.trim();
+            const locationId = document.getElementById('locationFilter').value;
+            const categoryId = document.getElementById('categoryFilter').value;
+            
+            currentSearchQuery = searchQuery;
+            currentLocationFilter = locationId;
+            currentCategoryFilter = categoryId;
+            
+            let url = API_URL + '/items?';
+            if (searchQuery) {
+                url += 'search=' + encodeURIComponent(searchQuery) + '&';
+            }
+            if (locationId) {
+                url += 'locationId=' + locationId + '&';
+            }
+            if (categoryId) {
+                url += 'categoryId=' + categoryId + '&';
+            }
+            
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                allItems = data.items;
+                
+                const resultsDiv = document.getElementById('searchResults');
+                if (searchQuery || locationId || categoryId) {
+                    resultsDiv.style.display = 'block';
+                    let message = `검색 결과: ${data.count}개`;
+                    if (searchQuery) message += ` (검색어: "${searchQuery}")`;
+                    if (locationId) {
+                        const location = allLocations.find(loc => loc.id == locationId);
+                        if (location) message += ` (위치: ${location.name})`;
+                    }
+                    if (categoryId) {
+                        const category = allCategories.find(cat => cat.id == categoryId);
+                        if (category) message += ` (카테고리: ${category.icon} ${category.name})`;
+                    }
+                    resultsDiv.textContent = message;
+                } else {
+                    resultsDiv.style.display = 'none';
+                }
+                
+                renderItems();
+                updateStats();
+                document.getElementById('searchResultCount').textContent = data.count;
+            } catch (error) {
+                showMessage('검색에 실패했습니다.', 'error');
+            }
+        }
+        
+        // 검색 초기화
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('aiSearchInput').value = '';
+            document.getElementById('locationFilter').value = '';
+            document.getElementById('categoryFilter').value = '';
+            document.getElementById('searchResults').style.display = 'none';
+            document.getElementById('aiResponse').style.display = 'none';
+            currentSearchQuery = '';
+            currentLocationFilter = null;
+            currentCategoryFilter = null;
+            loadItems();
+        }
+        
+        // 위치 선택 옵션 업데이트
+        function updateLocationOptions(level) {
+            const select = document.getElementById('location' + level);
+            const parentSelect = level > 1 ? document.getElementById('location' + (level - 1)) : null;
+            const parentId = parentSelect ? parentSelect.value : null;
+            
+            select.innerHTML = '<option value="">선택하세요</option>';
+            
+            for (let i = level + 1; i <= 4; i++) {
+                const nextSelect = document.getElementById('location' + i);
+                if (nextSelect) {
+                    nextSelect.style.display = 'none';
+                    nextSelect.innerHTML = '<option value="">선택하세요</option>';
+                }
+            }
+            
+            const locations = allLocations.filter(loc => {
+                if (level === 1) return loc.parentId === null;
+                return loc.parentId === parseInt(parentId);
+            });
+            
+            locations.forEach(loc => {
+                const option = document.createElement('option');
+                option.value = loc.id;
+                option.textContent = loc.name;
+                select.appendChild(option);
+            });
+            
+            if (locations.length > 0) {
+                select.style.display = 'block';
+            }
+        }
+        
+        // 최종 선택된 위치 ID 가져오기
+        function getSelectedLocationId() {
+            for (let i = 4; i >= 1; i--) {
+                const select = document.getElementById('location' + i);
+                if (select && select.value) {
+                    return parseInt(select.value);
+                }
+            }
+            return null;
+        }
+        
+        // 메시지 표시
+        function showMessage(text, type) {
+            const messageEl = document.getElementById('message');
+            messageEl.textContent = text;
+            messageEl.className = 'message ' + type;
+            messageEl.style.display = 'block';
+            setTimeout(() => {
+                messageEl.style.display = 'none';
+            }, 3000);
+        }
+        
+        // 물건 목록 로드
+        async function loadItems() {
+            try {
+                const response = await fetch(API_URL + '/items');
+                const data = await response.json();
+                allItems = data.items;
+                renderItems();
+                updateStats();
+            } catch (error) {
+                showMessage('물건 목록을 불러오는데 실패했습니다.', 'error');
+            }
+        }
+        
+        // 텍스트 하이라이트
+        function highlightText(text, query) {
+            if (!query || !text) return text;
+            const regex = new RegExp('(' + query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+            return text.replace(regex, '<span class="highlight-text">$1</span>');
+        }
+        
+        // 물건 목록 렌더링
+        function renderItems() {
+            const itemsEl = document.getElementById('items');
+            
+            if (allItems.length === 0) {
+                if (currentSearchQuery || currentLocationFilter || currentCategoryFilter) {
+                    itemsEl.innerHTML = '<div class="no-results">검색 결과가 없습니다.</div>';
+                } else {
+                    itemsEl.innerHTML = '<p style="text-align: center; color: #7f8c8d;">등록된 물건이 없습니다.</p>';
+                }
+                return;
+            }
+            
+            itemsEl.innerHTML = allItems.map(item => {
+                const highlightedName = highlightText(item.name, currentSearchQuery);
+                const highlightedDesc = highlightText(item.description || '', currentSearchQuery);
+                const isHighlighted = currentSearchQuery && 
+                    (item.name.toLowerCase().includes(currentSearchQuery.toLowerCase()) ||
+                     (item.description && item.description.toLowerCase().includes(currentSearchQuery.toLowerCase())));
+                
+                let categoryBadge = '';
+                if (item.categoryIcon && item.categoryName) {
+                    categoryBadge = `<span class="item-category" style="background: ${item.categoryColor || '#9E9E9E'}">
+                        ${item.categoryIcon} ${item.categoryName}
+                    </span>`;
+                }
+                
+                const imageHtml = item.thumbnailUrl 
+                    ? `<img src="${API_URL.replace('/api', '')}${item.thumbnailUrl}" class="item-thumbnail" alt="${item.name}">`
+                    : `<div class="no-image-placeholder">📷</div>`;
+                
+                const imageCountBadge = item.imageCount > 0 
+                    ? `<span class="item-image-count">📷 ${item.imageCount}</span>`
+                    : '';
+                
+                return `
+                    <div class="item-card ${isHighlighted ? 'highlight' : ''}">
+                        ${imageCountBadge}
+                        ${imageHtml}
+                        <div class="item-header">
+                            <div>
+                                <div class="item-title">${highlightedName}</div>
+                                <div style="margin: 5px 0;">
+                                    ${categoryBadge}
+                                </div>
+                                <div class="item-location">📍 ${item.locationName || '위치 미지정'}</div>
+                            </div>
+                            <div class="item-quantity">${item.quantity} ${item.unit}</div>
+                        </div>
+                        <div class="item-description">${highlightedDesc}</div>
+                        <div class="item-meta">등록일: ${new Date(item.createdAt).toLocaleString()}</div>
+                        <div class="item-actions">
+                            <button class="edit-btn" onclick="editItem(${item.id})">수정</button>
+                            <button class="image-btn" onclick="openImageModal(${item.id})">이미지</button>
+                            <button class="delete-btn" onclick="deleteItem(${item.id})">삭제</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // 이미지 모달 열기
+        async function openImageModal(itemId) {
+            currentModalItemId = itemId;
+            document.getElementById('imageModal').classList.add('show');
+            await loadItemImages(itemId);
+        }
+        
+        // 이미지 모달 닫기
+        function closeImageModal() {
+            document.getElementById('imageModal').classList.remove('show');
+            currentModalItemId = null;
+            document.getElementById('modalImageUpload').value = '';
+        }
+        
+        // 물건 이미지 로드
+        async function loadItemImages(itemId) {
+            try {
+                const response = await fetch(`${API_URL}/items/${itemId}/images`);
+                const data = await response.json();
+                
+                const gallery = document.getElementById('imageGallery');
+                if (data.images.length === 0) {
+                    gallery.innerHTML = '<p style="text-align: center; color: #999;">등록된 이미지가 없습니다.</p>';
+                } else {
+                    gallery.innerHTML = data.images.map(img => `
+                        <div class="gallery-item">
+                            <img src="${API_URL.replace('/api', '')}${img.url}" alt="이미지">
+                            <div class="gallery-item-actions">
+                                <button class="gallery-delete-btn" onclick="deleteItemImage('${img.url.split('/').pop()}')">삭제</button>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('이미지 로드 실패:', error);
+            }
+        }
+        
+        // 모달에서 이미지 업로드
+        async function uploadModalImages(files) {
+            for (const file of files) {
+                const formData = new FormData();
+                formData.append('image', file);
+                formData.append('itemId', currentModalItemId);
+                
+                try {
+                    await fetch(`${API_URL}/items/upload-image`, {
+                        method: 'POST',
+                        body: formData
+                    });
+                } catch (error) {
+                    console.error('이미지 업로드 실패:', error);
+                }
+            }
+            
+            await loadItemImages(currentModalItemId);
+            loadItems();
+            showMessage('이미지가 추가되었습니다.', 'success');
+        }
+        
+        // 이미지 삭제
+        async function deleteItemImage(filename) {
+            if (!confirm('이미지를 삭제하시겠습니까?')) return;
+            
+            try {
+                const response = await fetch(`${API_URL}/items/${currentModalItemId}/images/${filename}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    await loadItemImages(currentModalItemId);
+                    loadItems();
+                    showMessage('이미지가 삭제되었습니다.', 'success');
+                }
+            } catch (error) {
+                console.error('이미지 삭제 실패:', error);
+            }
+        }
+        
+        // 통계 업데이트
+        function updateStats() {
+            const totalItems = allItems.length;
+            const totalQuantity = allItems.reduce((sum, item) => sum + (item.quantity || 0), 0);
+            const uniqueLocations = new Set(allItems.map(item => item.locationId).filter(id => id)).size;
+            const uniqueCategories = new Set(allItems.map(item => item.categoryId).filter(id => id)).size;
+            const totalImages = allItems.reduce((sum, item) => sum + (item.imageCount || 0), 0);
+            
+            document.getElementById('totalItems').textContent = totalItems;
+            document.getElementById('totalQuantity').textContent = totalQuantity;
+            document.getElementById('totalLocations').textContent = uniqueLocations;
+            document.getElementById('totalCategories').textContent = uniqueCategories;
+            document.getElementById('totalImages').textContent = totalImages;
+            
+            if (!currentSearchQuery && !currentLocationFilter && !currentCategoryFilter) {
+                document.getElementById('searchResultCount').textContent = totalItems;
+            }
+        }
+        
+        // 물건 삭제
+        async function deleteItem(id) {
+            if (!confirm('정말 삭제하시겠습니까? 관련 이미지도 모두 삭제됩니다.')) return;
+            
+            try {
+                const response = await fetch(`${API_URL}/items/${id}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    showMessage('물건이 삭제되었습니다.', 'success');
+                    if (currentSearchQuery || currentLocationFilter || currentCategoryFilter) {
+                        searchItems();
+                    } else {
+                        loadItems();
+                    }
+                } else {
+                    showMessage('삭제에 실패했습니다.', 'error');
+                }
+            } catch (error) {
+                showMessage('서버 연결에 실패했습니다.', 'error');
+            }
+        }
+        
+        // 물건 수정
+        function editItem(id) {
+            const item = allItems.find(i => i.id === id);
+            if (!item) return;
+            
+            editingItemId = id;
+            document.getElementById('name').value = item.name;
+            document.getElementById('category').value = item.categoryId || '';
+            document.getElementById('quantity').value = item.quantity || 1;
+            document.getElementById('unit').value = item.unit || '개';
+            document.getElementById('description').value = item.description || '';
+            
+            document.getElementById('imagePreview').innerHTML = '';
+            selectedImages = [];
+            
+            document.querySelector('button[type="submit"]').textContent = '수정하기';
+            document.getElementById('name').focus();
+            window.scrollTo(0, 0);
+        }
+        
+        // 폼 제출 처리
+        document.getElementById('itemForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const categoryId = document.getElementById('category').value;
+            
+            const formData = {
+                name: document.getElementById('name').value,
+                categoryId: categoryId ? parseInt(categoryId) : null,
+                locationId: getSelectedLocationId(),
+                quantity: parseInt(document.getElementById('quantity').value) || 1,
+                unit: document.getElementById('unit').value,
+                description: document.getElementById('description').value
+            };
+            
+            try {
+                const url = editingItemId ? 
+                    `${API_URL}/items/${editingItemId}` : 
+                    `${API_URL}/items`;
+                    
+                const method = editingItemId ? 'PUT' : 'POST';
+                
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    if (!editingItemId && selectedImages.length > 0) {
+                        for (const image of selectedImages) {
+                            const imageFormData = new FormData();
+                            imageFormData.append('image', image);
+                            imageFormData.append('itemId', data.item.id);
+                            
+                            await fetch(`${API_URL}/items/upload-image`, {
+                                method: 'POST',
+                                body: imageFormData
+                            });
+                        }
+                    }
+                    
+                    showMessage(
+                        editingItemId ? '물건이 수정되었습니다!' : '물건이 추가되었습니다!', 
+                        'success'
+                    );
+                    
+                    document.getElementById('itemForm').reset();
+                    document.getElementById('imagePreview').innerHTML = '';
+                    selectedImages = [];
+                    document.querySelector('button[type="submit"]').textContent = '물건 등록';
+                    editingItemId = null;
+                    
+                    if (currentSearchQuery || currentLocationFilter || currentCategoryFilter) {
+                        searchItems();
+                    } else {
+                        loadItems();
+                    }
+                } else {
+                    showMessage('작업에 실패했습니다.', 'error');
+                }
+            } catch (error) {
+                showMessage('서버 연결에 실패했습니다.', 'error');
+            }
+        });
+        
+        // Enter 키로 검색
+        document.getElementById('searchInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                searchItems();
+            }
+        });
+        
+        // 초기화
+        init();
+    </script>
+</body>
+</html>

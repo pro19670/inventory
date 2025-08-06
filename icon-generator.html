@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PWA 아이콘 생성기</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .canvas-wrapper {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+        
+        .canvas-item {
+            text-align: center;
+        }
+        
+        canvas {
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            display: block;
+            margin: 10px auto;
+        }
+        
+        .controls {
+            display: grid;
+            gap: 15px;
+            margin: 30px 0;
+        }
+        
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        label {
+            min-width: 120px;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        input, select {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        input[type="color"] {
+            height: 40px;
+            cursor: pointer;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 5px;
+            transition: transform 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+        }
+        
+        .download-buttons {
+            text-align: center;
+            margin-top: 30px;
+        }
+        
+        .preset-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        
+        .preset-btn {
+            background: #f0f0f0;
+            color: #333;
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+        
+        .preset-btn:hover {
+            background: #e0e0e0;
+        }
+        
+        .info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .info h3 {
+            margin-top: 0;
+            color: #1976d2;
+        }
+        
+        .info ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        
+        .info li {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📦 물건 관리 앱 아이콘 생성기</h1>
+        
+        <div class="info">
+            <h3>ℹ️ 사용 방법</h3>
+            <ul>
+                <li>아래 옵션으로 아이콘을 커스터마이즈하세요</li>
+                <li>미리 만들어진 디자인을 선택할 수도 있습니다</li>
+                <li>각 크기별로 다운로드 버튼을 클릭하세요</li>
+                <li>다운로드한 파일을 frontend 폴더에 넣으세요</li>
+            </ul>
+        </div>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label>배경색:</label>
+                <input type="color" id="bgColor" value="#667eea">
+                <input type="text" id="bgColorText" value="#667eea" placeholder="#667eea">
+            </div>
+            
+            <div class="control-group">
+                <label>아이콘:</label>
+                <select id="iconSelect">
+                    <option value="📦">📦 박스</option>
+                    <option value="📋">📋 클립보드</option>
+                    <option value="🏠">🏠 집</option>
+                    <option value="📱">📱 모바일</option>
+                    <option value="🗂️">🗂️ 파일함</option>
+                    <option value="📊">📊 차트</option>
+                    <option value="🔍">🔍 검색</option>
+                    <option value="⚙️">⚙️ 설정</option>
+                    <option value="custom">커스텀 텍스트</option>
+                </select>
+                <input type="text" id="customIcon" placeholder="커스텀 아이콘/텍스트" style="display:none;">
+            </div>
+            
+            <div class="control-group">
+                <label>아이콘 크기:</label>
+                <input type="range" id="iconSize" min="30" max="70" value="50">
+                <span id="iconSizeValue">50%</span>
+            </div>
+            
+            <div class="control-group">
+                <label>모서리 둥글기:</label>
+                <input type="range" id="borderRadius" min="0" max="50" value="20">
+                <span id="borderRadiusValue">20%</span>
+            </div>
+            
+            <div class="control-group">
+                <label>그라데이션:</label>
+                <input type="checkbox" id="gradient" checked>
+                <input type="color" id="gradientColor" value="#764ba2">
+            </div>
+            
+            <div class="control-group">
+                <label>프리셋 디자인:</label>
+                <div class="preset-buttons">
+                    <button class="preset-btn" onclick="applyPreset('default')">기본</button>
+                    <button class="preset-btn" onclick="applyPreset('dark')">다크</button>
+                    <button class="preset-btn" onclick="applyPreset('light')">라이트</button>
+                    <button class="preset-btn" onclick="applyPreset('green')">그린</button>
+                    <button class="preset-btn" onclick="applyPreset('red')">레드</button>
+                    <button class="preset-btn" onclick="applyPreset('minimal')">미니멀</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="canvas-wrapper">
+            <div class="canvas-item">
+                <h3>192x192</h3>
+                <canvas id="canvas192" width="192" height="192"></canvas>
+                <button onclick="download('192')">다운로드 192x192</button>
+            </div>
+            <div class="canvas-item">
+                <h3>512x512</h3>
+                <canvas id="canvas512" width="512" height="512"></canvas>
+                <button onclick="download('512')">다운로드 512x512</button>
+            </div>
+        </div>
+        
+        <div class="download-buttons">
+            <button onclick="downloadAll()">🎯 모든 크기 다운로드</button>
+            <button onclick="generateFavicon()">🌐 Favicon 생성 (32x32)</button>
+            <button onclick="generateAppleTouch()">🍎 Apple Touch Icon (180x180)</button>
+        </div>
+    </div>
+    
+    <script>
+        // 초기 설정
+        const canvas192 = document.getElementById('canvas192');
+        const canvas512 = document.getElementById('canvas512');
+        const ctx192 = canvas192.getContext('2d');
+        const ctx512 = canvas512.getContext('2d');
+        
+        // 이벤트 리스너
+        document.getElementById('bgColor').addEventListener('input', (e) => {
+            document.getElementById('bgColorText').value = e.target.value;
+            drawIcons();
+        });
+        
+        document.getElementById('bgColorText').addEventListener('input', (e) => {
+            document.getElementById('bgColor').value = e.target.value;
+            drawIcons();
+        });
+        
+        document.getElementById('iconSelect').addEventListener('change', (e) => {
+            const customInput = document.getElementById('customIcon');
+            if (e.target.value === 'custom') {
+                customInput.style.display = 'block';
+                customInput.focus();
+            } else {
+                customInput.style.display = 'none';
+            }
+            drawIcons();
+        });
+        
+        document.getElementById('customIcon').addEventListener('input', drawIcons);
+        document.getElementById('iconSize').addEventListener('input', (e) => {
+            document.getElementById('iconSizeValue').textContent = e.target.value + '%';
+            drawIcons();
+        });
+        
+        document.getElementById('borderRadius').addEventListener('input', (e) => {
+            document.getElementById('borderRadiusValue').textContent = e.target.value + '%';
+            drawIcons();
+        });
+        
+        document.getElementById('gradient').addEventListener('change', drawIcons);
+        document.getElementById('gradientColor').addEventListener('input', drawIcons);
+        
+        // 아이콘 그리기 함수
+        function drawIcon(canvas, ctx) {
+            const size = canvas.width;
+            ctx.clearRect(0, 0, size, size);
+            
+            // 배경 그리기
+            const bgColor = document.getElementById('bgColor').value;
+            const useGradient = document.getElementById('gradient').checked;
+            const gradientColor = document.getElementById('gradientColor').value;
+            const borderRadius = (document.getElementById('borderRadius').value / 100) * size;
+            
+            // 둥근 모서리 경로 생성
+            ctx.beginPath();
+            ctx.moveTo(borderRadius, 0);
+            ctx.lineTo(size - borderRadius, 0);
+            ctx.quadraticCurveTo(size, 0, size, borderRadius);
+            ctx.lineTo(size, size - borderRadius);
+            ctx.quadraticCurveTo(size, size, size - borderRadius, size);
+            ctx.lineTo(borderRadius, size);
+            ctx.quadraticCurveTo(0, size, 0, size - borderRadius);
+            ctx.lineTo(0, borderRadius);
+            ctx.quadraticCurveTo(0, 0, borderRadius, 0);
+            ctx.closePath();
+            
+            // 배경 채우기
+            if (useGradient) {
+                const gradient = ctx.createLinearGradient(0, 0, size, size);
+                gradient.addColorStop(0, bgColor);
+                gradient.addColorStop(1, gradientColor);
+                ctx.fillStyle = gradient;
+            } else {
+                ctx.fillStyle = bgColor;
+            }
+            ctx.fill();
+            
+            // 아이콘 그리기
+            const iconSelect = document.getElementById('iconSelect');
+            const icon = iconSelect.value === 'custom' 
+                ? document.getElementById('customIcon').value || '📦'
+                : iconSelect.value;
+            
+            const iconSizePercent = document.getElementById('iconSize').value / 100;
+            const fontSize = size * iconSizePercent;
+            
+            ctx.fillStyle = 'white';
+            ctx.font = `${fontSize}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            // 그림자 효과
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
+            ctx.shadowBlur = size * 0.05;
+            ctx.shadowOffsetX = size * 0.02;
+            ctx.shadowOffsetY = size * 0.02;
+            
+            ctx.fillText(icon, size / 2, size / 2);
+            
+            // 그림자 제거
+            ctx.shadowColor = 'transparent';
+            ctx.shadowBlur = 0;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
+        }
+        
+        // 모든 아이콘 그리기
+        function drawIcons() {
+            drawIcon(canvas192, ctx192);
+            drawIcon(canvas512, ctx512);
+        }
+        
+        // 다운로드 함수
+        function download(size) {
+            const canvas = size === '192' ? canvas192 : canvas512;
+            const link = document.createElement('a');
+            link.download = `icon-${size}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+        
+        // 모든 크기 다운로드
+        function downloadAll() {
+            download('192');
+            setTimeout(() => download('512'), 100);
+        }
+        
+        // Favicon 생성
+        function generateFavicon() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 32;
+            canvas.height = 32;
+            const ctx = canvas.getContext('2d');
+            
+            drawIcon(canvas, ctx);
+            
+            const link = document.createElement('a');
+            link.download = 'favicon.ico';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+        
+        // Apple Touch Icon 생성
+        function generateAppleTouch() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 180;
+            canvas.height = 180;
+            const ctx = canvas.getContext('2d');
+            
+            drawIcon(canvas, ctx);
+            
+            const link = document.createElement('a');
+            link.download = 'apple-touch-icon.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+        
+        // 프리셋 적용
+        function applyPreset(preset) {
+            switch(preset) {
+                case 'default':
+                    document.getElementById('bgColor').value = '#667eea';
+                    document.getElementById('gradientColor').value = '#764ba2';
+                    document.getElementById('gradient').checked = true;
+                    document.getElementById('iconSelect').value = '📦';
+                    break;
+                case 'dark':
+                    document.getElementById('bgColor').value = '#1a1a1a';
+                    document.getElementById('gradientColor').value = '#333333';
+                    document.getElementById('gradient').checked = true;
+                    document.getElementById('iconSelect').value = '📦';
+                    break;
+                case 'light':
+                    document.getElementById('bgColor').value = '#ffffff';
+                    document.getElementById('gradientColor').value = '#f0f0f0';
+                    document.getElementById('gradient').checked = false;
+                    document.getElementById('iconSelect').value = '📦';
+                    // 밝은 배경에는 어두운 아이콘
+                    setTimeout(() => {
+                        ctx192.fillStyle = '#333';
+                        ctx512.fillStyle = '#333';
+                        drawIcons();
+                    }, 10);
+                    break;
+                case 'green':
+                    document.getElementById('bgColor').value = '#4caf50';
+                    document.getElementById('gradientColor').value = '#81c784';
+                    document.getElementById('gradient').checked = true;
+                    document.getElementById('iconSelect').value = '📦';
+                    break;
+                case 'red':
+                    document.getElementById('bgColor').value = '#f44336';
+                    document.getElementById('gradientColor').value = '#e57373';
+                    document.getElementById('gradient').checked = true;
+                    document.getElementById('iconSelect').value = '📦';
+                    break;
+                case 'minimal':
+                    document.getElementById('bgColor').value = '#2196f3';
+                    document.getElementById('gradient').checked = false;
+                    document.getElementById('borderRadius').value = 0;
+                    document.getElementById('borderRadiusValue').textContent = '0%';
+                    document.getElementById('iconSelect').value = '📦';
+                    break;
+            }
+            
+            document.getElementById('bgColorText').value = document.getElementById('bgColor').value;
+            drawIcons();
+        }
+        
+        // 초기 아이콘 그리기
+        drawIcons();
+    </script>
+</body>
+</html>

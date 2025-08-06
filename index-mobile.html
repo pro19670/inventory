@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#667eea">
+    <title>📦 내 물건 관리</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            padding-bottom: 70px; /* 하단 네비게이션 공간 */
+            overflow-x: hidden;
+        }
+        
+        /* 모바일 헤더 */
+        .mobile-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .mobile-header h1 {
+            font-size: 20px;
+            text-align: center;
+        }
+        
+        /* 하단 네비게이션 */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            z-index: 100;
+        }
+        
+        .nav-item {
+            flex: 1;
+            text-align: center;
+            padding: 5px;
+            color: #666;
+            text-decoration: none;
+            font-size: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+        }
+        
+        .nav-item.active {
+            color: #667eea;
+        }
+        
+        .nav-item span {
+            font-size: 24px;
+        }
+        
+        /* 플로팅 액션 버튼 */
+        .fab {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            font-size: 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 99;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .fab-menu {
+            position: fixed;
+            bottom: 150px;
+            right: 20px;
+            display: none;
+            flex-direction: column;
+            gap: 15px;
+            z-index: 98;
+        }
+        
+        .fab-menu.show {
+            display: flex;
+        }
+        
+        .fab-option {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            font-size: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* 컨텐츠 영역 */
+        .mobile-content {
+            padding: 15px;
+        }
+        
+        /* 통계 카드 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        
+        .stat-number {
+            font-size: 28px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #999;
+            margin-top: 5px;
+        }
+        
+        /* 검색 바 */
+        .search-bar {
+            background: white;
+            padding: 10px;
+            border-radius: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .search-input {
+            flex: 1;
+            border: none;
+            outline: none;
+            font-size: 16px;
+            padding: 5px;
+        }
+        
+        .search-btn {
+            background: none;
+            border: none;
+            color: #667eea;
+            font-size: 20px;
+            padding: 5px;
+        }
+        
+        /* 아이템 카드 */
+        .item-card {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 10px;
+        }
+        
+        .item-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .item-quantity {
+            background: #667eea;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 14px;
+        }
+        
+        .item-info {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .info-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 8px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .item-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .action-btn {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .edit-btn {
+            background: #f39c12;
+        }
+        
+        .delete-btn {
+            background: #e74c3c;
+        }
+        
+        /* 모달 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 200;
+        }
+        
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: white;
+            width: 90%;
+            max-height: 80vh;
+            border-radius: 20px;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #999;
+        }
+        
+        /* 폼 스타일 */
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+            font-size: 14px;
+        }
+        
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            background: #f8f8f8;
+        }
+        
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+        }
+        
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 20px;
+        }
+        
+        /* 영수증 업로드 영역 */
+        .receipt-upload {
+            border: 2px dashed #667eea;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            background: #f8f9ff;
+            margin-bottom: 20px;
+        }
+        
+        .receipt-upload-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        
+        .receipt-upload-btn {
+            background: #667eea;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            border: none;
+            font-size: 14px;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+        
+        /* 음성 검색 버튼 */
+        .voice-search-btn {
+            position: fixed;
+            bottom: 150px;
+            left: 20px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: white;
+            border: 2px solid #667eea;
+            color: #667eea;
+            font-size: 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            z-index: 99;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .voice-search-btn.listening {
+            animation: pulse 1.5s infinite;
+            background: #ff4444;
+            color: white;
+            border-color: #ff4444;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        /* 토스트 메시지 */
+        .toast {
+            position: fixed;
+            bottom: 90px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-size: 14px;
+            z-index: 300;
+            display: none;
+        }
+        
+        .toast.show {
+            display: block;
+            animation: slideUp 0.3s ease;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+        
+        /* 스와이프 삭제 */
+        .swipeable {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .swipe-actions {
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 80px;
+            background: #e74c3c;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            transform: translateX(100%);
+            transition: transform 0.3s;
+        }
+        
+        .swipeable.swiped .swipe-actions {
+            transform: translateX(0);
+        }
+        
+        /* 로딩 스피너 */
+        .loading {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 400;
+        }
+        
+        .loading.show {
+            display: block;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* 탭 메뉴 */
+        .tab-menu {
+            display: flex;
+            background: white;
+            border-radius: 12px;
+            padding: 5px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        
+        .tab-item {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #999;
+            transition: all 0.3s;
+        }
+        
+        .tab-item.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        /* Pull to Refresh */
+        .pull-to-refresh {
+            position: fixed;
+            top: -60px;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: top 0.3s;
+            z-index: 90;
+        }
+        
+        .pull-to-refresh.show {
+            top: 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- 헤더 -->
+    <div class="mobile-header">
+        <h1>📦 내 물건 관리</h1>
+    </div>
+    
+    <!-- Pull to Refresh -->
+    <div class="pull-to-refresh" id="pullToRefresh">
+        <span>🔄 새로고침 중...</span>
+    </div>
+    
+    <!-- 메인 컨텐츠 -->
+    <div class="mobile-content">
+        <!-- 통계 -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number" id="totalItems">0</div>
+                <div class="stat-label">전체 물건</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalQuantity">0</div>
+                <div class="stat-label">총 수량</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalLocations">0</div>
+                <div class="stat-label">위치</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalCategories">0</div>
+                <div class="stat-label">카테고리</div>
+            </div>
+        </div>
+        
+        <!-- 탭 메뉴 -->
+        <div class="tab-menu">
+            <div class="tab-item active" onclick="switchTab('items')">물건 목록</div>
+            <div class="tab-item" onclick="switchTab('receipt')">영수증</div>
+            <div class="tab-item" onclick="switchTab('search')">AI 검색</div>
+        </div>
+        
+        <!-- 검색 바 -->
+        <div class="search-bar">
+            <input type="text" class="search-input" id="searchInput" placeholder="물건 검색...">
+            <button class="search-btn" onclick="searchItems()">🔍</button>
+        </div>
+        
+        <!-- 아이템 목록 -->
+        <div id="itemsList"></div>
+    </div>
+    
+    <!-- 음성 검색 버튼 -->
+    <button class="voice-search-btn" id="voiceBtn" onclick="startVoiceSearch()">
+        🎤
+    </button>
+    
+    <!-- 플로팅 액션 버튼 -->
+    <button class="fab" onclick="toggleFabMenu()">
+        ➕
+    </button>
+    
+    <div class="fab-menu" id="fabMenu">
+        <button class="fab-option" onclick="openAddModal()">📝</button>
+        <button class="fab-option" onclick="openReceiptModal()">📸</button>
+        <button class="fab-option" onclick="openCameraModal()">📷</button>
+    </div>
+    
+    <!-- 하단 네비게이션 -->
+    <div class="bottom-nav">
+        <a href="#" class="nav-item active">
+            <span>🏠</span>
+            <div>홈</div>
+        </a>
+        <a href="#" class="nav-item" onclick="openLocationModal()">
+            <span>📍</span>
+            <div>위치</div>
+        </a>
+        <a href="#" class="nav-item" onclick="openCategoryModal()">
+            <span>🏷️</span>
+            <div>카테고리</div>
+        </a>
+        <a href="#" class="nav-item" onclick="openSettingsModal()">
+            <span>⚙️</span>
+            <div>설정</div>
+        </a>
+    </div>
+    
+    <!-- 물건 추가 모달 -->
+    <div class="modal" id="addModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">물건 추가</h2>
+                <button class="modal-close" onclick="closeModal('addModal')">✕</button>
+            </div>
+            <form id="itemForm">
+                <div class="form-group">
+                    <label class="form-label">물건 이름 *</label>
+                    <input type="text" class="form-input" id="itemName" required placeholder="예: 겨울 코트">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">카테고리</label>
+                    <select class="form-select" id="itemCategory">
+                        <option value="">선택하세요</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">위치</label>
+                    <select class="form-select" id="itemLocation">
+                        <option value="">선택하세요</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">수량</label>
+                    <input type="number" class="form-input" id="itemQuantity" value="1" min="1">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">설명</label>
+                    <textarea class="form-textarea" id="itemDescription" rows="3" placeholder="물건에 대한 설명..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">사진 추가</label>
+                    <input type="file" id="itemImage" accept="image/*" capture="environment" style="display: none;">
+                    <button type="button" class="receipt-upload-btn" onclick="document.getElementById('itemImage').click()">
+                        📷 사진 선택
+                    </button>
+                </div>
+                
+                <button type="submit" class="submit-btn">저장하기</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- 영수증 모달 -->
+    <div class="modal" id="receiptModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">영수증 스캔</h2>
+                <button class="modal-close" onclick="closeModal('receiptModal')">✕</button>
+            </div>
+            
+            <div class="receipt-upload">
+                <div class="receipt-upload-icon">📸</div>
+                <p>영수증을 촬영하거나 선택하세요</p>
+                <input type="file" id="receiptImage" accept="image/*" capture="camera" style="display: none;" onchange="processReceipt()">
+                <button class="receipt-upload-btn" onclick="document.getElementById('receiptImage').click()">
+                    카메라 열기
+                </button>
+            </div>
+            
+            <div id="receiptResults"></div>
+        </div>
+    </div>
+    
+    <!-- 토스트 메시지 -->
+    <div class="toast" id="toast"></div>
+    
+    <!-- 로딩 -->
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+    </div>
+    
+    <script>
+        const API_URL = 'http://localhost:3001/api';
+        let items = [];
+        let categories = [];
+        let locations = [];
+        let currentTab = 'items';
+        let isListening = false;
+        let pullDistance = 0;
+        let isPulling = false;
+        
+        // 초기화
+        async function init() {
+            await loadData();
+            setupPullToRefresh();
+            setupSwipeGestures();
+            checkNotificationPermission();
+        }
+        
+        // 데이터 로드
+        async function loadData() {
+            showLoading();
+            try {
+                // 카테고리 로드
+                const catResponse = await fetch(API_URL + '/categories');
+                const catData = await catResponse.json();
+                categories = catData.categories;
+                updateCategoryOptions();
+                
+                // 위치 로드
+                const locResponse = await fetch(API_URL + '/locations');
+                const locData = await locResponse.json();
+                locations = locData.locations;
+                updateLocationOptions();
+                
+                // 물건 로드
+                const itemResponse = await fetch(API_URL + '/items');
+                const itemData = await itemResponse.json();
+                items = itemData.items;
+                renderItems();
+                updateStats();
+                
+            } catch (error) {
+                showToast('데이터 로드 실패');
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        // Pull to Refresh 설정
+        function setupPullToRefresh() {
+            let startY = 0;
+            let currentY = 0;
+            
+            document.addEventListener('touchstart', (e) => {
+                if (window.scrollY === 0) {
+                    startY = e.touches[0].clientY;
+                    isPulling = true;
+                }
+            });
+            
+            document.addEventListener('touchmove', (e) => {
+                if (!isPulling) return;
+                
+                currentY = e.touches[0].clientY;
+                pullDistance = currentY - startY;
+                
+                if (pullDistance > 0 && pullDistance < 150) {
+                    e.preventDefault();
+                    if (pullDistance > 60) {
+                        document.getElementById('pullToRefresh').classList.add('show');
+                    }
+                }
+            });
+            
+            document.addEventListener('touchend', async () => {
+                if (pullDistance > 60) {
+                    await loadData();
+                    showToast('새로고침 완료');
+                }
+                
+                document.getElementById('pullToRefresh').classList.remove('show');
+                pullDistance = 0;
+                isPulling = false;
+            });
+        }
+        
+        // 스와이프 제스처 설정
+        function setupSwipeGestures() {
+            let startX = 0;
+            let currentX = 0;
+            let currentElement = null;
+            
+            document.addEventListener('touchstart', (e) => {
+                if (e.target.closest('.item-card')) {
+                    startX = e.touches[0].clientX;
+                    currentElement = e.target.closest('.item-card');
+                }
+            });
+            
+            document.addEventListener('touchmove', (e) => {
+                if (!currentElement) return;
+                
+                currentX = e.touches[0].clientX;
+                const diffX = startX - currentX;
+                
+                if (diffX > 50) {
+                    currentElement.classList.add('swiped');
+                } else if (diffX < -50) {
+                    currentElement.classList.remove('swiped');
+                }
+            });
+            
+            document.addEventListener('touchend', () => {
+                startX = 0;
+                currentX = 0;
+                currentElement = null;
+            });
+        }
+        
+        // 알림 권한 확인
+        function checkNotificationPermission() {
+            if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission();
+            }
+        }
+        
+        // 물건 렌더링
+        function renderItems() {
+            const container = document.getElementById('itemsList');
+            
+            if (items.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #999;">
+                        <div style="font-size: 48px;">📦</div>
+                        <p>등록된 물건이 없습니다</p>
+                        <p style="font-size: 14px;">+ 버튼을 눌러 추가하세요</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = items.map(item => `
+                <div class="item-card swipeable">
+                    <div class="item-header">
+                        <div class="item-title">${item.name}</div>
+                        <div class="item-quantity">${item.quantity} ${item.unit || '개'}</div>
+                    </div>
+                    <div class="item-info">
+                        ${item.categoryName ? `<span class="info-badge">🏷️ ${item.categoryName}</span>` : ''}
+                        ${item.locationName ? `<span class="info-badge">📍 ${item.locationName}</span>` : ''}
+                    </div>
+                    ${item.description ? `<div style="color: #666; font-size: 14px;">${item.description}</div>` : ''}
+                    <div class="item-actions">
+                        <button class="action-btn edit-btn" onclick="editItem(${item.id})">수정</button>
+                        <button class="action-btn delete-btn" onclick="deleteItem(${item.id})">삭제</button>
+                    </div>
+                    <div class="swipe-actions" onclick="deleteItem(${item.id})">
+                        🗑️
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // 통계 업데이트
+        function updateStats() {
+            document.getElementById('totalItems').textContent = items.length;
+            document.getElementById('totalQuantity').textContent = items.reduce((sum, item) => sum + (item.quantity || 0), 0);
+            document.getElementById('totalLocations').textContent = locations.length;
+            document.getElementById('totalCategories').textContent = categories.length;
+        }
+        
+        // 카테고리 옵션 업데이트
+        function updateCategoryOptions() {
+            const select = document.getElementById('itemCategory');
+            select.innerHTML = '<option value="">선택하세요</option>';
+            categories.forEach(cat => {
+                select.innerHTML += `<option value="${cat.id}">${cat.icon} ${cat.name}</option>`;
+            });
+        }
+        
+        // 위치 옵션 업데이트
+        function updateLocationOptions() {
+            const select = document.getElementById('itemLocation');
+            select.innerHTML = '<option value="">선택하세요</option>';
+            locations.filter(loc => !loc.parentId).forEach(loc => {
+                select.innerHTML += `<option value="${loc.id}">${loc.name}</option>`;
+            });
+        }
+        
+        // FAB 메뉴 토글
+        function toggleFabMenu() {
+            document.getElementById('fabMenu').classList.toggle('show');
+        }
+        
+        // 모달 열기
+        function openAddModal() {
+            document.getElementById('addModal').classList.add('show');
+            toggleFabMenu();
+        }
+        
+        function openReceiptModal() {
+            document.getElementById('receiptModal').classList.add('show');
+            toggleFabMenu();
+        }
+        
+        function openCameraModal() {
+            document.getElementById('itemImage').click();
+            toggleFabMenu();
+        }
+        
+        // 모달 닫기
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+        
+        // 토스트 메시지
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+        
+        // 로딩 표시
+        function showLoading() {
+            document.getElementById('loading').classList.add('show');
+        }
+        
+        function hideLoading() {
+            document.getElementById('loading').classList.remove('show');
+        }
+        
+        // 음성 검색
+        function startVoiceSearch() {
+            if (!('webkitSpeechRecognition' in window)) {
+                showToast('음성 검색을 지원하지 않는 브라우저입니다');
+                return;
+            }
+            
+            const recognition = new webkitSpeechRecognition();
+            recognition.lang = 'ko-KR';
+            recognition.interimResults = false;
+            
+            const voiceBtn = document.getElementById('voiceBtn');
+            
+            recognition.onstart = () => {
+                isListening = true;
+                voiceBtn.classList.add('listening');
+                showToast('말씀해주세요...');
+            };
+            
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                document.getElementById('searchInput').value = transcript;
+                searchItems();
+            };
+            
+            recognition.onerror = () => {
+                showToast('음성 인식 실패');
+            };
+            
+            recognition.onend = () => {
+                isListening = false;
+                voiceBtn.classList.remove('listening');
+            };
+            
+            if (isListening) {
+                recognition.stop();
+            } else {
+                recognition.start();
+            }
+        }
+        
+        // 검색
+        async function searchItems() {
+            const query = document.getElementById('searchInput').value;
+            if (!query) {
+                await loadData();
+                return;
+            }
+            
+            showLoading();
+            try {
+                const response = await fetch(API_URL + '/items?search=' + encodeURIComponent(query));
+                const data = await response.json();
+                items = data.items;
+                renderItems();
+                showToast(`${data.count}개 검색 결과`);
+            } catch (error) {
+                showToast('검색 실패');
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        // 물건 삭제
+        async function deleteItem(id) {
+            if (!confirm('정말 삭제하시겠습니까?')) return;
+            
+            showLoading();
+            try {
+                const response = await fetch(API_URL + '/items/' + id, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    await loadData();
+                    showToast('삭제되었습니다');
+                    
+                    // 진동 피드백 (지원하는 경우)
+                    if ('vibrate' in navigator) {
+                        navigator.vibrate(50);
+                    }
+                }
+            } catch (error) {
+                showToast('삭제 실패');
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        // 물건 수정
+        function editItem(id) {
+            const item = items.find(i => i.id === id);
+            if (!item) return;
+            
+            document.getElementById('itemName').value = item.name;
+            document.getElementById('itemCategory').value = item.categoryId || '';
+            document.getElementById('itemLocation').value = item.locationId || '';
+            document.getElementById('itemQuantity').value = item.quantity || 1;
+            document.getElementById('itemDescription').value = item.description || '';
+            
+            openAddModal();
+        }
+        
+        // 영수증 처리
+        async function processReceipt() {
+            const file = document.getElementById('receiptImage').files[0];
+            if (!file) return;
+            
+            showLoading();
+            const formData = new FormData();
+            formData.append('receipt', file);
+            
+            try {
+                const response = await fetch(API_URL + '/analyze-receipt', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showToast(`${data.items.length}개 물건 인식됨`);
+                    displayReceiptResults(data.items);
+                }
+            } catch (error) {
+                showToast('영수증 분석 실패');
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        // 영수증 결과 표시
+        function displayReceiptResults(items) {
+            const container = document.getElementById('receiptResults');
+            container.innerHTML = `
+                <h3>인식된 물건들</h3>
+                ${items.map((item, index) => `
+                    <div class="item-card">
+                        <input type="text" value="${item.name}" id="receipt-name-${index}" class="form-input" style="margin-bottom: 10px;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <input type="number" value="${item.quantity}" id="receipt-qty-${index}" class="form-input" placeholder="수량">
+                            <input type="number" value="${item.price || ''}" id="receipt-price-${index}" class="form-input" placeholder="가격">
+                        </div>
+                    </div>
+                `).join('')}
+                <button class="submit-btn" onclick="saveReceiptItems()">모두 저장</button>
+            `;
+        }
+        
+        // 탭 전환
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // 탭에 따른 컨텐츠 변경
+            if (tab === 'receipt') {
+                openReceiptModal();
+            } else if (tab === 'search') {
+                document.getElementById('searchInput').focus();
+            }
+        }
+        
+        // 폼 제출
+        document.getElementById('itemForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            showLoading();
+            const formData = {
+                name: document.getElementById('itemName').value,
+                categoryId: parseInt(document.getElementById('itemCategory').value) || null,
+                locationId: parseInt(document.getElementById('itemLocation').value) || null,
+                quantity: parseInt(document.getElementById('itemQuantity').value) || 1,
+                unit: '개',
+                description: document.getElementById('itemDescription').value
+            };
+            
+            try {
+                const response = await fetch(API_URL + '/items', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                
+                if (response.ok) {
+                    await loadData();
+                    closeModal('addModal');
+                    document.getElementById('itemForm').reset();
+                    showToast('저장되었습니다');
+                    
+                    // 알림 (권한이 있는 경우)
+                    if ('Notification' in window && Notification.permission === 'granted') {
+                        new Notification('물건 추가됨', {
+                            body: formData.name,
+                            icon: '📦'
+                        });
+                    }
+                }
+            } catch (error) {
+                showToast('저장 실패');
+            } finally {
+                hideLoading();
+            }
+        });
+        
+        // 초기화 실행
+        init();
+        
+        // PWA 설치 프롬프트
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            // 설치 버튼 표시
+            setTimeout(() => {
+                if (deferredPrompt) {
+                    showToast('홈 화면에 추가하여 앱처럼 사용하세요!');
+                }
+            }, 5000);
+        });
+    </script>
+    <script>
+    // 서비스 워커 등록
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js')
+                .then(registration => console.log('SW 등록 성공:', registration))
+                .catch(error => console.log('SW 등록 실패:', error));
+        });
+    }
+</script>
+</body>
+</html>
