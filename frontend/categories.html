@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>카테고리 관리</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .header h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .nav-links a {
+            margin-right: 15px;
+            color: #3498db;
+            text-decoration: none;
+        }
+        
+        .nav-links a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-manager {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 20px;
+        }
+        
+        .section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .section h2 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .color-input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .color-input {
+            width: 60px;
+            height: 40px;
+            padding: 5px;
+            cursor: pointer;
+        }
+        
+        .icon-selector {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 5px;
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        
+        .icon-option {
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: white;
+            font-size: 20px;
+        }
+        
+        .icon-option:hover {
+            background: #e3f2fd;
+        }
+        
+        .icon-option.selected {
+            background: #2196f3;
+            border-color: #1976d2;
+        }
+        
+        button {
+            background-color: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+        }
+        
+        .delete-btn {
+            background-color: #e74c3c;
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+        
+        .delete-btn:hover {
+            background-color: #c0392b;
+        }
+        
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+        }
+        
+        .category-card {
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            position: relative;
+            color: white;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .category-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .category-icon {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+        
+        .category-name {
+            font-weight: 600;
+            font-size: 16px;
+        }
+        
+        .category-count {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+        
+        .delete-category-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(255,255,255,0.3);
+            border: none;
+            color: white;
+            padding: 5px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .delete-category-btn:hover {
+            background: rgba(255,255,255,0.5);
+        }
+        
+        .message {
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        @media (max-width: 768px) {
+            .category-manager {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏷️ 카테고리 관리</h1>
+            <div class="nav-links">
+                <a href="index-v5.html">물건 관리</a>
+                <a href="locations.html">위치 관리</a>
+                <a href="categories.html">카테고리 관리</a>
+                <a href="upload.html">이미지 업로드</a>
+            </div>
+        </div>
+        
+        <div id="message" class="message"></div>
+        
+        <div class="category-manager">
+            <div class="section">
+                <h2>새 카테고리 추가</h2>
+                
+                <form id="categoryForm">
+                    <div class="form-group">
+                        <label for="categoryName">카테고리 이름 *</label>
+                        <input type="text" id="categoryName" required placeholder="예: 전자제품">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="categoryColor">색상</label>
+                        <div class="color-input-group">
+                            <input type="color" id="categoryColor" class="color-input" value="#3498db">
+                            <input type="text" id="colorHex" value="#3498db" placeholder="#000000">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>아이콘 선택</label>
+                        <div class="icon-selector" id="iconSelector">
+                            <div class="icon-option" data-icon="📦">📦</div>
+                            <div class="icon-option" data-icon="💻">💻</div>
+                            <div class="icon-option" data-icon="🪑">🪑</div>
+                            <div class="icon-option" data-icon="👕">👕</div>
+                            <div class="icon-option" data-icon="🍎">🍎</div>
+                            <div class="icon-option" data-icon="📚">📚</div>
+                            <div class="icon-option" data-icon="✏️">✏️</div>
+                            <div class="icon-option" data-icon="🍳">🍳</div>
+                            <div class="icon-option" data-icon="🧼">🧼</div>
+                            <div class="icon-option" data-icon="⚽">⚽</div>
+                            <div class="icon-option" data-icon="🎮">🎮</div>
+                            <div class="icon-option" data-icon="🧸">🧸</div>
+                            <div class="icon-option" data-icon="💊">💊</div>
+                            <div class="icon-option" data-icon="🔧">🔧</div>
+                            <div class="icon-option" data-icon="🎨">🎨</div>
+                            <div class="icon-option" data-icon="📱">📱</div>
+                            <div class="icon-option" data-icon="👟">👟</div>
+                            <div class="icon-option" data-icon="💄">💄</div>
+                            <div class="icon-option" data-icon="🧳">🧳</div>
+                            <div class="icon-option" data-icon="🏠">🏠</div>
+                        </div>
+                    </div>
+                    
+                    <button type="submit">카테고리 추가</button>
+                </form>
+            </div>
+            
+            <div class="section">
+                <h2>카테고리 목록</h2>
+                <div id="categoryList" class="category-grid"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3001/api';
+        let categories = [];
+        let selectedIcon = '📦';
+        let itemCounts = {};
+        
+        // 페이지 로드시 초기화
+        async function init() {
+            await loadCategories();
+            await loadItemCounts();
+            setupEventListeners();
+        }
+        
+        // 카테고리 데이터 로드
+        async function loadCategories() {
+            try {
+                const response = await fetch(API_URL + '/categories');
+                const data = await response.json();
+                categories = data.categories;
+                renderCategories();
+            } catch (error) {
+                showMessage('카테고리 목록을 불러오는데 실패했습니다.', 'error');
+            }
+        }
+        
+        // 각 카테고리별 물건 수 로드
+        async function loadItemCounts() {
+            try {
+                const response = await fetch(API_URL + '/items');
+                const data = await response.json();
+                itemCounts = {};
+                data.items.forEach(item => {
+                    if (item.categoryId) {
+                        itemCounts[item.categoryId] = (itemCounts[item.categoryId] || 0) + 1;
+                    }
+                });
+                renderCategories();
+            } catch (error) {
+                console.error('Failed to load item counts:', error);
+            }
+        }
+        
+        // 이벤트 리스너 설정
+        function setupEventListeners() {
+            // 색상 선택기 동기화
+            document.getElementById('categoryColor').addEventListener('input', (e) => {
+                document.getElementById('colorHex').value = e.target.value;
+            });
+            
+            document.getElementById('colorHex').addEventListener('input', (e) => {
+                if (/^#[0-9A-F]{6}$/i.test(e.target.value)) {
+                    document.getElementById('categoryColor').value = e.target.value;
+                }
+            });
+            
+            // 아이콘 선택
+            document.querySelectorAll('.icon-option').forEach(option => {
+                option.addEventListener('click', () => {
+                    document.querySelectorAll('.icon-option').forEach(o => o.classList.remove('selected'));
+                    option.classList.add('selected');
+                    selectedIcon = option.dataset.icon;
+                });
+            });
+            
+            // 기본 아이콘 선택
+            document.querySelector('.icon-option[data-icon="📦"]').classList.add('selected');
+        }
+        
+        // 카테고리 목록 렌더링
+        function renderCategories() {
+            const listEl = document.getElementById('categoryList');
+            
+            if (categories.length === 0) {
+                listEl.innerHTML = '<p style="text-align: center; color: #7f8c8d;">등록된 카테고리가 없습니다.</p>';
+                return;
+            }
+            
+            listEl.innerHTML = categories.map(category => {
+                const count = itemCounts[category.id] || 0;
+                return `
+                    <div class="category-card" style="background-color: ${category.color};">
+                        <button class="delete-category-btn" onclick="deleteCategory(${category.id})" 
+                            ${count > 0 ? 'disabled title="물건이 있는 카테고리는 삭제할 수 없습니다"' : ''}>
+                            ✕
+                        </button>
+                        <div class="category-icon">${category.icon}</div>
+                        <div class="category-name">${category.name}</div>
+                        <div class="category-count">${count}개 물건</div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // 메시지 표시
+        function showMessage(text, type) {
+            const messageEl = document.getElementById('message');
+            messageEl.textContent = text;
+            messageEl.className = 'message ' + type;
+            messageEl.style.display = 'block';
+            setTimeout(() => {
+                messageEl.style.display = 'none';
+            }, 3000);
+        }
+        
+        // 카테고리 삭제
+        async function deleteCategory(id) {
+            if (!confirm('이 카테고리를 삭제하시겠습니까?')) return;
+            
+            try {
+                const response = await fetch(`${API_URL}/categories/${id}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    showMessage('카테고리가 삭제되었습니다.', 'success');
+                    loadCategories();
+                } else {
+                    const error = await response.json();
+                    showMessage(error.error || '삭제에 실패했습니다.', 'error');
+                }
+            } catch (error) {
+                showMessage('서버 연결에 실패했습니다.', 'error');
+            }
+        }
+        
+        // 폼 제출 처리
+        document.getElementById('categoryForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = {
+                name: document.getElementById('categoryName').value.trim(),
+                color: document.getElementById('categoryColor').value,
+                icon: selectedIcon
+            };
+            
+            if (!formData.name) {
+                showMessage('카테고리 이름을 입력하세요.', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(API_URL + '/categories', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showMessage('카테고리가 추가되었습니다!', 'success');
+                    document.getElementById('categoryForm').reset();
+                    document.getElementById('categoryColor').value = '#3498db';
+                    document.getElementById('colorHex').value = '#3498db';
+                    loadCategories();
+                } else {
+                    showMessage(data.error || '카테고리 추가에 실패했습니다.', 'error');
+                }
+            } catch (error) {
+                showMessage('서버 연결에 실패했습니다.', 'error');
+            }
+        });
+        
+        // 초기화
+        init();
+    </script>
+</body>
+</html>
