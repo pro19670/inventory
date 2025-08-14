@@ -1,0 +1,24 @@
+{
+    "name": "??臾쇨굔 愿由?,
+    "short_name": "臾쇨굔愿由?,
+    "description": "?ㅻ쭏?명븳 臾쇨굔 愿由??쒖뒪??,
+    "start_url": "/index-mobile.html",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#667eea",
+    "orientation": "portrait",
+    "icons": [
+        {
+            "src": "/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ]
+}

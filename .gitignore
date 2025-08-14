@@ -1,5 +1,4 @@
-﻿@"
-# Dependencies
+﻿# Dependencies
 node_modules/
 */node_modules/
 backend/node_modules/
@@ -12,7 +11,11 @@ frontend/node_modules/
 
 # Data files
 data/
-*.json
+# *.json  <- 이 라인을 주석 처리하거나 삭제
+
+# 특정 JSON 파일만 제외하고 PWA 필수 파일은 포함
+!manifest.json
+!package.json
 
 # Logs
 *.log
@@ -29,4 +32,3 @@ Thumbs.db
 # IDE
 .vscode/
 .idea/
-"@ | Out-File -FilePath .gitignore -Encoding UTF8
