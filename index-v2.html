@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>내 물건 관리 v2.0</title>
+    <title>??臾쇨굔 愿由?v2.0</title>
     <style>
         * {
             box-sizing: border-box;
@@ -252,27 +252,27 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>📦 내 물건 관리 시스템 v2.0</h1>
+            <h1>?벀 ??臾쇨굔 愿由??쒖뒪??v2.0</h1>
             <div class="nav-links">
-                <a href="index-v2.html">물건 관리</a>
-                <a href="locations.html">위치 관리</a>
-                <a href="upload.html">이미지 업로드</a>
-                <a href="#" onclick="showStats()">통계</a>
+                <a href="index-v2.html">臾쇨굔 愿由?/a>
+                <a href="locations.html">?꾩튂 愿由?/a>
+                <a href="upload.html">?대?吏 ?낅줈??/a>
+                <a href="#" onclick="showStats()">?듦퀎</a>
             </div>
         </div>
         
         <div class="stats" id="stats">
             <div class="stat-card">
                 <div class="stat-number" id="totalItems">0</div>
-                <div class="stat-label">전체 물건</div>
+                <div class="stat-label">?꾩껜 臾쇨굔</div>
             </div>
             <div class="stat-card">
                 <div class="stat-number" id="totalQuantity">0</div>
-                <div class="stat-label">총 수량</div>
+                <div class="stat-label">珥??섎웾</div>
             </div>
             <div class="stat-card">
                 <div class="stat-number" id="totalLocations">0</div>
-                <div class="stat-label">등록 위치</div>
+                <div class="stat-label">?깅줉 ?꾩튂</div>
             </div>
         </div>
         
@@ -280,63 +280,63 @@
         
         <div class="main-content">
             <div class="form-section">
-                <h2>물건 등록</h2>
+                <h2>臾쇨굔 ?깅줉</h2>
                 
                 <div id="noLocationsMessage" class="no-locations-message" style="display: none;">
-                    ⚠️ 등록된 위치가 없습니다. 
-                    <a href="locations.html">위치 관리</a>에서 먼저 위치를 추가해주세요.
+                    ?좑툘 ?깅줉???꾩튂媛 ?놁뒿?덈떎. 
+                    <a href="locations.html">?꾩튂 愿由?/a>?먯꽌 癒쇱? ?꾩튂瑜?異붽??댁＜?몄슂.
                 </div>
                 
                 <form id="itemForm">
                     <div class="form-group">
-                        <label for="name">물건 이름 *</label>
-                        <input type="text" id="name" required placeholder="예: 겨울 코트">
+                        <label for="name">臾쇨굔 ?대쫫 *</label>
+                        <input type="text" id="name" required placeholder="?? 寃⑥슱 肄뷀듃">
                     </div>
                     
                     <div class="form-group">
-                        <label>위치 선택</label>
+                        <label>?꾩튂 ?좏깮</label>
                         <div class="location-selects">
                             <select id="location1" onchange="updateLocationOptions(2)">
-                                <option value="">장소 선택</option>
+                                <option value="">?μ냼 ?좏깮</option>
                             </select>
                             <select id="location2" onchange="updateLocationOptions(3)" style="display:none">
-                                <option value="">세부 위치</option>
+                                <option value="">?몃? ?꾩튂</option>
                             </select>
                             <select id="location3" onchange="updateLocationOptions(4)" style="display:none">
-                                <option value="">구역</option>
+                                <option value="">援ъ뿭</option>
                             </select>
                             <select id="location4" style="display:none">
-                                <option value="">상세 위치</option>
+                                <option value="">?곸꽭 ?꾩튂</option>
                             </select>
                         </div>
                     </div>
                     
                     <div class="form-group">
-                        <label>수량</label>
+                        <label>?섎웾</label>
                         <div class="quantity-group">
                             <input type="number" id="quantity" min="1" value="1">
                             <select id="unit">
-                                <option value="개">개</option>
-                                <option value="벌">벌</option>
-                                <option value="권">권</option>
-                                <option value="병">병</option>
-                                <option value="박스">박스</option>
-                                <option value="세트">세트</option>
+                                <option value="媛?>媛?/option>
+                                <option value="踰?>踰?/option>
+                                <option value="沅?>沅?/option>
+                                <option value="蹂?>蹂?/option>
+                                <option value="諛뺤뒪">諛뺤뒪</option>
+                                <option value="?명듃">?명듃</option>
                             </select>
                         </div>
                     </div>
                     
                     <div class="form-group">
-                        <label for="description">설명</label>
-                        <textarea id="description" rows="3" placeholder="물건에 대한 상세 설명을 입력하세요"></textarea>
+                        <label for="description">?ㅻ챸</label>
+                        <textarea id="description" rows="3" placeholder="臾쇨굔??????곸꽭 ?ㅻ챸???낅젰?섏꽭??></textarea>
                     </div>
                     
-                    <button type="submit">물건 등록</button>
+                    <button type="submit">臾쇨굔 ?깅줉</button>
                 </form>
             </div>
             
             <div class="list-section">
-                <h2>물건 목록</h2>
+                <h2>臾쇨굔 紐⑸줉</h2>
                 <div id="items"></div>
             </div>
         </div>
@@ -348,21 +348,21 @@
         let allItems = [];
         let editingItemId = null;
         
-        // 페이지 로드시 초기화
+        // ?섏씠吏 濡쒕뱶??珥덇린??
         async function init() {
             await loadLocations();
             await loadItems();
             updateStats();
         }
         
-        // 위치 데이터 로드
+        // ?꾩튂 ?곗씠??濡쒕뱶
         async function loadLocations() {
             try {
                 const response = await fetch(API_URL + '/locations');
                 const data = await response.json();
                 allLocations = data.locations;
                 
-                // 위치가 없으면 메시지 표시
+                // ?꾩튂媛 ?놁쑝硫?硫붿떆吏 ?쒖떆
                 if (allLocations.length === 0) {
                     document.getElementById('noLocationsMessage').style.display = 'block';
                 } else {
@@ -375,31 +375,31 @@
             }
         }
         
-        // 위치 선택 옵션 업데이트
+        // ?꾩튂 ?좏깮 ?듭뀡 ?낅뜲?댄듃
         function updateLocationOptions(level) {
             const select = document.getElementById('location' + level);
             const parentSelect = level > 1 ? document.getElementById('location' + (level - 1)) : null;
             const parentId = parentSelect ? parentSelect.value : null;
             
-            // 현재 레벨의 select 초기화
-            select.innerHTML = '<option value="">선택하세요</option>';
+            // ?꾩옱 ?덈꺼??select 珥덇린??
+            select.innerHTML = '<option value="">?좏깮?섏꽭??/option>';
             
-            // 다음 레벨들 숨기기 및 초기화
+            // ?ㅼ쓬 ?덈꺼???④린湲?諛?珥덇린??
             for (let i = level + 1; i <= 4; i++) {
                 const nextSelect = document.getElementById('location' + i);
                 if (nextSelect) {
                     nextSelect.style.display = 'none';
-                    nextSelect.innerHTML = '<option value="">선택하세요</option>';
+                    nextSelect.innerHTML = '<option value="">?좏깮?섏꽭??/option>';
                 }
             }
             
-            // 현재 레벨에 맞는 위치들 필터링
+            // ?꾩옱 ?덈꺼??留욌뒗 ?꾩튂???꾪꽣留?
             const locations = allLocations.filter(loc => {
                 if (level === 1) return loc.parentId === null;
                 return loc.parentId === parseInt(parentId);
             });
             
-            // 옵션 추가
+            // ?듭뀡 異붽?
             locations.forEach(loc => {
                 const option = document.createElement('option');
                 option.value = loc.id;
@@ -407,13 +407,13 @@
                 select.appendChild(option);
             });
             
-            // 옵션이 있으면 select 표시
+            // ?듭뀡???덉쑝硫?select ?쒖떆
             if (locations.length > 0) {
                 select.style.display = 'block';
             }
         }
         
-        // 최종 선택된 위치 ID 가져오기
+        // 理쒖쥌 ?좏깮???꾩튂 ID 媛?몄삤湲?
         function getSelectedLocationId() {
             for (let i = 4; i >= 1; i--) {
                 const select = document.getElementById('location' + i);
@@ -424,7 +424,7 @@
             return null;
         }
         
-        // 메시지 표시
+        // 硫붿떆吏 ?쒖떆
         function showMessage(text, type) {
             const messageEl = document.getElementById('message');
             messageEl.textContent = text;
@@ -435,7 +435,7 @@
             }, 3000);
         }
         
-        // 물건 목록 로드
+        // 臾쇨굔 紐⑸줉 濡쒕뱶
         async function loadItems() {
             try {
                 const response = await fetch(API_URL + '/items');
@@ -444,16 +444,16 @@
                 renderItems();
                 updateStats();
             } catch (error) {
-                showMessage('물건 목록을 불러오는데 실패했습니다.', 'error');
+                showMessage('臾쇨굔 紐⑸줉??遺덈윭?ㅻ뒗???ㅽ뙣?덉뒿?덈떎.', 'error');
             }
         }
         
-        // 물건 목록 렌더링
+        // 臾쇨굔 紐⑸줉 ?뚮뜑留?
         function renderItems() {
             const itemsEl = document.getElementById('items');
             
             if (allItems.length === 0) {
-                itemsEl.innerHTML = '<p style="text-align: center; color: #7f8c8d;">등록된 물건이 없습니다.</p>';
+                itemsEl.innerHTML = '<p style="text-align: center; color: #7f8c8d;">?깅줉??臾쇨굔???놁뒿?덈떎.</p>';
                 return;
             }
             
@@ -462,21 +462,21 @@
                     <div class="item-header">
                         <div>
                             <div class="item-title">${item.name}</div>
-                            <div class="item-location">📍 ${item.locationName || '위치 미지정'}</div>
+                            <div class="item-location">?뱧 ${item.locationName || '?꾩튂 誘몄???}</div>
                         </div>
                         <div class="item-quantity">${item.quantity} ${item.unit}</div>
                     </div>
                     <div class="item-description">${item.description || ''}</div>
-                    <div class="item-meta">등록일: ${new Date(item.createdAt).toLocaleString()}</div>
+                    <div class="item-meta">?깅줉?? ${new Date(item.createdAt).toLocaleString()}</div>
                     <div class="item-actions">
-                        <button class="edit-btn" onclick="editItem(${item.id})">수정</button>
-                        <button class="delete-btn" onclick="deleteItem(${item.id})">삭제</button>
+                        <button class="edit-btn" onclick="editItem(${item.id})">?섏젙</button>
+                        <button class="delete-btn" onclick="deleteItem(${item.id})">??젣</button>
                     </div>
                 </div>
             `).join('');
         }
         
-        // 통계 업데이트
+        // ?듦퀎 ?낅뜲?댄듃
         function updateStats() {
             const totalItems = allItems.length;
             const totalQuantity = allItems.reduce((sum, item) => sum + (item.quantity || 0), 0);
@@ -487,9 +487,9 @@
             document.getElementById('totalLocations').textContent = uniqueLocations;
         }
         
-        // 물건 삭제
+        // 臾쇨굔 ??젣
         async function deleteItem(id) {
-            if (!confirm('정말 삭제하시겠습니까?')) return;
+            if (!confirm('?뺣쭚 ??젣?섏떆寃좎뒿?덇퉴?')) return;
             
             try {
                 const response = await fetch(`${API_URL}/items/${id}`, {
@@ -497,17 +497,17 @@
                 });
                 
                 if (response.ok) {
-                    showMessage('물건이 삭제되었습니다.', 'success');
+                    showMessage('臾쇨굔????젣?섏뿀?듬땲??', 'success');
                     loadItems();
                 } else {
-                    showMessage('삭제에 실패했습니다.', 'error');
+                    showMessage('??젣???ㅽ뙣?덉뒿?덈떎.', 'error');
                 }
             } catch (error) {
-                showMessage('서버 연결에 실패했습니다.', 'error');
+                showMessage('?쒕쾭 ?곌껐???ㅽ뙣?덉뒿?덈떎.', 'error');
             }
         }
         
-        // 물건 수정
+        // 臾쇨굔 ?섏젙
         function editItem(id) {
             const item = allItems.find(i => i.id === id);
             if (!item) return;
@@ -515,16 +515,16 @@
             editingItemId = id;
             document.getElementById('name').value = item.name;
             document.getElementById('quantity').value = item.quantity || 1;
-            document.getElementById('unit').value = item.unit || '개';
+            document.getElementById('unit').value = item.unit || '媛?;
             document.getElementById('description').value = item.description || '';
             
-            // 위치 설정 (나중에 구현)
+            // ?꾩튂 ?ㅼ젙 (?섏쨷??援ы쁽)
             
-            document.querySelector('button[type="submit"]').textContent = '수정하기';
+            document.querySelector('button[type="submit"]').textContent = '?섏젙?섍린';
             document.getElementById('name').focus();
         }
         
-        // 폼 제출 처리
+        // ???쒖텧 泥섎━
         document.getElementById('itemForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -555,22 +555,22 @@
                 
                 if (response.ok) {
                     showMessage(
-                        editingItemId ? '물건이 수정되었습니다!' : '물건이 추가되었습니다!', 
+                        editingItemId ? '臾쇨굔???섏젙?섏뿀?듬땲??' : '臾쇨굔??異붽??섏뿀?듬땲??', 
                         'success'
                     );
                     document.getElementById('itemForm').reset();
-                    document.querySelector('button[type="submit"]').textContent = '물건 등록';
+                    document.querySelector('button[type="submit"]').textContent = '臾쇨굔 ?깅줉';
                     editingItemId = null;
                     loadItems();
                 } else {
-                    showMessage('작업에 실패했습니다.', 'error');
+                    showMessage('?묒뾽???ㅽ뙣?덉뒿?덈떎.', 'error');
                 }
             } catch (error) {
-                showMessage('서버 연결에 실패했습니다.', 'error');
+                showMessage('?쒕쾭 ?곌껐???ㅽ뙣?덉뒿?덈떎.', 'error');
             }
         });
         
-        // 초기화
+        // 珥덇린??
         init();
     </script>
 </body>

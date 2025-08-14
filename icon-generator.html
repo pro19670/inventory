@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PWA 아이콘 생성기</title>
+    <title>PWA ?꾩씠肄??앹꽦湲?/title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -139,68 +139,68 @@
 </head>
 <body>
     <div class="container">
-        <h1>📦 물건 관리 앱 아이콘 생성기</h1>
+        <h1>?벀 臾쇨굔 愿由????꾩씠肄??앹꽦湲?/h1>
         
         <div class="info">
-            <h3>ℹ️ 사용 방법</h3>
+            <h3>?뱄툘 ?ъ슜 諛⑸쾿</h3>
             <ul>
-                <li>아래 옵션으로 아이콘을 커스터마이즈하세요</li>
-                <li>미리 만들어진 디자인을 선택할 수도 있습니다</li>
-                <li>각 크기별로 다운로드 버튼을 클릭하세요</li>
-                <li>다운로드한 파일을 frontend 폴더에 넣으세요</li>
+                <li>?꾨옒 ?듭뀡?쇰줈 ?꾩씠肄섏쓣 而ㅼ뒪?곕쭏?댁쫰?섏꽭??/li>
+                <li>誘몃━ 留뚮뱾?댁쭊 ?붿옄?몄쓣 ?좏깮???섎룄 ?덉뒿?덈떎</li>
+                <li>媛??ш린蹂꾨줈 ?ㅼ슫濡쒕뱶 踰꾪듉???대┃?섏꽭??/li>
+                <li>?ㅼ슫濡쒕뱶???뚯씪??frontend ?대뜑???ｌ쑝?몄슂</li>
             </ul>
         </div>
         
         <div class="controls">
             <div class="control-group">
-                <label>배경색:</label>
+                <label>諛곌꼍??</label>
                 <input type="color" id="bgColor" value="#667eea">
                 <input type="text" id="bgColorText" value="#667eea" placeholder="#667eea">
             </div>
             
             <div class="control-group">
-                <label>아이콘:</label>
+                <label>?꾩씠肄?</label>
                 <select id="iconSelect">
-                    <option value="📦">📦 박스</option>
-                    <option value="📋">📋 클립보드</option>
-                    <option value="🏠">🏠 집</option>
-                    <option value="📱">📱 모바일</option>
-                    <option value="🗂️">🗂️ 파일함</option>
-                    <option value="📊">📊 차트</option>
-                    <option value="🔍">🔍 검색</option>
-                    <option value="⚙️">⚙️ 설정</option>
-                    <option value="custom">커스텀 텍스트</option>
+                    <option value="?벀">?벀 諛뺤뒪</option>
+                    <option value="?뱥">?뱥 ?대┰蹂대뱶</option>
+                    <option value="?룧">?룧 吏?/option>
+                    <option value="?벑">?벑 紐⑤컮??/option>
+                    <option value="?뾺截?>?뾺截??뚯씪??/option>
+                    <option value="?뱤">?뱤 李⑦듃</option>
+                    <option value="?뵇">?뵇 寃??/option>
+                    <option value="?숋툘">?숋툘 ?ㅼ젙</option>
+                    <option value="custom">而ㅼ뒪? ?띿뒪??/option>
                 </select>
-                <input type="text" id="customIcon" placeholder="커스텀 아이콘/텍스트" style="display:none;">
+                <input type="text" id="customIcon" placeholder="而ㅼ뒪? ?꾩씠肄??띿뒪?? style="display:none;">
             </div>
             
             <div class="control-group">
-                <label>아이콘 크기:</label>
+                <label>?꾩씠肄??ш린:</label>
                 <input type="range" id="iconSize" min="30" max="70" value="50">
                 <span id="iconSizeValue">50%</span>
             </div>
             
             <div class="control-group">
-                <label>모서리 둥글기:</label>
+                <label>紐⑥꽌由??κ?湲?</label>
                 <input type="range" id="borderRadius" min="0" max="50" value="20">
                 <span id="borderRadiusValue">20%</span>
             </div>
             
             <div class="control-group">
-                <label>그라데이션:</label>
+                <label>洹몃씪?곗씠??</label>
                 <input type="checkbox" id="gradient" checked>
                 <input type="color" id="gradientColor" value="#764ba2">
             </div>
             
             <div class="control-group">
-                <label>프리셋 디자인:</label>
+                <label>?꾨━???붿옄??</label>
                 <div class="preset-buttons">
-                    <button class="preset-btn" onclick="applyPreset('default')">기본</button>
-                    <button class="preset-btn" onclick="applyPreset('dark')">다크</button>
-                    <button class="preset-btn" onclick="applyPreset('light')">라이트</button>
-                    <button class="preset-btn" onclick="applyPreset('green')">그린</button>
-                    <button class="preset-btn" onclick="applyPreset('red')">레드</button>
-                    <button class="preset-btn" onclick="applyPreset('minimal')">미니멀</button>
+                    <button class="preset-btn" onclick="applyPreset('default')">湲곕낯</button>
+                    <button class="preset-btn" onclick="applyPreset('dark')">?ㅽ겕</button>
+                    <button class="preset-btn" onclick="applyPreset('light')">?쇱씠??/button>
+                    <button class="preset-btn" onclick="applyPreset('green')">洹몃┛</button>
+                    <button class="preset-btn" onclick="applyPreset('red')">?덈뱶</button>
+                    <button class="preset-btn" onclick="applyPreset('minimal')">誘몃땲硫</button>
                 </div>
             </div>
         </div>
@@ -209,30 +209,30 @@
             <div class="canvas-item">
                 <h3>192x192</h3>
                 <canvas id="canvas192" width="192" height="192"></canvas>
-                <button onclick="download('192')">다운로드 192x192</button>
+                <button onclick="download('192')">?ㅼ슫濡쒕뱶 192x192</button>
             </div>
             <div class="canvas-item">
                 <h3>512x512</h3>
                 <canvas id="canvas512" width="512" height="512"></canvas>
-                <button onclick="download('512')">다운로드 512x512</button>
+                <button onclick="download('512')">?ㅼ슫濡쒕뱶 512x512</button>
             </div>
         </div>
         
         <div class="download-buttons">
-            <button onclick="downloadAll()">🎯 모든 크기 다운로드</button>
-            <button onclick="generateFavicon()">🌐 Favicon 생성 (32x32)</button>
-            <button onclick="generateAppleTouch()">🍎 Apple Touch Icon (180x180)</button>
+            <button onclick="downloadAll()">?렞 紐⑤뱺 ?ш린 ?ㅼ슫濡쒕뱶</button>
+            <button onclick="generateFavicon()">?뙋 Favicon ?앹꽦 (32x32)</button>
+            <button onclick="generateAppleTouch()">?뜋 Apple Touch Icon (180x180)</button>
         </div>
     </div>
     
     <script>
-        // 초기 설정
+        // 珥덇린 ?ㅼ젙
         const canvas192 = document.getElementById('canvas192');
         const canvas512 = document.getElementById('canvas512');
         const ctx192 = canvas192.getContext('2d');
         const ctx512 = canvas512.getContext('2d');
         
-        // 이벤트 리스너
+        // ?대깽??由ъ뒪??
         document.getElementById('bgColor').addEventListener('input', (e) => {
             document.getElementById('bgColorText').value = e.target.value;
             drawIcons();
@@ -268,18 +268,18 @@
         document.getElementById('gradient').addEventListener('change', drawIcons);
         document.getElementById('gradientColor').addEventListener('input', drawIcons);
         
-        // 아이콘 그리기 함수
+        // ?꾩씠肄?洹몃━湲??⑥닔
         function drawIcon(canvas, ctx) {
             const size = canvas.width;
             ctx.clearRect(0, 0, size, size);
             
-            // 배경 그리기
+            // 諛곌꼍 洹몃━湲?
             const bgColor = document.getElementById('bgColor').value;
             const useGradient = document.getElementById('gradient').checked;
             const gradientColor = document.getElementById('gradientColor').value;
             const borderRadius = (document.getElementById('borderRadius').value / 100) * size;
             
-            // 둥근 모서리 경로 생성
+            // ?κ렐 紐⑥꽌由?寃쎈줈 ?앹꽦
             ctx.beginPath();
             ctx.moveTo(borderRadius, 0);
             ctx.lineTo(size - borderRadius, 0);
@@ -292,7 +292,7 @@
             ctx.quadraticCurveTo(0, 0, borderRadius, 0);
             ctx.closePath();
             
-            // 배경 채우기
+            // 諛곌꼍 梨꾩슦湲?
             if (useGradient) {
                 const gradient = ctx.createLinearGradient(0, 0, size, size);
                 gradient.addColorStop(0, bgColor);
@@ -303,10 +303,10 @@
             }
             ctx.fill();
             
-            // 아이콘 그리기
+            // ?꾩씠肄?洹몃━湲?
             const iconSelect = document.getElementById('iconSelect');
             const icon = iconSelect.value === 'custom' 
-                ? document.getElementById('customIcon').value || '📦'
+                ? document.getElementById('customIcon').value || '?벀'
                 : iconSelect.value;
             
             const iconSizePercent = document.getElementById('iconSize').value / 100;
@@ -317,7 +317,7 @@
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             
-            // 그림자 효과
+            // 洹몃┝???④낵
             ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
             ctx.shadowBlur = size * 0.05;
             ctx.shadowOffsetX = size * 0.02;
@@ -325,20 +325,20 @@
             
             ctx.fillText(icon, size / 2, size / 2);
             
-            // 그림자 제거
+            // 洹몃┝???쒓굅
             ctx.shadowColor = 'transparent';
             ctx.shadowBlur = 0;
             ctx.shadowOffsetX = 0;
             ctx.shadowOffsetY = 0;
         }
         
-        // 모든 아이콘 그리기
+        // 紐⑤뱺 ?꾩씠肄?洹몃━湲?
         function drawIcons() {
             drawIcon(canvas192, ctx192);
             drawIcon(canvas512, ctx512);
         }
         
-        // 다운로드 함수
+        // ?ㅼ슫濡쒕뱶 ?⑥닔
         function download(size) {
             const canvas = size === '192' ? canvas192 : canvas512;
             const link = document.createElement('a');
@@ -347,13 +347,13 @@
             link.click();
         }
         
-        // 모든 크기 다운로드
+        // 紐⑤뱺 ?ш린 ?ㅼ슫濡쒕뱶
         function downloadAll() {
             download('192');
             setTimeout(() => download('512'), 100);
         }
         
-        // Favicon 생성
+        // Favicon ?앹꽦
         function generateFavicon() {
             const canvas = document.createElement('canvas');
             canvas.width = 32;
@@ -368,7 +368,7 @@
             link.click();
         }
         
-        // Apple Touch Icon 생성
+        // Apple Touch Icon ?앹꽦
         function generateAppleTouch() {
             const canvas = document.createElement('canvas');
             canvas.width = 180;
@@ -383,27 +383,27 @@
             link.click();
         }
         
-        // 프리셋 적용
+        // ?꾨━???곸슜
         function applyPreset(preset) {
             switch(preset) {
                 case 'default':
                     document.getElementById('bgColor').value = '#667eea';
                     document.getElementById('gradientColor').value = '#764ba2';
                     document.getElementById('gradient').checked = true;
-                    document.getElementById('iconSelect').value = '📦';
+                    document.getElementById('iconSelect').value = '?벀';
                     break;
                 case 'dark':
                     document.getElementById('bgColor').value = '#1a1a1a';
                     document.getElementById('gradientColor').value = '#333333';
                     document.getElementById('gradient').checked = true;
-                    document.getElementById('iconSelect').value = '📦';
+                    document.getElementById('iconSelect').value = '?벀';
                     break;
                 case 'light':
                     document.getElementById('bgColor').value = '#ffffff';
                     document.getElementById('gradientColor').value = '#f0f0f0';
                     document.getElementById('gradient').checked = false;
-                    document.getElementById('iconSelect').value = '📦';
-                    // 밝은 배경에는 어두운 아이콘
+                    document.getElementById('iconSelect').value = '?벀';
+                    // 諛앹? 諛곌꼍?먮뒗 ?대몢???꾩씠肄?
                     setTimeout(() => {
                         ctx192.fillStyle = '#333';
                         ctx512.fillStyle = '#333';
@@ -414,20 +414,20 @@
                     document.getElementById('bgColor').value = '#4caf50';
                     document.getElementById('gradientColor').value = '#81c784';
                     document.getElementById('gradient').checked = true;
-                    document.getElementById('iconSelect').value = '📦';
+                    document.getElementById('iconSelect').value = '?벀';
                     break;
                 case 'red':
                     document.getElementById('bgColor').value = '#f44336';
                     document.getElementById('gradientColor').value = '#e57373';
                     document.getElementById('gradient').checked = true;
-                    document.getElementById('iconSelect').value = '📦';
+                    document.getElementById('iconSelect').value = '?벀';
                     break;
                 case 'minimal':
                     document.getElementById('bgColor').value = '#2196f3';
                     document.getElementById('gradient').checked = false;
                     document.getElementById('borderRadius').value = 0;
                     document.getElementById('borderRadiusValue').textContent = '0%';
-                    document.getElementById('iconSelect').value = '📦';
+                    document.getElementById('iconSelect').value = '?벀';
                     break;
             }
             
@@ -435,7 +435,7 @@
             drawIcons();
         }
         
-        // 초기 아이콘 그리기
+        // 珥덇린 ?꾩씠肄?洹몃━湲?
         drawIcons();
     </script>
 </body>

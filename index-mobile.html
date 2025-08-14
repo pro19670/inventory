@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="manifest" href="/manifest.json">
+    <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#667eea">
-    <title>📦 내 물건 관리</title>
+    <title>스마트 재물관리</title>
     <style>
         * {
             box-sizing: border-box;
@@ -20,11 +20,10 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             background-color: #f5f5f5;
             color: #333;
-            padding-bottom: 70px; /* 하단 네비게이션 공간 */
+            padding-bottom: 70px;
             overflow-x: hidden;
         }
         
-        /* 모바일 헤더 */
         .mobile-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -40,7 +39,6 @@
             text-align: center;
         }
         
-        /* 하단 네비게이션 */
         .bottom-nav {
             position: fixed;
             bottom: 0;
@@ -75,7 +73,6 @@
             font-size: 24px;
         }
         
-        /* 플로팅 액션 버튼 */
         .fab {
             position: fixed;
             bottom: 80px;
@@ -122,12 +119,10 @@
             justify-content: center;
         }
         
-        /* 컨텐츠 영역 */
         .mobile-content {
             padding: 15px;
         }
         
-        /* 통계 카드 */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -155,7 +150,6 @@
             margin-top: 5px;
         }
         
-        /* 검색 바 */
         .search-bar {
             background: white;
             padding: 10px;
@@ -183,7 +177,6 @@
             padding: 5px;
         }
         
-        /* 아이템 카드 */
         .item-card {
             background: white;
             border-radius: 12px;
@@ -255,7 +248,6 @@
             background: #e74c3c;
         }
         
-        /* 모달 */
         .modal {
             display: none;
             position: fixed;
@@ -301,7 +293,6 @@
             color: #999;
         }
         
-        /* 폼 스타일 */
         .form-group {
             margin-bottom: 15px;
         }
@@ -341,7 +332,6 @@
             margin-top: 20px;
         }
         
-        /* 영수증 업로드 영역 */
         .receipt-upload {
             border: 2px dashed #667eea;
             border-radius: 12px;
@@ -367,7 +357,6 @@
             margin-top: 10px;
         }
         
-        /* 음성 검색 버튼 */
         .voice-search-btn {
             position: fixed;
             bottom: 150px;
@@ -399,7 +388,6 @@
             100% { transform: scale(1); }
         }
         
-        /* 토스트 메시지 */
         .toast {
             position: fixed;
             bottom: 90px;
@@ -430,7 +418,6 @@
             }
         }
         
-        /* 스와이프 삭제 */
         .swipeable {
             position: relative;
             overflow: hidden;
@@ -455,7 +442,6 @@
             transform: translateX(0);
         }
         
-        /* 로딩 스피너 */
         .loading {
             display: none;
             position: fixed;
@@ -483,7 +469,6 @@
             100% { transform: rotate(360deg); }
         }
         
-        /* 탭 메뉴 */
         .tab-menu {
             display: flex;
             background: white;
@@ -509,7 +494,6 @@
             color: white;
         }
         
-        /* Pull to Refresh */
         .pull-to-refresh {
             position: fixed;
             top: -60px;
@@ -531,19 +515,15 @@
     </style>
 </head>
 <body>
-    <!-- 헤더 -->
     <div class="mobile-header">
-        <h1>📦 내 물건 관리</h1>
+        <h1>스마트 재물관리</h1>
     </div>
     
-    <!-- Pull to Refresh -->
     <div class="pull-to-refresh" id="pullToRefresh">
-        <span>🔄 새로고침 중...</span>
+        <span>새로고침 중...</span>
     </div>
     
-    <!-- 메인 컨텐츠 -->
     <div class="mobile-content">
-        <!-- 통계 -->
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-number" id="totalItems">0</div>
@@ -563,40 +543,30 @@
             </div>
         </div>
         
-        <!-- 탭 메뉴 -->
         <div class="tab-menu">
             <div class="tab-item active" onclick="switchTab('items')">물건 목록</div>
             <div class="tab-item" onclick="switchTab('receipt')">영수증</div>
             <div class="tab-item" onclick="switchTab('search')">AI 검색</div>
         </div>
         
-        <!-- 검색 바 -->
         <div class="search-bar">
             <input type="text" class="search-input" id="searchInput" placeholder="물건 검색...">
             <button class="search-btn" onclick="searchItems()">🔍</button>
         </div>
         
-        <!-- 아이템 목록 -->
         <div id="itemsList"></div>
     </div>
     
-    <!-- 음성 검색 버튼 -->
-    <button class="voice-search-btn" id="voiceBtn" onclick="startVoiceSearch()">
-        🎤
-    </button>
+    <button class="voice-search-btn" id="voiceBtn" onclick="startVoiceSearch()">🎤</button>
     
-    <!-- 플로팅 액션 버튼 -->
-    <button class="fab" onclick="toggleFabMenu()">
-        ➕
-    </button>
+    <button class="fab" onclick="toggleFabMenu()">➕</button>
     
     <div class="fab-menu" id="fabMenu">
         <button class="fab-option" onclick="openAddModal()">📝</button>
-        <button class="fab-option" onclick="openReceiptModal()">📸</button>
+        <button class="fab-option" onclick="openReceiptModal()">📄</button>
         <button class="fab-option" onclick="openCameraModal()">📷</button>
     </div>
     
-    <!-- 하단 네비게이션 -->
     <div class="bottom-nav">
         <a href="#" class="nav-item active">
             <span>🏠</span>
@@ -616,7 +586,6 @@
         </a>
     </div>
     
-    <!-- 물건 추가 모달 -->
     <div class="modal" id="addModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -626,7 +595,7 @@
             <form id="itemForm">
                 <div class="form-group">
                     <label class="form-label">물건 이름 *</label>
-                    <input type="text" class="form-input" id="itemName" required placeholder="예: 겨울 코트">
+                    <input type="text" class="form-input" id="itemName" required placeholder="예: 검은 코트">
                 </div>
                 
                 <div class="form-group">
@@ -666,20 +635,19 @@
         </div>
     </div>
     
-    <!-- 영수증 모달 -->
     <div class="modal" id="receiptModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 class="modal-title">영수증 스캔</h2>
+                <h2 class="modal-title">영수증 분석</h2>
                 <button class="modal-close" onclick="closeModal('receiptModal')">✕</button>
             </div>
             
             <div class="receipt-upload">
-                <div class="receipt-upload-icon">📸</div>
+                <div class="receipt-upload-icon">📄</div>
                 <p>영수증을 촬영하거나 선택하세요</p>
                 <input type="file" id="receiptImage" accept="image/*" capture="camera" style="display: none;" onchange="processReceipt()">
                 <button class="receipt-upload-btn" onclick="document.getElementById('receiptImage').click()">
-                    카메라 열기
+                    카메라 시작하기
                 </button>
             </div>
             
@@ -687,30 +655,53 @@
         </div>
     </div>
     
-    <!-- 토스트 메시지 -->
     <div class="toast" id="toast"></div>
-    
-    <!-- 로딩 -->
     <div class="loading" id="loading">
         <div class="spinner"></div>
     </div>
     
     <script>
-        const API_URL = 'http://localhost:3001/api';
-        let items = [];
-        let categories = [];
-        let locations = [];
-        let currentTab = 'items';
-        let isListening = false;
-        let pullDistance = 0;
-        let isPulling = false;
+        // ⭐ API URL 설정 - GitHub Pages 배포 대응
+        var API_URL = (function() {
+            var hostname = window.location.hostname;
+            var protocol = window.location.protocol;
+            
+            // GitHub Pages에서 호출 시 -> Render API 사용
+            if (hostname.endsWith('github.io')) {
+                return 'https://inventory.onrender.com/api';
+            }
+            
+            // 로컬 개발 환경
+            if (hostname === 'localhost' || hostname === '127.0.0.1') {
+                return protocol + '//' + hostname + ':3001/api';
+            }
+            
+            // 기본값
+            return 'https://inventory.onrender.com/api';
+        })();
         
-        // 초기화
+        // 앱 상태 관리
+        const appState = {
+            items: [],
+            categories: [],
+            locations: [],
+            currentTab: 'items',
+            isListening: false,
+            pullDistance: 0,
+            isPulling: false
+        };
+        
+        // 초기화 함수
         async function init() {
-            await loadData();
-            setupPullToRefresh();
-            setupSwipeGestures();
-            checkNotificationPermission();
+            try {
+                await loadData();
+                setupPullToRefresh();
+                setupSwipeGestures();
+                checkNotificationPermission();
+            } catch (error) {
+                console.error('초기화 실패:', error);
+                showToast('앱 초기화에 실패했습니다');
+            }
         }
         
         // 데이터 로드
@@ -718,26 +709,40 @@
             showLoading();
             try {
                 // 카테고리 로드
-                const catResponse = await fetch(API_URL + '/categories');
-                const catData = await catResponse.json();
-                categories = catData.categories;
-                updateCategoryOptions();
+                const catResponse = await fetch(`${API_URL}/categories`);
+                if (catResponse.ok) {
+                    const catData = await catResponse.json();
+                    appState.categories = catData.categories || [];
+                    updateCategoryOptions();
+                }
                 
                 // 위치 로드
-                const locResponse = await fetch(API_URL + '/locations');
-                const locData = await locResponse.json();
-                locations = locData.locations;
-                updateLocationOptions();
+                const locResponse = await fetch(`${API_URL}/locations`);
+                if (locResponse.ok) {
+                    const locData = await locResponse.json();
+                    appState.locations = locData.locations || [];
+                    updateLocationOptions();
+                }
                 
                 // 물건 로드
-                const itemResponse = await fetch(API_URL + '/items');
-                const itemData = await itemResponse.json();
-                items = itemData.items;
-                renderItems();
-                updateStats();
+                const itemResponse = await fetch(`${API_URL}/items`);
+                if (itemResponse.ok) {
+                    const itemData = await itemResponse.json();
+                    appState.items = itemData.items || [];
+                    renderItems();
+                    updateStats();
+                }
                 
             } catch (error) {
-                showToast('데이터 로드 실패');
+                console.error('데이터 로드 실패:', error);
+                showToast('데이터 로드에 실패했습니다');
+                
+                // 오프라인 모드 - 기본 데이터 표시
+                appState.items = [];
+                appState.categories = [];
+                appState.locations = [];
+                renderItems();
+                updateStats();
             } finally {
                 hideLoading();
             }
@@ -751,33 +756,33 @@
             document.addEventListener('touchstart', (e) => {
                 if (window.scrollY === 0) {
                     startY = e.touches[0].clientY;
-                    isPulling = true;
+                    appState.isPulling = true;
                 }
             });
             
             document.addEventListener('touchmove', (e) => {
-                if (!isPulling) return;
+                if (!appState.isPulling) return;
                 
                 currentY = e.touches[0].clientY;
-                pullDistance = currentY - startY;
+                appState.pullDistance = currentY - startY;
                 
-                if (pullDistance > 0 && pullDistance < 150) {
+                if (appState.pullDistance > 0 && appState.pullDistance < 150) {
                     e.preventDefault();
-                    if (pullDistance > 60) {
+                    if (appState.pullDistance > 60) {
                         document.getElementById('pullToRefresh').classList.add('show');
                     }
                 }
             });
             
             document.addEventListener('touchend', async () => {
-                if (pullDistance > 60) {
+                if (appState.pullDistance > 60) {
                     await loadData();
                     showToast('새로고침 완료');
                 }
                 
                 document.getElementById('pullToRefresh').classList.remove('show');
-                pullDistance = 0;
-                isPulling = false;
+                appState.pullDistance = 0;
+                appState.isPulling = false;
             });
         }
         
@@ -788,9 +793,10 @@
             let currentElement = null;
             
             document.addEventListener('touchstart', (e) => {
-                if (e.target.closest('.item-card')) {
+                const itemCard = e.target.closest('.item-card');
+                if (itemCard) {
                     startX = e.touches[0].clientX;
-                    currentElement = e.target.closest('.item-card');
+                    currentElement = itemCard;
                 }
             });
             
@@ -825,7 +831,7 @@
         function renderItems() {
             const container = document.getElementById('itemsList');
             
-            if (items.length === 0) {
+            if (!appState.items || appState.items.length === 0) {
                 container.innerHTML = `
                     <div style="text-align: center; padding: 40px; color: #999;">
                         <div style="font-size: 48px;">📦</div>
@@ -836,11 +842,11 @@
                 return;
             }
             
-            container.innerHTML = items.map(item => `
+            container.innerHTML = appState.items.map(item => `
                 <div class="item-card swipeable">
                     <div class="item-header">
-                        <div class="item-title">${item.name}</div>
-                        <div class="item-quantity">${item.quantity} ${item.unit || '개'}</div>
+                        <div class="item-title">${item.name || '이름 없음'}</div>
+                        <div class="item-quantity">${item.quantity || 1} ${item.unit || '개'}</div>
                     </div>
                     <div class="item-info">
                         ${item.categoryName ? `<span class="info-badge">🏷️ ${item.categoryName}</span>` : ''}
@@ -860,73 +866,107 @@
         
         // 통계 업데이트
         function updateStats() {
-            document.getElementById('totalItems').textContent = items.length;
-            document.getElementById('totalQuantity').textContent = items.reduce((sum, item) => sum + (item.quantity || 0), 0);
-            document.getElementById('totalLocations').textContent = locations.length;
-            document.getElementById('totalCategories').textContent = categories.length;
+            const totalItems = appState.items ? appState.items.length : 0;
+            const totalQuantity = appState.items ? appState.items.reduce((sum, item) => sum + (item.quantity || 0), 0) : 0;
+            const totalLocations = appState.locations ? appState.locations.length : 0;
+            const totalCategories = appState.categories ? appState.categories.length : 0;
+            
+            document.getElementById('totalItems').textContent = totalItems;
+            document.getElementById('totalQuantity').textContent = totalQuantity;
+            document.getElementById('totalLocations').textContent = totalLocations;
+            document.getElementById('totalCategories').textContent = totalCategories;
         }
         
         // 카테고리 옵션 업데이트
         function updateCategoryOptions() {
             const select = document.getElementById('itemCategory');
+            if (!select) return;
+            
             select.innerHTML = '<option value="">선택하세요</option>';
-            categories.forEach(cat => {
-                select.innerHTML += `<option value="${cat.id}">${cat.icon} ${cat.name}</option>`;
-            });
+            if (appState.categories) {
+                appState.categories.forEach(cat => {
+                    select.innerHTML += `<option value="${cat.id}">${cat.icon || '📁'} ${cat.name}</option>`;
+                });
+            }
         }
         
         // 위치 옵션 업데이트
         function updateLocationOptions() {
             const select = document.getElementById('itemLocation');
+            if (!select) return;
+            
             select.innerHTML = '<option value="">선택하세요</option>';
-            locations.filter(loc => !loc.parentId).forEach(loc => {
-                select.innerHTML += `<option value="${loc.id}">${loc.name}</option>`;
-            });
+            if (appState.locations) {
+                appState.locations.filter(loc => !loc.parentId).forEach(loc => {
+                    select.innerHTML += `<option value="${loc.id}">${loc.name}</option>`;
+                });
+            }
         }
         
         // FAB 메뉴 토글
         function toggleFabMenu() {
-            document.getElementById('fabMenu').classList.toggle('show');
+            const fabMenu = document.getElementById('fabMenu');
+            if (fabMenu) {
+                fabMenu.classList.toggle('show');
+            }
         }
         
-        // 모달 열기
+        // 모달 관리
         function openAddModal() {
-            document.getElementById('addModal').classList.add('show');
+            const modal = document.getElementById('addModal');
+            if (modal) {
+                modal.classList.add('show');
+            }
             toggleFabMenu();
         }
         
         function openReceiptModal() {
-            document.getElementById('receiptModal').classList.add('show');
+            const modal = document.getElementById('receiptModal');
+            if (modal) {
+                modal.classList.add('show');
+            }
             toggleFabMenu();
         }
         
         function openCameraModal() {
-            document.getElementById('itemImage').click();
+            const imageInput = document.getElementById('itemImage');
+            if (imageInput) {
+                imageInput.click();
+            }
             toggleFabMenu();
         }
         
-        // 모달 닫기
         function closeModal(modalId) {
-            document.getElementById(modalId).classList.remove('show');
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.remove('show');
+            }
         }
         
-        // 토스트 메시지
+        // UI 피드백
         function showToast(message) {
             const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.classList.add('show');
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
+            if (toast) {
+                toast.textContent = message;
+                toast.classList.add('show');
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 3000);
+            }
         }
         
-        // 로딩 표시
         function showLoading() {
-            document.getElementById('loading').classList.add('show');
+            const loading = document.getElementById('loading');
+            if (loading) {
+                loading.classList.add('show');
+            }
         }
         
         function hideLoading() {
-            document.getElementById('loading').classList.remove('show');
+            const loading = document.getElementById('loading');
+            if (loading) {
+                loading.classList.remove('show');
+            }
         }
         
         // 음성 검색
@@ -943,15 +983,18 @@
             const voiceBtn = document.getElementById('voiceBtn');
             
             recognition.onstart = () => {
-                isListening = true;
-                voiceBtn.classList.add('listening');
+                appState.isListening = true;
+                if (voiceBtn) voiceBtn.classList.add('listening');
                 showToast('말씀해주세요...');
             };
             
             recognition.onresult = (event) => {
                 const transcript = event.results[0][0].transcript;
-                document.getElementById('searchInput').value = transcript;
-                searchItems();
+                const searchInput = document.getElementById('searchInput');
+                if (searchInput) {
+                    searchInput.value = transcript;
+                    searchItems();
+                }
             };
             
             recognition.onerror = () => {
@@ -959,20 +1002,22 @@
             };
             
             recognition.onend = () => {
-                isListening = false;
-                voiceBtn.classList.remove('listening');
+                appState.isListening = false;
+                if (voiceBtn) voiceBtn.classList.remove('listening');
             };
             
-            if (isListening) {
+            if (appState.isListening) {
                 recognition.stop();
             } else {
                 recognition.start();
             }
         }
         
-        // 검색
+        // 검색 기능
         async function searchItems() {
-            const query = document.getElementById('searchInput').value;
+            const searchInput = document.getElementById('searchInput');
+            const query = searchInput ? searchInput.value.trim() : '';
+            
             if (!query) {
                 await loadData();
                 return;
@@ -980,13 +1025,18 @@
             
             showLoading();
             try {
-                const response = await fetch(API_URL + '/items?search=' + encodeURIComponent(query));
-                const data = await response.json();
-                items = data.items;
-                renderItems();
-                showToast(`${data.count}개 검색 결과`);
+                const response = await fetch(`${API_URL}/items?search=${encodeURIComponent(query)}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    appState.items = data.items || [];
+                    renderItems();
+                    showToast(`${data.count || appState.items.length}개 검색결과`);
+                } else {
+                    throw new Error('검색 실패');
+                }
             } catch (error) {
-                showToast('검색 실패');
+                console.error('검색 실패:', error);
+                showToast('검색에 실패했습니다');
             } finally {
                 hideLoading();
             }
@@ -998,21 +1048,24 @@
             
             showLoading();
             try {
-                const response = await fetch(API_URL + '/items/' + id, {
+                const response = await fetch(`${API_URL}/items/${id}`, {
                     method: 'DELETE'
                 });
                 
                 if (response.ok) {
                     await loadData();
-                    showToast('삭제되었습니다');
+                    showToast('삭제했습니다');
                     
-                    // 진동 피드백 (지원하는 경우)
+                    // 진동 피드백
                     if ('vibrate' in navigator) {
                         navigator.vibrate(50);
                     }
+                } else {
+                    throw new Error('삭제 실패');
                 }
             } catch (error) {
-                showToast('삭제 실패');
+                console.error('삭제 실패:', error);
+                showToast('삭제에 실패했습니다');
             } finally {
                 hideLoading();
             }
@@ -1020,21 +1073,28 @@
         
         // 물건 수정
         function editItem(id) {
-            const item = items.find(i => i.id === id);
+            const item = appState.items.find(i => i.id === id);
             if (!item) return;
             
-            document.getElementById('itemName').value = item.name;
-            document.getElementById('itemCategory').value = item.categoryId || '';
-            document.getElementById('itemLocation').value = item.locationId || '';
-            document.getElementById('itemQuantity').value = item.quantity || 1;
-            document.getElementById('itemDescription').value = item.description || '';
+            const nameInput = document.getElementById('itemName');
+            const categorySelect = document.getElementById('itemCategory');
+            const locationSelect = document.getElementById('itemLocation');
+            const quantityInput = document.getElementById('itemQuantity');
+            const descriptionInput = document.getElementById('itemDescription');
+            
+            if (nameInput) nameInput.value = item.name || '';
+            if (categorySelect) categorySelect.value = item.categoryId || '';
+            if (locationSelect) locationSelect.value = item.locationId || '';
+            if (quantityInput) quantityInput.value = item.quantity || 1;
+            if (descriptionInput) descriptionInput.value = item.description || '';
             
             openAddModal();
         }
         
         // 영수증 처리
         async function processReceipt() {
-            const file = document.getElementById('receiptImage').files[0];
+            const receiptInput = document.getElementById('receiptImage');
+            const file = receiptInput ? receiptInput.files[0] : null;
             if (!file) return;
             
             showLoading();
@@ -1042,19 +1102,23 @@
             formData.append('receipt', file);
             
             try {
-                const response = await fetch(API_URL + '/analyze-receipt', {
+                const response = await fetch(`${API_URL}/analyze-receipt`, {
                     method: 'POST',
                     body: formData
                 });
                 
-                const data = await response.json();
-                
-                if (data.success) {
-                    showToast(`${data.items.length}개 물건 인식됨`);
-                    displayReceiptResults(data.items);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success && data.items) {
+                        showToast(`${data.items.length}개 물건 인식됨`);
+                        displayReceiptResults(data.items);
+                    }
+                } else {
+                    throw new Error('영수증 분석 실패');
                 }
             } catch (error) {
-                showToast('영수증 분석 실패');
+                console.error('영수증 처리 실패:', error);
+                showToast('영수증 분석에 실패했습니다');
             } finally {
                 hideLoading();
             }
@@ -1063,105 +1127,204 @@
         // 영수증 결과 표시
         function displayReceiptResults(items) {
             const container = document.getElementById('receiptResults');
+            if (!container || !items) return;
+            
             container.innerHTML = `
                 <h3>인식된 물건들</h3>
                 ${items.map((item, index) => `
                     <div class="item-card">
-                        <input type="text" value="${item.name}" id="receipt-name-${index}" class="form-input" style="margin-bottom: 10px;">
+                        <input type="text" value="${item.name || ''}" id="receipt-name-${index}" class="form-input" style="margin-bottom: 10px;">
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                            <input type="number" value="${item.quantity}" id="receipt-qty-${index}" class="form-input" placeholder="수량">
+                            <input type="number" value="${item.quantity || 1}" id="receipt-qty-${index}" class="form-input" placeholder="수량">
                             <input type="number" value="${item.price || ''}" id="receipt-price-${index}" class="form-input" placeholder="가격">
                         </div>
                     </div>
                 `).join('')}
-                <button class="submit-btn" onclick="saveReceiptItems()">모두 저장</button>
+                <button class="submit-btn" onclick="saveReceiptItems(${items.length})">모두 저장</button>
             `;
         }
         
         // 탭 전환
         function switchTab(tab) {
-            currentTab = tab;
+            appState.currentTab = tab;
+            
+            // 탭 활성화 상태 업데이트
             document.querySelectorAll('.tab-item').forEach(item => {
                 item.classList.remove('active');
             });
+            
+            // 현재 클릭된 탭 활성화
             event.target.classList.add('active');
             
-            // 탭에 따른 컨텐츠 변경
-            if (tab === 'receipt') {
-                openReceiptModal();
-            } else if (tab === 'search') {
-                document.getElementById('searchInput').focus();
+            // 탭별 동작
+            switch (tab) {
+                case 'receipt':
+                    openReceiptModal();
+                    break;
+                case 'search':
+                    const searchInput = document.getElementById('searchInput');
+                    if (searchInput) searchInput.focus();
+                    break;
+                default:
+                    break;
             }
         }
         
-        // 폼 제출
-        document.getElementById('itemForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
+        // 폼 제출 처리
+        function setupFormSubmission() {
+            const itemForm = document.getElementById('itemForm');
+            if (!itemForm) return;
+            
+            itemForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const nameInput = document.getElementById('itemName');
+                const categorySelect = document.getElementById('itemCategory');
+                const locationSelect = document.getElementById('itemLocation');
+                const quantityInput = document.getElementById('itemQuantity');
+                const descriptionInput = document.getElementById('itemDescription');
+                
+                if (!nameInput || !nameInput.value.trim()) {
+                    showToast('물건 이름을 입력하세요');
+                    return;
+                }
+                
+                showLoading();
+                const formData = {
+                    name: nameInput.value.trim(),
+                    categoryId: categorySelect ? parseInt(categorySelect.value) || null : null,
+                    locationId: locationSelect ? parseInt(locationSelect.value) || null : null,
+                    quantity: quantityInput ? parseInt(quantityInput.value) || 1 : 1,
+                    unit: '개',
+                    description: descriptionInput ? descriptionInput.value.trim() : ''
+                };
+                
+                try {
+                    const response = await fetch(`${API_URL}/items`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(formData)
+                    });
+                    
+                    if (response.ok) {
+                        await loadData();
+                        closeModal('addModal');
+                        itemForm.reset();
+                        showToast('저장되었습니다');
+                        
+                        // 알림
+                        if ('Notification' in window && Notification.permission === 'granted') {
+                            new Notification('물건 추가됨', {
+                                body: formData.name,
+                                icon: '📦'
+                            });
+                        }
+                    } else {
+                        throw new Error('저장 실패');
+                    }
+                } catch (error) {
+                    console.error('저장 실패:', error);
+                    showToast('저장에 실패했습니다');
+                } finally {
+                    hideLoading();
+                }
+            });
+        }
+        
+        // 영수증 아이템 저장
+        async function saveReceiptItems(itemCount) {
+            const items = [];
+            
+            for (let i = 0; i < itemCount; i++) {
+                const nameInput = document.getElementById(`receipt-name-${i}`);
+                const qtyInput = document.getElementById(`receipt-qty-${i}`);
+                
+                if (nameInput && nameInput.value.trim()) {
+                    items.push({
+                        name: nameInput.value.trim(),
+                        quantity: qtyInput ? parseInt(qtyInput.value) || 1 : 1,
+                        unit: '개'
+                    });
+                }
+            }
+            
+            if (items.length === 0) {
+                showToast('저장할 항목이 없습니다');
+                return;
+            }
             
             showLoading();
-            const formData = {
-                name: document.getElementById('itemName').value,
-                categoryId: parseInt(document.getElementById('itemCategory').value) || null,
-                locationId: parseInt(document.getElementById('itemLocation').value) || null,
-                quantity: parseInt(document.getElementById('itemQuantity').value) || 1,
-                unit: '개',
-                description: document.getElementById('itemDescription').value
-            };
+            let savedCount = 0;
             
             try {
-                const response = await fetch(API_URL + '/items', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(formData)
-                });
-                
-                if (response.ok) {
-                    await loadData();
-                    closeModal('addModal');
-                    document.getElementById('itemForm').reset();
-                    showToast('저장되었습니다');
+                for (const item of items) {
+                    const response = await fetch(`${API_URL}/items`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(item)
+                    });
                     
-                    // 알림 (권한이 있는 경우)
-                    if ('Notification' in window && Notification.permission === 'granted') {
-                        new Notification('물건 추가됨', {
-                            body: formData.name,
-                            icon: '📦'
-                        });
+                    if (response.ok) {
+                        savedCount++;
                     }
                 }
+                
+                await loadData();
+                closeModal('receiptModal');
+                showToast(`${savedCount}개 항목이 저장되었습니다`);
+                
             } catch (error) {
-                showToast('저장 실패');
+                console.error('저장 실패:', error);
+                showToast('일부 항목 저장에 실패했습니다');
             } finally {
                 hideLoading();
             }
+        }
+        
+        // 앱 초기화 및 폼 설정
+        document.addEventListener('DOMContentLoaded', () => {
+            init();
+            setupFormSubmission();
         });
         
-        // 초기화 실행
-        init();
+        // 전역 에러 핸들러
+        window.addEventListener('error', (e) => {
+            console.error('전역 에러:', e.error);
+            showToast('오류가 발생했습니다');
+        });
         
-        // PWA 설치 프롬프트
+        // 전역 Promise 거부 핸들러
+        window.addEventListener('unhandledrejection', (e) => {
+            console.error('처리되지 않은 Promise 거부:', e.reason);
+            showToast('네트워크 오류가 발생했습니다');
+        });
+
+        // ⭐ Service Worker 등록
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(registration => {
+                        console.log('SW 등록 성공:', registration);
+                        console.log('Scope:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('SW 등록 실패:', error);
+                    });
+            });
+        }
+
+        // ⭐ PWA 설치 프롬프트
         let deferredPrompt;
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
             
-            // 설치 버튼 표시
             setTimeout(() => {
                 if (deferredPrompt) {
-                    showToast('홈 화면에 추가하여 앱처럼 사용하세요!');
+                    showToast('홈화면에 추가하여 앱처럼 사용하세요');
                 }
             }, 5000);
         });
     </script>
-    <script>
-    // 서비스 워커 등록
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('/sw.js')
-                .then(registration => console.log('SW 등록 성공:', registration))
-                .catch(error => console.log('SW 등록 실패:', error));
-        });
-    }
-</script>
 </body>
 </html>

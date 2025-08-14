@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>이미지 업로드</title>
+    <title>?대?吏 ?낅줈??/title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -103,24 +103,24 @@
 </head>
 <body>
     <div class="container">
-        <h1>이미지 업로드</h1>
+        <h1>?대?吏 ?낅줈??/h1>
         
         <div class="nav-links">
-            <a href="index.html">물건 관리</a>
-            <a href="upload.html">이미지 업로드</a>
+            <a href="index.html">臾쇨굔 愿由?/a>
+            <a href="upload.html">?대?吏 ?낅줈??/a>
         </div>
         
         <div class="upload-area" id="uploadArea">
-            <p>📷 클릭하거나 이미지를 드래그하세요</p>
-            <p style="font-size: 14px; color: #666;">JPG, PNG, GIF 형식 지원</p>
+            <p>?벜 ?대┃?섍굅???대?吏瑜??쒕옒洹명븯?몄슂</p>
+            <p style="font-size: 14px; color: #666;">JPG, PNG, GIF ?뺤떇 吏??/p>
             <input type="file" id="fileInput" class="hidden" accept="image/*">
         </div>
         
         <div id="preview">
-            <h3>미리보기</h3>
+            <h3>誘몃━蹂닿린</h3>
             <img id="previewImage" alt="Preview">
             <div class="file-info" id="fileInfo"></div>
-            <button onclick="uploadImage()">이미지 업로드</button>
+            <button onclick="uploadImage()">?대?吏 ?낅줈??/button>
         </div>
         
         <div id="result"></div>
@@ -136,20 +136,20 @@
         const fileInfo = document.getElementById('fileInfo');
         const result = document.getElementById('result');
         
-        // 클릭으로 파일 선택
+        // ?대┃?쇰줈 ?뚯씪 ?좏깮
         uploadArea.addEventListener('click', () => fileInput.click());
         
-        // 파일 선택시
+        // ?뚯씪 ?좏깮??
         fileInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (file && file.type.startsWith('image/')) {
                 handleFile(file);
             } else {
-                alert('이미지 파일만 업로드할 수 있습니다.');
+                alert('?대?吏 ?뚯씪留??낅줈?쒗븷 ???덉뒿?덈떎.');
             }
         });
         
-        // 드래그 앤 드롭
+        // ?쒕옒洹????쒕∼
         uploadArea.addEventListener('dragover', (e) => {
             e.preventDefault();
             uploadArea.classList.add('dragover');
@@ -167,19 +167,19 @@
             if (file && file.type.startsWith('image/')) {
                 handleFile(file);
             } else {
-                alert('이미지 파일만 업로드할 수 있습니다.');
+                alert('?대?吏 ?뚯씪留??낅줈?쒗븷 ???덉뒿?덈떎.');
             }
         });
         
-        // 파일 처리
+        // ?뚯씪 泥섎━
         function handleFile(file) {
             selectedFile = file;
             
-            // 파일 정보 표시
+            // ?뚯씪 ?뺣낫 ?쒖떆
             const fileSize = (file.size / 1024 / 1024).toFixed(2);
-            fileInfo.textContent = `파일명: ${file.name} | 크기: ${fileSize}MB | 형식: ${file.type}`;
+            fileInfo.textContent = `?뚯씪紐? ${file.name} | ?ш린: ${fileSize}MB | ?뺤떇: ${file.type}`;
             
-            // 미리보기
+            // 誘몃━蹂닿린
             const reader = new FileReader();
             reader.onload = (e) => {
                 previewImage.src = e.target.result;
@@ -189,14 +189,14 @@
             reader.readAsDataURL(file);
         }
         
-        // 업로드
+        // ?낅줈??
         async function uploadImage() {
             if (!selectedFile) return;
             
             const formData = new FormData();
             formData.append('image', selectedFile);
             
-            result.textContent = '업로드 중...';
+            result.textContent = '?낅줈??以?..';
             result.className = '';
             result.style.display = 'block';
             
@@ -210,18 +210,18 @@
                 
                 if (response.ok) {
                     result.innerHTML = `
-                        <strong>✅ 업로드 성공!</strong><br>
-                        파일명: ${data.image.filename}<br>
-                        크기: ${(data.image.size / 1024 / 1024).toFixed(2)}MB<br>
-                        URL: <a href="${data.image.url}" target="_blank">이미지 보기</a>
+                        <strong>???낅줈???깃났!</strong><br>
+                        ?뚯씪紐? ${data.image.filename}<br>
+                        ?ш린: ${(data.image.size / 1024 / 1024).toFixed(2)}MB<br>
+                        URL: <a href="${data.image.url}" target="_blank">?대?吏 蹂닿린</a>
                     `;
                     result.className = 'success';
                 } else {
-                    result.innerHTML = `<strong>❌ 업로드 실패:</strong> ${data.error}`;
+                    result.innerHTML = `<strong>???낅줈???ㅽ뙣:</strong> ${data.error}`;
                     result.className = 'error';
                 }
             } catch (error) {
-                result.innerHTML = `<strong>❌ 오류:</strong> ${error.message}`;
+                result.innerHTML = `<strong>???ㅻ쪟:</strong> ${error.message}`;
                 result.className = 'error';
             }
         }

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>내 물건 관리 v5.1 - AI 검색 & 영수증 분석</title>
+    <title>??臾쇨굔 愿由?v5.1 - AI 寃??& ?곸닔利?遺꾩꽍</title>
     <style>
         * {
             box-sizing: border-box;
@@ -56,7 +56,7 @@
             text-decoration: underline;
         }
         
-        /* AI 검색 스타일 */
+        /* AI 寃???ㅽ???*/
         .ai-search-container {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             padding: 20px;
@@ -247,7 +247,7 @@
             font-size: 11px;
         }
         
-        /* 영수증 분석 스타일 */
+        /* ?곸닔利?遺꾩꽍 ?ㅽ???*/
         .receipt-section {
             background: white;
             padding: 20px;
@@ -935,55 +935,55 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>📦 내 물건 관리 시스템 <span class="version-badge">v5.1 AI & 영수증</span></h1>
+            <h1>?벀 ??臾쇨굔 愿由??쒖뒪??<span class="version-badge">v5.1 AI & ?곸닔利?/span></h1>
             <div class="nav-links">
-                <a href="index-v5.html">물건 관리</a>
-                <a href="locations.html">위치 관리</a>
-                <a href="categories.html">카테고리 관리</a>
+                <a href="index-v5.html">臾쇨굔 愿由?/a>
+                <a href="locations.html">?꾩튂 愿由?/a>
+                <a href="categories.html">移댄뀒怨좊━ 愿由?/a>
             </div>
         </div>
         
         <div class="stats" id="stats">
             <div class="stat-card">
                 <div class="stat-number" id="totalItems">0</div>
-                <div class="stat-label">전체 물건</div>
+                <div class="stat-label">?꾩껜 臾쇨굔</div>
             </div>
             <div class="stat-card">
                 <div class="stat-number" id="totalQuantity">0</div>
-                <div class="stat-label">총 수량</div>
+                <div class="stat-label">珥??섎웾</div>
             </div>
             <div class="stat-card">
                 <div class="stat-number" id="totalLocations">0</div>
-                <div class="stat-label">등록 위치</div>
+                <div class="stat-label">?깅줉 ?꾩튂</div>
             </div>
             <div class="stat-card">
                 <div class="stat-number" id="totalCategories">0</div>
-                <div class="stat-label">카테고리</div>
+                <div class="stat-label">移댄뀒怨좊━</div>
             </div>
             <div class="stat-card">
                 <div class="stat-number" id="totalImages">0</div>
-                <div class="stat-label">총 이미지</div>
+                <div class="stat-label">珥??대?吏</div>
             </div>
             <div class="stat-card">
                 <div class="stat-number" id="searchResultCount">0</div>
-                <div class="stat-label">검색 결과</div>
+                <div class="stat-label">寃??寃곌낵</div>
             </div>
         </div>
         
-        <!-- 영수증 분석 섹션 -->
+        <!-- ?곸닔利?遺꾩꽍 ?뱀뀡 -->
         <div class="receipt-section">
-            <h2 style="margin-bottom: 15px;">🧾 영수증으로 물건 추가</h2>
+            <h2 style="margin-bottom: 15px;">?㎨ ?곸닔利앹쑝濡?臾쇨굔 異붽?</h2>
             
             <div class="receipt-upload-area">
                 <div style="margin-bottom: 20px;">
-                    <span style="font-size: 48px;">📸</span>
-                    <h3>영수증 사진을 업로드하세요</h3>
-                    <p style="color: #666; margin-top: 10px;">영수증을 분석하여 자동으로 물건을 등록합니다</p>
+                    <span style="font-size: 48px;">?벝</span>
+                    <h3>?곸닔利??ъ쭊???낅줈?쒗븯?몄슂</h3>
+                    <p style="color: #666; margin-top: 10px;">?곸닔利앹쓣 遺꾩꽍?섏뿬 ?먮룞?쇰줈 臾쇨굔???깅줉?⑸땲??/p>
                 </div>
                 
                 <input type="file" id="receiptImage" accept="image/*" style="display: none;" onchange="analyzeReceipt()">
                 <button class="receipt-upload-btn" onclick="document.getElementById('receiptImage').click()">
-                    영수증 선택
+                    ?곸닔利??좏깮
                 </button>
                 
                 <div id="receiptPreview" style="margin-top: 20px; display: none;">
@@ -992,8 +992,8 @@
             </div>
             
             <div id="receiptAnalyzing" style="display: none; text-align: center; padding: 20px;">
-                <div style="font-size: 24px; margin-bottom: 10px;">🔍</div>
-                <div>영수증을 분석 중입니다...</div>
+                <div style="font-size: 24px; margin-bottom: 10px;">?뵇</div>
+                <div>?곸닔利앹쓣 遺꾩꽍 以묒엯?덈떎...</div>
                 <div style="margin-top: 10px;">
                     <div style="display: inline-block; width: 200px; height: 4px; background: #e0e0e0; border-radius: 2px; overflow: hidden;">
                         <div style="width: 50%; height: 100%; background: linear-gradient(90deg, #667eea, #764ba2); animation: loading 1.5s infinite;"></div>
@@ -1002,72 +1002,72 @@
             </div>
             
             <div id="receiptResults" style="display: none; margin-top: 20px;">
-                <h3>📋 인식된 물건들</h3>
+                <h3>?뱥 ?몄떇??臾쇨굔??/h3>
                 <div id="recognizedItems" style="margin-top: 15px;"></div>
                 <div style="margin-top: 20px; text-align: center;">
                     <button onclick="addAllRecognizedItems()" style="background: #27ae60; color: white; padding: 10px 25px; border-radius: 4px; border: none; cursor: pointer; margin-right: 10px;">
-                        모두 추가
+                        紐⑤몢 異붽?
                     </button>
                     <button onclick="clearReceiptResults()" style="background: #95a5a6; color: white; padding: 10px 25px; border-radius: 4px; border: none; cursor: pointer;">
-                        취소
+                        痍⑥냼
                     </button>
                 </div>
             </div>
         </div>
         
         <div class="search-section">
-            <h2 style="margin-bottom: 15px;">🔍 물건 검색</h2>
+            <h2 style="margin-bottom: 15px;">?뵇 臾쇨굔 寃??/h2>
             
-            <!-- AI 자연어 검색 -->
+            <!-- AI ?먯뿰??寃??-->
             <div class="ai-search-container">
                 <div style="display: flex; gap: 10px; align-items: center;">
                     <div style="flex: 1; position: relative;">
                         <input type="text" 
                                id="aiSearchInput" 
                                class="ai-search-input" 
-                               placeholder="자연어로 검색해보세요. 예: '부엌에 뭐가 있지?' '전자제품 보여줘' '재고 부족한 물건'"
+                               placeholder="?먯뿰?대줈 寃?됲빐蹂댁꽭?? ?? '遺?뚯뿉 萸먭? ?덉??' '?꾩옄?쒗뭹 蹂댁뿬以? '?ш퀬 遺議깊븳 臾쇨굔'"
                                onkeypress="if(event.key==='Enter') aiSearch()">
                         <span class="ai-badge">AI</span>
                     </div>
                     <button class="ai-search-btn" onclick="aiSearch()">
-                        <span>🤖 AI 검색</span>
+                        <span>?쨼 AI 寃??/span>
                     </button>
-                    <button class="voice-btn" id="voiceBtn" onclick="startVoiceSearch()" title="음성 검색">
-                        🎤
+                    <button class="voice-btn" id="voiceBtn" onclick="startVoiceSearch()" title="?뚯꽦 寃??>
+                        ?렎
                     </button>
                 </div>
                 <div id="aiSearchExamples" class="search-examples">
-                    <span>예시:</span>
-                    <button class="example-btn" onclick="setAISearchExample('부엌에 있는 물건 보여줘')">부엌 물건</button>
-                    <button class="example-btn" onclick="setAISearchExample('전자제품 몇 개 있어?')">전자제품 개수</button>
-                    <button class="example-btn" onclick="setAISearchExample('재고가 부족한 물건')">재고 부족</button>
-                    <button class="example-btn" onclick="setAISearchExample('거실에 있는 가구')">거실 가구</button>
-                    <button class="example-btn" onclick="setAISearchExample('냉장고에 뭐가 있지?')">냉장고 확인</button>
+                    <span>?덉떆:</span>
+                    <button class="example-btn" onclick="setAISearchExample('遺?뚯뿉 ?덈뒗 臾쇨굔 蹂댁뿬以?)">遺??臾쇨굔</button>
+                    <button class="example-btn" onclick="setAISearchExample('?꾩옄?쒗뭹 紐?媛??덉뼱?')">?꾩옄?쒗뭹 媛쒖닔</button>
+                    <button class="example-btn" onclick="setAISearchExample('?ш퀬媛 遺議깊븳 臾쇨굔')">?ш퀬 遺議?/button>
+                    <button class="example-btn" onclick="setAISearchExample('嫄곗떎???덈뒗 媛援?)">嫄곗떎 媛援?/button>
+                    <button class="example-btn" onclick="setAISearchExample('?됱옣怨좎뿉 萸먭? ?덉??')">?됱옣怨??뺤씤</button>
                 </div>
                 <div id="suggestedQueries" class="suggested-queries" style="display: none;">
-                    <h4>자주 검색한 내용:</h4>
+                    <h4>?먯＜ 寃?됲븳 ?댁슜:</h4>
                     <div id="suggestedList"></div>
                 </div>
                 <div id="aiResponse" class="ai-response" style="display: none;"></div>
             </div>
             
-            <!-- 기존 검색 (접을 수 있게) -->
+            <!-- 湲곗〈 寃??(?묒쓣 ???덇쾶) -->
             <details>
-                <summary>📋 상세 검색 옵션</summary>
+                <summary>?뱥 ?곸꽭 寃???듭뀡</summary>
                 <div class="search-controls">
                     <input type="text" 
                            id="searchInput" 
                            class="search-input" 
-                           placeholder="물건 이름 또는 설명으로 검색..."
+                           placeholder="臾쇨굔 ?대쫫 ?먮뒗 ?ㅻ챸?쇰줈 寃??.."
                            onkeypress="if(event.key==='Enter') searchItems()">
                     <select id="locationFilter" class="filter-select">
-                        <option value="">모든 위치</option>
+                        <option value="">紐⑤뱺 ?꾩튂</option>
                     </select>
                     <select id="categoryFilter" class="filter-select">
-                        <option value="">모든 카테고리</option>
+                        <option value="">紐⑤뱺 移댄뀒怨좊━</option>
                     </select>
-                    <button class="search-btn" onclick="searchItems()">검색</button>
-                    <button class="clear-btn" onclick="clearSearch()">초기화</button>
+                    <button class="search-btn" onclick="searchItems()">寃??/button>
+                    <button class="clear-btn" onclick="clearSearch()">珥덇린??/button>
                 </div>
             </details>
             
@@ -1078,93 +1078,93 @@
         
         <div class="main-content">
             <div class="form-section">
-                <h2>물건 등록</h2>
+                <h2>臾쇨굔 ?깅줉</h2>
                 
                 <div id="noLocationsMessage" class="no-locations-message" style="display: none;">
-                    ⚠️ 등록된 위치가 없습니다. 
-                    <a href="locations.html">위치 관리</a>에서 먼저 위치를 추가해주세요.
+                    ?좑툘 ?깅줉???꾩튂媛 ?놁뒿?덈떎. 
+                    <a href="locations.html">?꾩튂 愿由?/a>?먯꽌 癒쇱? ?꾩튂瑜?異붽??댁＜?몄슂.
                 </div>
                 
                 <form id="itemForm">
                     <div class="form-group">
-                        <label for="name">물건 이름 *</label>
-                        <input type="text" id="name" required placeholder="예: 겨울 코트">
+                        <label for="name">臾쇨굔 ?대쫫 *</label>
+                        <input type="text" id="name" required placeholder="?? 寃⑥슱 肄뷀듃">
                     </div>
                     
                     <div class="form-group">
-                        <label for="category">카테고리</label>
+                        <label for="category">移댄뀒怨좊━</label>
                         <select id="category">
-                            <option value="">카테고리 선택</option>
+                            <option value="">移댄뀒怨좊━ ?좏깮</option>
                         </select>
                     </div>
                     
                     <div class="form-group">
-                        <label>위치 선택</label>
+                        <label>?꾩튂 ?좏깮</label>
                         <div class="location-selects">
                             <select id="location1" onchange="updateLocationOptions(2)">
-                                <option value="">장소 선택</option>
+                                <option value="">?μ냼 ?좏깮</option>
                             </select>
                             <select id="location2" onchange="updateLocationOptions(3)" style="display:none">
-                                <option value="">세부 위치</option>
+                                <option value="">?몃? ?꾩튂</option>
                             </select>
                             <select id="location3" onchange="updateLocationOptions(4)" style="display:none">
-                                <option value="">구역</option>
+                                <option value="">援ъ뿭</option>
                             </select>
                             <select id="location4" style="display:none">
-                                <option value="">상세 위치</option>
+                                <option value="">?곸꽭 ?꾩튂</option>
                             </select>
                         </div>
                     </div>
                     
                     <div class="form-group">
-                        <label>수량</label>
+                        <label>?섎웾</label>
                         <div class="quantity-group">
                             <input type="number" id="quantity" min="1" value="1">
                             <select id="unit">
-                                <option value="개">개</option>
-                                <option value="벌">벌</option>
-                                <option value="권">권</option>
-                                <option value="병">병</option>
-                                <option value="박스">박스</option>
-                                <option value="세트">세트</option>
+                                <option value="媛?>媛?/option>
+                                <option value="踰?>踰?/option>
+                                <option value="沅?>沅?/option>
+                                <option value="蹂?>蹂?/option>
+                                <option value="諛뺤뒪">諛뺤뒪</option>
+                                <option value="?명듃">?명듃</option>
                             </select>
                         </div>
                     </div>
                     
                     <div class="form-group">
-                        <label for="description">설명</label>
-                        <textarea id="description" rows="3" placeholder="물건에 대한 상세 설명을 입력하세요"></textarea>
+                        <label for="description">?ㅻ챸</label>
+                        <textarea id="description" rows="3" placeholder="臾쇨굔??????곸꽭 ?ㅻ챸???낅젰?섏꽭??></textarea>
                     </div>
                     
-                    <!-- 이미지 업로드 섹션 -->
+                    <!-- ?대?吏 ?낅줈???뱀뀡 -->
                     <div class="image-upload-section">
-                        <label>이미지 추가</label>
+                        <label>?대?吏 異붽?</label>
                         <label for="itemImages" class="image-upload-label">
-                            📷 클릭하여 이미지 선택 (여러 장 가능)
+                            ?벜 ?대┃?섏뿬 ?대?吏 ?좏깮 (?щ윭 ??媛??
                         </label>
                         <input type="file" id="itemImages" class="image-upload-input" accept="image/*" multiple>
                         <div id="imagePreview" class="image-preview-grid"></div>
                     </div>
                     
-                    <button type="submit">물건 등록</button>
+                    <button type="submit">臾쇨굔 ?깅줉</button>
                 </form>
             </div>
             
             <div class="list-section">
-                <h2>물건 목록</h2>
+                <h2>臾쇨굔 紐⑸줉</h2>
                 <div id="items"></div>
             </div>
         </div>
     </div>
     
-    <!-- 이미지 관리 모달 -->
+    <!-- ?대?吏 愿由?紐⑤떖 -->
     <div id="imageModal" class="modal">
         <div class="modal-content">
-            <button class="modal-close" onclick="closeImageModal()">×</button>
-            <h2>이미지 관리</h2>
+            <button class="modal-close" onclick="closeImageModal()">횞</button>
+            <h2>?대?吏 愿由?/h2>
             <div class="image-upload-section">
                 <label for="modalImageUpload" class="image-upload-label">
-                    📷 새 이미지 추가
+                    ?벜 ???대?吏 異붽?
                 </label>
                 <input type="file" id="modalImageUpload" class="image-upload-input" accept="image/*" multiple>
             </div>
@@ -1173,7 +1173,23 @@
     </div>
 
     <script>
-        const API_URL = 'http://localhost:3001/api';
+        var API_URL = (function() {
+    var hostname = window.location.hostname;
+    var protocol = window.location.protocol;
+    
+    // GitHub Pages에서 호출 시 -> Render API 사용
+    if (hostname.endsWith('github.io')) {
+        return 'https://inventory.onrender.com/api';
+    }
+    
+    // 로컬 개발 환경
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+        return protocol + '//' + hostname + ':3001/api';
+    }
+    
+    // 기본값 (Render 등)
+    return 'https://inventory.onrender.com/api';
+})();
         let allLocations = [];
         let allCategories = [];
         let allItems = [];
@@ -1186,7 +1202,7 @@
         let recognition = null;
         let recognizedItems = [];
         
-        // 페이지 로드시 초기화
+        // ?섏씠吏 濡쒕뱶??珥덇린??
         async function init() {
             await loadCategories();
             await loadLocations();
@@ -1198,14 +1214,14 @@
             setupVoiceRecognition();
         }
         
-        // 영수증 분석
+        // ?곸닔利?遺꾩꽍
         async function analyzeReceipt() {
             const fileInput = document.getElementById('receiptImage');
             const file = fileInput.files[0];
             
             if (!file) return;
             
-            // 미리보기 표시
+            // 誘몃━蹂닿린 ?쒖떆
             const reader = new FileReader();
             reader.onload = function(e) {
                 document.getElementById('receiptImg').src = e.target.result;
@@ -1213,11 +1229,11 @@
             };
             reader.readAsDataURL(file);
             
-            // 분석 중 표시
+            // 遺꾩꽍 以??쒖떆
             document.getElementById('receiptAnalyzing').style.display = 'block';
             document.getElementById('receiptResults').style.display = 'none';
             
-            // 서버로 영수증 전송
+            // ?쒕쾭濡??곸닔利??꾩넚
             const formData = new FormData();
             formData.append('receipt', file);
             
@@ -1234,31 +1250,31 @@
                     displayRecognizedItems(data.items);
                     document.getElementById('receiptAnalyzing').style.display = 'none';
                     document.getElementById('receiptResults').style.display = 'block';
-                    showMessage(`${data.items.length}개의 물건을 인식했습니다.`, 'success');
+                    showMessage(`${data.items.length}媛쒖쓽 臾쇨굔???몄떇?덉뒿?덈떎.`, 'success');
                 } else {
-                    showMessage('영수증 분석에 실패했습니다.', 'error');
+                    showMessage('?곸닔利?遺꾩꽍???ㅽ뙣?덉뒿?덈떎.', 'error');
                     document.getElementById('receiptAnalyzing').style.display = 'none';
                 }
             } catch (error) {
-                console.error('영수증 분석 오류:', error);
-                showMessage('영수증 분석 중 오류가 발생했습니다.', 'error');
+                console.error('?곸닔利?遺꾩꽍 ?ㅻ쪟:', error);
+                showMessage('?곸닔利?遺꾩꽍 以??ㅻ쪟媛 諛쒖깮?덉뒿?덈떎.', 'error');
                 document.getElementById('receiptAnalyzing').style.display = 'none';
             }
         }
         
-        // 인식된 물건 표시 (수정된 버전)
+        // ?몄떇??臾쇨굔 ?쒖떆 (?섏젙??踰꾩쟾)
         function displayRecognizedItems(items) {
             const container = document.getElementById('recognizedItems');
             
             if (items.length === 0) {
-                container.innerHTML = '<p style="text-align: center; color: #999;">인식된 물건이 없습니다.</p>';
+                container.innerHTML = '<p style="text-align: center; color: #999;">?몄떇??臾쇨굔???놁뒿?덈떎.</p>';
                 return;
             }
             
             container.innerHTML = `
                 <div style="margin-bottom: 15px; text-align: right;">
                     <button onclick="addNewReceiptItem()" style="background: #4CAF50; color: white; padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer;">
-                        ➕ 새 항목 추가
+                        ??????ぉ 異붽?
                     </button>
                 </div>
             ` + items.map((item, index) => `
@@ -1267,38 +1283,38 @@
                         <input type="text" 
                                id="name-${index}" 
                                value="${item.name}" 
-                               placeholder="상품명 입력"
+                               placeholder="?곹뭹紐??낅젰"
                                style="font-weight: 600; font-size: 16px; border: 1px solid #ddd; padding: 5px; border-radius: 4px; flex: 1;"
                                onchange="updateReceiptItem(${index}, 'name', this.value)">
                         <button onclick="removeReceiptItem(${index})" 
                                 style="background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; margin-left: 10px;">
-                            삭제
+                            ??젣
                         </button>
                     </div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0;">
                         <div>
-                            <label style="font-size: 12px; color: #666;">가격</label>
+                            <label style="font-size: 12px; color: #666;">媛寃?/label>
                             <input type="number" 
                                    id="price-${index}" 
                                    value="${item.price || ''}" 
-                                   placeholder="가격 입력"
+                                   placeholder="媛寃??낅젰"
                                    style="width: 100%; padding: 5px; border: 1px solid #ddd; border-radius: 4px;"
                                    onchange="updateReceiptItem(${index}, 'price', parseInt(this.value))">
                         </div>
                         <div>
-                            <label style="font-size: 12px; color: #666;">수량</label>
+                            <label style="font-size: 12px; color: #666;">?섎웾</label>
                             <input type="number" 
                                    id="quantity-${index}" 
                                    value="${item.quantity}" 
                                    min="1" 
-                                   placeholder="수량"
+                                   placeholder="?섎웾"
                                    style="width: 100%; padding: 5px; border: 1px solid #ddd; border-radius: 4px;"
                                    onchange="updateReceiptItem(${index}, 'quantity', parseInt(this.value))">
                         </div>
                     </div>
                     <div class="receipt-item-controls">
                         <select id="category-${index}" onchange="updateReceiptItem(${index}, 'category', this.value)">
-                            <option value="">카테고리 선택</option>
+                            <option value="">移댄뀒怨좊━ ?좏깮</option>
                             ${allCategories.map(cat => 
                                 `<option value="${cat.id}" ${item.category === cat.id ? 'selected' : ''}>
                                     ${cat.icon} ${cat.name}
@@ -1306,7 +1322,7 @@
                             ).join('')}
                         </select>
                         <select id="location-${index}" onchange="updateReceiptItem(${index}, 'suggestedLocation', this.value)">
-                            <option value="">위치 선택</option>
+                            <option value="">?꾩튂 ?좏깮</option>
                             ${allLocations.filter(loc => !loc.parentId).map(loc => 
                                 `<option value="${loc.id}" ${item.suggestedLocation === loc.id ? 'selected' : ''}>
                                     ${loc.name}
@@ -1315,14 +1331,14 @@
                         </select>
                         <label style="display: flex; align-items: center; justify-content: center; grid-column: span 2;">
                             <input type="checkbox" id="select-${index}" checked style="margin-right: 5px;">
-                            추가할 항목
+                            異붽?????ぉ
                         </label>
                     </div>
                 </div>
             `).join('');
         }
 
-        // 새 항목 추가 함수
+        // ????ぉ 異붽? ?⑥닔
         function addNewReceiptItem() {
             const newItem = {
                 name: '',
@@ -1336,23 +1352,23 @@
             displayRecognizedItems(recognizedItems);
         }
 
-        // 항목 삭제 함수
+        // ??ぉ ??젣 ?⑥닔
         function removeReceiptItem(index) {
-            if (confirm('이 항목을 삭제하시겠습니까?')) {
+            if (confirm('????ぉ????젣?섏떆寃좎뒿?덇퉴?')) {
                 recognizedItems.splice(index, 1);
                 displayRecognizedItems(recognizedItems);
             }
         }
 
-        // 항목 업데이트 함수
+        // ??ぉ ?낅뜲?댄듃 ?⑥닔
         function updateReceiptItem(index, field, value) {
             if (recognizedItems[index]) {
                 recognizedItems[index][field] = value;
-                console.log(`항목 ${index} 업데이트: ${field} = ${value}`);
+                console.log(`??ぉ ${index} ?낅뜲?댄듃: ${field} = ${value}`);
             }
         }
 
-        // 인식된 물건 모두 추가 (수정된 버전)
+        // ?몄떇??臾쇨굔 紐⑤몢 異붽? (?섏젙??踰꾩쟾)
         async function addAllRecognizedItems() {
             let addedCount = 0;
             let skippedCount = 0;
@@ -1366,9 +1382,9 @@
                 
                 const item = recognizedItems[i];
                 
-                // 상품명이 비어있으면 건너뛰기
+                // ?곹뭹紐낆씠 鍮꾩뼱?덉쑝硫?嫄대꼫?곌린
                 if (!item.name || item.name.trim() === '') {
-                    alert(`${i + 1}번째 항목의 상품명이 비어있습니다.`);
+                    alert(`${i + 1}踰덉㎏ ??ぉ???곹뭹紐낆씠 鍮꾩뼱?덉뒿?덈떎.`);
                     continue;
                 }
                 
@@ -1379,11 +1395,11 @@
                 
                 const itemData = {
                     name: item.name.trim(),
-                    description: `영수증에서 추가 (${new Date().toLocaleDateString()})${price ? ` - ${parseInt(price).toLocaleString()}원` : ''}`,
+                    description: `?곸닔利앹뿉??異붽? (${new Date().toLocaleDateString()})${price ? ` - ${parseInt(price).toLocaleString()}?? : ''}`,
                     categoryId: categoryId ? parseInt(categoryId) : null,
                     locationId: locationId ? parseInt(locationId) : null,
                     quantity: parseInt(quantity) || 1,
-                    unit: '개'
+                    unit: '媛?
                 };
                 
                 try {
@@ -1397,20 +1413,20 @@
                         addedCount++;
                     }
                 } catch (error) {
-                    console.error('물건 추가 오류:', error);
+                    console.error('臾쇨굔 異붽? ?ㅻ쪟:', error);
                 }
             }
             
             if (addedCount > 0) {
-                showMessage(`${addedCount}개의 물건이 추가되었습니다! (${skippedCount}개 건너뜀)`, 'success');
+                showMessage(`${addedCount}媛쒖쓽 臾쇨굔??異붽??섏뿀?듬땲?? (${skippedCount}媛?嫄대꼫?)`, 'success');
                 clearReceiptResults();
                 loadItems();
             } else if (skippedCount > 0) {
-                showMessage('선택된 항목이 없거나 유효하지 않습니다.', 'error');
+                showMessage('?좏깮????ぉ???녾굅???좏슚?섏? ?딆뒿?덈떎.', 'error');
             }
         }
         
-        // 영수증 결과 초기화
+        // ?곸닔利?寃곌낵 珥덇린??
         function clearReceiptResults() {
             document.getElementById('receiptImage').value = '';
             document.getElementById('receiptPreview').style.display = 'none';
@@ -1419,7 +1435,7 @@
             recognizedItems = [];
         }
         
-        // 음성 인식 설정
+        // ?뚯꽦 ?몄떇 ?ㅼ젙
         function setupVoiceRecognition() {
             if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
                 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -1430,7 +1446,7 @@
                 
                 recognition.onstart = function() {
                     document.getElementById('voiceBtn').classList.add('listening');
-                    document.getElementById('aiSearchInput').placeholder = '🎤 듣고 있습니다...';
+                    document.getElementById('aiSearchInput').placeholder = '?렎 ?ｊ퀬 ?덉뒿?덈떎...';
                 };
                 
                 recognition.onresult = function(event) {
@@ -1440,31 +1456,31 @@
                 };
                 
                 recognition.onerror = function(event) {
-                    console.error('음성 인식 오류:', event.error);
-                    showMessage('음성 인식에 실패했습니다.', 'error');
+                    console.error('?뚯꽦 ?몄떇 ?ㅻ쪟:', event.error);
+                    showMessage('?뚯꽦 ?몄떇???ㅽ뙣?덉뒿?덈떎.', 'error');
                 };
                 
                 recognition.onend = function() {
                     document.getElementById('voiceBtn').classList.remove('listening');
-                    document.getElementById('aiSearchInput').placeholder = '자연어로 검색해보세요...';
+                    document.getElementById('aiSearchInput').placeholder = '?먯뿰?대줈 寃?됲빐蹂댁꽭??..';
                 };
             }
         }
         
-        // 음성 검색 시작
+        // ?뚯꽦 寃???쒖옉
         function startVoiceSearch() {
             if (recognition) {
                 recognition.start();
             } else {
-                alert('이 브라우저는 음성 인식을 지원하지 않습니다.');
+                alert('??釉뚮씪?곗????뚯꽦 ?몄떇??吏?먰븯吏 ?딆뒿?덈떎.');
             }
         }
         
-        // AI 검색 실행
+        // AI 寃???ㅽ뻾
         async function aiSearch() {
             const query = document.getElementById('aiSearchInput').value.trim();
             if (!query) {
-                showMessage('검색어를 입력해주세요.', 'error');
+                showMessage('寃?됱뼱瑜??낅젰?댁＜?몄슂.', 'error');
                 return;
             }
             
@@ -1473,7 +1489,7 @@
             const responseDiv = document.getElementById('aiResponse');
             responseDiv.style.display = 'block';
             responseDiv.className = 'ai-response thinking';
-            responseDiv.innerHTML = '🤔 생각 중...';
+            responseDiv.innerHTML = '?쨺 ?앷컖 以?..';
             
             try {
                 const response = await fetch(API_URL + '/ai-search', {
@@ -1490,18 +1506,18 @@
                     responseDiv.className = 'ai-response';
                     responseDiv.innerHTML = `
                         <div style="margin-bottom: 10px;">
-                            <strong>🤖 AI 응답:</strong> ${data.aiResponse}
+                            <strong>?쨼 AI ?묐떟:</strong> ${data.aiResponse}
                         </div>
                         ${data.interpretation ? `
                             <div class="interpretation-box">
-                                <strong>이해한 내용:</strong>
-                                ${data.interpretation.locations.length > 0 ? `<br>📍 위치: ${data.interpretation.locations.join(', ')}` : ''}
-                                ${data.interpretation.categories.length > 0 ? `<br>📂 카테고리: ${data.interpretation.categories.join(', ')}` : ''}
-                                ${data.interpretation.keywords.length > 0 ? `<br>🔑 키워드: ${data.interpretation.keywords.join(', ')}` : ''}
-                                ${data.interpretation.quantity ? `<br>📊 수량 조건: ${
-                                    data.interpretation.quantity.operator === 'low' ? '부족' :
-                                    data.interpretation.quantity.operator === 'high' ? '충분' :
-                                    data.interpretation.quantity.operator === 'zero' ? '없음' : ''
+                                <strong>?댄빐???댁슜:</strong>
+                                ${data.interpretation.locations.length > 0 ? `<br>?뱧 ?꾩튂: ${data.interpretation.locations.join(', ')}` : ''}
+                                ${data.interpretation.categories.length > 0 ? `<br>?뱛 移댄뀒怨좊━: ${data.interpretation.categories.join(', ')}` : ''}
+                                ${data.interpretation.keywords.length > 0 ? `<br>?뵎 ?ㅼ썙?? ${data.interpretation.keywords.join(', ')}` : ''}
+                                ${data.interpretation.quantity ? `<br>?뱤 ?섎웾 議곌굔: ${
+                                    data.interpretation.quantity.operator === 'low' ? '遺議? :
+                                    data.interpretation.quantity.operator === 'high' ? '異⑸텇' :
+                                    data.interpretation.quantity.operator === 'zero' ? '?놁쓬' : ''
                                 }` : ''}
                             </div>
                         ` : ''}
@@ -1514,24 +1530,24 @@
                     
                     const resultsDiv = document.getElementById('searchResults');
                     resultsDiv.style.display = 'block';
-                    resultsDiv.textContent = `AI 검색 결과: ${data.count}개 물건 발견`;
+                    resultsDiv.textContent = `AI 寃??寃곌낵: ${data.count}媛?臾쇨굔 諛쒓껄`;
                     
                     updateSearchSuccess(query, data.count > 0);
                 }
             } catch (error) {
                 responseDiv.className = 'ai-response';
-                responseDiv.innerHTML = '❌ 검색 중 오류가 발생했습니다.';
-                console.error('AI 검색 오류:', error);
+                responseDiv.innerHTML = '??寃??以??ㅻ쪟媛 諛쒖깮?덉뒿?덈떎.';
+                console.error('AI 寃???ㅻ쪟:', error);
             }
         }
         
-        // 예시 검색어 설정
+        // ?덉떆 寃?됱뼱 ?ㅼ젙
         function setAISearchExample(text) {
             document.getElementById('aiSearchInput').value = text;
             aiSearch();
         }
         
-        // 검색 패턴 학습
+        // 寃???⑦꽩 ?숈뒿
         function learnSearchPattern(query) {
             const patterns = JSON.parse(localStorage.getItem('searchPatterns') || '{}');
             
@@ -1551,7 +1567,7 @@
             setTimeout(loadSuggestedQueries, 100);
         }
         
-        // 검색 성공 여부 업데이트
+        // 寃???깃났 ?щ? ?낅뜲?댄듃
         function updateSearchSuccess(query, successful) {
             const patterns = JSON.parse(localStorage.getItem('searchPatterns') || '{}');
             if (patterns[query]) {
@@ -1560,7 +1576,7 @@
             }
         }
         
-        // 자주 사용하는 검색어 로드
+        // ?먯＜ ?ъ슜?섎뒗 寃?됱뼱 濡쒕뱶
         function loadSuggestedQueries() {
             const patterns = JSON.parse(localStorage.getItem('searchPatterns') || '{}');
             const sorted = Object.entries(patterns)
@@ -1575,13 +1591,13 @@
                 suggestedDiv.style.display = 'block';
                 listDiv.innerHTML = sorted.map(([query, data]) => `
                     <span class="suggested-query" onclick="setAISearchExample('${query}')">
-                        ${query} <span class="count">(${data.count}회)</span>
+                        ${query} <span class="count">(${data.count}??</span>
                     </span>
                 `).join('');
             }
         }
         
-        // 이미지 업로드 설정
+        // ?대?吏 ?낅줈???ㅼ젙
         function setupImageUpload() {
             document.getElementById('itemImages').addEventListener('change', handleImageSelect);
             document.getElementById('modalImageUpload').addEventListener('change', async function(e) {
@@ -1591,7 +1607,7 @@
             });
         }
         
-        // 이미지 선택 처리
+        // ?대?吏 ?좏깮 泥섎━
         function handleImageSelect(e) {
             const files = Array.from(e.target.files);
             files.forEach(file => {
@@ -1606,25 +1622,25 @@
             });
         }
         
-        // 이미지 미리보기 추가
+        // ?대?吏 誘몃━蹂닿린 異붽?
         function addImagePreview(src, file) {
             const preview = document.getElementById('imagePreview');
             const item = document.createElement('div');
             item.className = 'image-preview-item';
             item.innerHTML = `
-                <img src="${src}" alt="미리보기">
-                <button type="button" class="remove-btn" onclick="removeImage(this, '${file.name}')">×</button>
+                <img src="${src}" alt="誘몃━蹂닿린">
+                <button type="button" class="remove-btn" onclick="removeImage(this, '${file.name}')">횞</button>
             `;
             preview.appendChild(item);
         }
         
-        // 이미지 제거
+        // ?대?吏 ?쒓굅
         function removeImage(btn, fileName) {
             btn.parentElement.remove();
             selectedImages = selectedImages.filter(f => f.name !== fileName);
         }
         
-        // 카테고리 데이터 로드
+        // 移댄뀒怨좊━ ?곗씠??濡쒕뱶
         async function loadCategories() {
             try {
                 const response = await fetch(API_URL + '/categories');
@@ -1636,13 +1652,13 @@
             }
         }
         
-        // 카테고리 옵션 업데이트
+        // 移댄뀒怨좊━ ?듭뀡 ?낅뜲?댄듃
         function updateCategoryOptions() {
             const select = document.getElementById('category');
             const filter = document.getElementById('categoryFilter');
             
-            select.innerHTML = '<option value="">카테고리 선택</option>';
-            filter.innerHTML = '<option value="">모든 카테고리</option>';
+            select.innerHTML = '<option value="">移댄뀒怨좊━ ?좏깮</option>';
+            filter.innerHTML = '<option value="">紐⑤뱺 移댄뀒怨좊━</option>';
             
             allCategories.forEach(cat => {
                 select.innerHTML += `<option value="${cat.id}">${cat.icon} ${cat.name}</option>`;
@@ -1650,7 +1666,7 @@
             });
         }
         
-        // 위치 데이터 로드
+        // ?꾩튂 ?곗씠??濡쒕뱶
         async function loadLocations() {
             try {
                 const response = await fetch(API_URL + '/locations');
@@ -1669,15 +1685,15 @@
             }
         }
         
-        // 필터 설정
+        // ?꾪꽣 ?ㅼ젙
         function setupFilters() {
             setupLocationFilter();
         }
         
-        // 위치 필터 설정
+        // ?꾩튂 ?꾪꽣 ?ㅼ젙
         function setupLocationFilter() {
             const filter = document.getElementById('locationFilter');
-            filter.innerHTML = '<option value="">모든 위치</option>';
+            filter.innerHTML = '<option value="">紐⑤뱺 ?꾩튂</option>';
             
             const rootLocations = allLocations.filter(loc => !loc.parentId);
             rootLocations.forEach(loc => {
@@ -1685,7 +1701,7 @@
             });
         }
         
-        // 위치 필터에 옵션 추가 (재귀)
+        // ?꾩튂 ?꾪꽣???듭뀡 異붽? (?ш?)
         function addLocationToFilter(location, prefix) {
             const filter = document.getElementById('locationFilter');
             const option = document.createElement('option');
@@ -1695,11 +1711,11 @@
             
             const children = allLocations.filter(loc => loc.parentId === location.id);
             children.forEach(child => {
-                addLocationToFilter(child, prefix + '　');
+                addLocationToFilter(child, prefix + '?');
             });
         }
         
-        // 검색 실행
+        // 寃???ㅽ뻾
         async function searchItems() {
             const searchQuery = document.getElementById('searchInput').value.trim();
             const locationId = document.getElementById('locationFilter').value;
@@ -1728,15 +1744,15 @@
                 const resultsDiv = document.getElementById('searchResults');
                 if (searchQuery || locationId || categoryId) {
                     resultsDiv.style.display = 'block';
-                    let message = `검색 결과: ${data.count}개`;
-                    if (searchQuery) message += ` (검색어: "${searchQuery}")`;
+                    let message = `寃??寃곌낵: ${data.count}媛?;
+                    if (searchQuery) message += ` (寃?됱뼱: "${searchQuery}")`;
                     if (locationId) {
                         const location = allLocations.find(loc => loc.id == locationId);
-                        if (location) message += ` (위치: ${location.name})`;
+                        if (location) message += ` (?꾩튂: ${location.name})`;
                     }
                     if (categoryId) {
                         const category = allCategories.find(cat => cat.id == categoryId);
-                        if (category) message += ` (카테고리: ${category.icon} ${category.name})`;
+                        if (category) message += ` (移댄뀒怨좊━: ${category.icon} ${category.name})`;
                     }
                     resultsDiv.textContent = message;
                 } else {
@@ -1747,11 +1763,11 @@
                 updateStats();
                 document.getElementById('searchResultCount').textContent = data.count;
             } catch (error) {
-                showMessage('검색에 실패했습니다.', 'error');
+                showMessage('寃?됱뿉 ?ㅽ뙣?덉뒿?덈떎.', 'error');
             }
         }
         
-        // 검색 초기화
+        // 寃??珥덇린??
         function clearSearch() {
             document.getElementById('searchInput').value = '';
             document.getElementById('aiSearchInput').value = '';
@@ -1765,19 +1781,19 @@
             loadItems();
         }
         
-        // 위치 선택 옵션 업데이트
+        // ?꾩튂 ?좏깮 ?듭뀡 ?낅뜲?댄듃
         function updateLocationOptions(level) {
             const select = document.getElementById('location' + level);
             const parentSelect = level > 1 ? document.getElementById('location' + (level - 1)) : null;
             const parentId = parentSelect ? parentSelect.value : null;
             
-            select.innerHTML = '<option value="">선택하세요</option>';
+            select.innerHTML = '<option value="">?좏깮?섏꽭??/option>';
             
             for (let i = level + 1; i <= 4; i++) {
                 const nextSelect = document.getElementById('location' + i);
                 if (nextSelect) {
                     nextSelect.style.display = 'none';
-                    nextSelect.innerHTML = '<option value="">선택하세요</option>';
+                    nextSelect.innerHTML = '<option value="">?좏깮?섏꽭??/option>';
                 }
             }
             
@@ -1798,7 +1814,7 @@
             }
         }
         
-        // 최종 선택된 위치 ID 가져오기
+        // 理쒖쥌 ?좏깮???꾩튂 ID 媛?몄삤湲?
         function getSelectedLocationId() {
             for (let i = 4; i >= 1; i--) {
                 const select = document.getElementById('location' + i);
@@ -1809,7 +1825,7 @@
             return null;
         }
         
-        // 메시지 표시
+        // 硫붿떆吏 ?쒖떆
         function showMessage(text, type) {
             const messageEl = document.getElementById('message');
             messageEl.textContent = text;
@@ -1820,7 +1836,7 @@
             }, 3000);
         }
         
-        // 물건 목록 로드
+        // 臾쇨굔 紐⑸줉 濡쒕뱶
         async function loadItems() {
             try {
                 const response = await fetch(API_URL + '/items');
@@ -1829,26 +1845,26 @@
                 renderItems();
                 updateStats();
             } catch (error) {
-                showMessage('물건 목록을 불러오는데 실패했습니다.', 'error');
+                showMessage('臾쇨굔 紐⑸줉??遺덈윭?ㅻ뒗???ㅽ뙣?덉뒿?덈떎.', 'error');
             }
         }
         
-        // 텍스트 하이라이트
+        // ?띿뒪???섏씠?쇱씠??
         function highlightText(text, query) {
             if (!query || !text) return text;
             const regex = new RegExp('(' + query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
             return text.replace(regex, '<span class="highlight-text">$1</span>');
         }
         
-        // 물건 목록 렌더링
+        // 臾쇨굔 紐⑸줉 ?뚮뜑留?
         function renderItems() {
             const itemsEl = document.getElementById('items');
             
             if (allItems.length === 0) {
                 if (currentSearchQuery || currentLocationFilter || currentCategoryFilter) {
-                    itemsEl.innerHTML = '<div class="no-results">검색 결과가 없습니다.</div>';
+                    itemsEl.innerHTML = '<div class="no-results">寃??寃곌낵媛 ?놁뒿?덈떎.</div>';
                 } else {
-                    itemsEl.innerHTML = '<p style="text-align: center; color: #7f8c8d;">등록된 물건이 없습니다.</p>';
+                    itemsEl.innerHTML = '<p style="text-align: center; color: #7f8c8d;">?깅줉??臾쇨굔???놁뒿?덈떎.</p>';
                 }
                 return;
             }
@@ -1869,10 +1885,10 @@
                 
                 const imageHtml = item.thumbnailUrl 
                     ? `<img src="${API_URL.replace('/api', '')}${item.thumbnailUrl}" class="item-thumbnail" alt="${item.name}">`
-                    : `<div class="no-image-placeholder">📷</div>`;
+                    : `<div class="no-image-placeholder">?벜</div>`;
                 
                 const imageCountBadge = item.imageCount > 0 
-                    ? `<span class="item-image-count">📷 ${item.imageCount}</span>`
+                    ? `<span class="item-image-count">?벜 ${item.imageCount}</span>`
                     : '';
                 
                 return `
@@ -1885,37 +1901,37 @@
                                 <div style="margin: 5px 0;">
                                     ${categoryBadge}
                                 </div>
-                                <div class="item-location">📍 ${item.locationName || '위치 미지정'}</div>
+                                <div class="item-location">?뱧 ${item.locationName || '?꾩튂 誘몄???}</div>
                             </div>
                             <div class="item-quantity">${item.quantity} ${item.unit}</div>
                         </div>
                         <div class="item-description">${highlightedDesc}</div>
-                        <div class="item-meta">등록일: ${new Date(item.createdAt).toLocaleString()}</div>
+                        <div class="item-meta">?깅줉?? ${new Date(item.createdAt).toLocaleString()}</div>
                         <div class="item-actions">
-                            <button class="edit-btn" onclick="editItem(${item.id})">수정</button>
-                            <button class="image-btn" onclick="openImageModal(${item.id})">이미지</button>
-                            <button class="delete-btn" onclick="deleteItem(${item.id})">삭제</button>
+                            <button class="edit-btn" onclick="editItem(${item.id})">?섏젙</button>
+                            <button class="image-btn" onclick="openImageModal(${item.id})">?대?吏</button>
+                            <button class="delete-btn" onclick="deleteItem(${item.id})">??젣</button>
                         </div>
                     </div>
                 `;
             }).join('');
         }
         
-        // 이미지 모달 열기
+        // ?대?吏 紐⑤떖 ?닿린
         async function openImageModal(itemId) {
             currentModalItemId = itemId;
             document.getElementById('imageModal').classList.add('show');
             await loadItemImages(itemId);
         }
         
-        // 이미지 모달 닫기
+        // ?대?吏 紐⑤떖 ?リ린
         function closeImageModal() {
             document.getElementById('imageModal').classList.remove('show');
             currentModalItemId = null;
             document.getElementById('modalImageUpload').value = '';
         }
         
-        // 물건 이미지 로드
+        // 臾쇨굔 ?대?吏 濡쒕뱶
         async function loadItemImages(itemId) {
             try {
                 const response = await fetch(`${API_URL}/items/${itemId}/images`);
@@ -1923,23 +1939,23 @@
                 
                 const gallery = document.getElementById('imageGallery');
                 if (data.images.length === 0) {
-                    gallery.innerHTML = '<p style="text-align: center; color: #999;">등록된 이미지가 없습니다.</p>';
+                    gallery.innerHTML = '<p style="text-align: center; color: #999;">?깅줉???대?吏媛 ?놁뒿?덈떎.</p>';
                 } else {
                     gallery.innerHTML = data.images.map(img => `
                         <div class="gallery-item">
-                            <img src="${API_URL.replace('/api', '')}${img.url}" alt="이미지">
+                            <img src="${API_URL.replace('/api', '')}${img.url}" alt="?대?吏">
                             <div class="gallery-item-actions">
-                                <button class="gallery-delete-btn" onclick="deleteItemImage('${img.url.split('/').pop()}')">삭제</button>
+                                <button class="gallery-delete-btn" onclick="deleteItemImage('${img.url.split('/').pop()}')">??젣</button>
                             </div>
                         </div>
                     `).join('');
                 }
             } catch (error) {
-                console.error('이미지 로드 실패:', error);
+                console.error('?대?吏 濡쒕뱶 ?ㅽ뙣:', error);
             }
         }
         
-        // 모달에서 이미지 업로드
+        // 紐⑤떖?먯꽌 ?대?吏 ?낅줈??
         async function uploadModalImages(files) {
             for (const file of files) {
                 const formData = new FormData();
@@ -1952,18 +1968,18 @@
                         body: formData
                     });
                 } catch (error) {
-                    console.error('이미지 업로드 실패:', error);
+                    console.error('?대?吏 ?낅줈???ㅽ뙣:', error);
                 }
             }
             
             await loadItemImages(currentModalItemId);
             loadItems();
-            showMessage('이미지가 추가되었습니다.', 'success');
+            showMessage('?대?吏媛 異붽??섏뿀?듬땲??', 'success');
         }
         
-        // 이미지 삭제
+        // ?대?吏 ??젣
         async function deleteItemImage(filename) {
-            if (!confirm('이미지를 삭제하시겠습니까?')) return;
+            if (!confirm('?대?吏瑜???젣?섏떆寃좎뒿?덇퉴?')) return;
             
             try {
                 const response = await fetch(`${API_URL}/items/${currentModalItemId}/images/${filename}`, {
@@ -1973,14 +1989,14 @@
                 if (response.ok) {
                     await loadItemImages(currentModalItemId);
                     loadItems();
-                    showMessage('이미지가 삭제되었습니다.', 'success');
+                    showMessage('?대?吏媛 ??젣?섏뿀?듬땲??', 'success');
                 }
             } catch (error) {
-                console.error('이미지 삭제 실패:', error);
+                console.error('?대?吏 ??젣 ?ㅽ뙣:', error);
             }
         }
         
-        // 통계 업데이트
+        // ?듦퀎 ?낅뜲?댄듃
         function updateStats() {
             const totalItems = allItems.length;
             const totalQuantity = allItems.reduce((sum, item) => sum + (item.quantity || 0), 0);
@@ -1999,9 +2015,9 @@
             }
         }
         
-        // 물건 삭제
+        // 臾쇨굔 ??젣
         async function deleteItem(id) {
-            if (!confirm('정말 삭제하시겠습니까? 관련 이미지도 모두 삭제됩니다.')) return;
+            if (!confirm('?뺣쭚 ??젣?섏떆寃좎뒿?덇퉴? 愿???대?吏??紐⑤몢 ??젣?⑸땲??')) return;
             
             try {
                 const response = await fetch(`${API_URL}/items/${id}`, {
@@ -2009,21 +2025,21 @@
                 });
                 
                 if (response.ok) {
-                    showMessage('물건이 삭제되었습니다.', 'success');
+                    showMessage('臾쇨굔????젣?섏뿀?듬땲??', 'success');
                     if (currentSearchQuery || currentLocationFilter || currentCategoryFilter) {
                         searchItems();
                     } else {
                         loadItems();
                     }
                 } else {
-                    showMessage('삭제에 실패했습니다.', 'error');
+                    showMessage('??젣???ㅽ뙣?덉뒿?덈떎.', 'error');
                 }
             } catch (error) {
-                showMessage('서버 연결에 실패했습니다.', 'error');
+                showMessage('?쒕쾭 ?곌껐???ㅽ뙣?덉뒿?덈떎.', 'error');
             }
         }
         
-        // 물건 수정
+        // 臾쇨굔 ?섏젙
         function editItem(id) {
             const item = allItems.find(i => i.id === id);
             if (!item) return;
@@ -2032,18 +2048,18 @@
             document.getElementById('name').value = item.name;
             document.getElementById('category').value = item.categoryId || '';
             document.getElementById('quantity').value = item.quantity || 1;
-            document.getElementById('unit').value = item.unit || '개';
+            document.getElementById('unit').value = item.unit || '媛?;
             document.getElementById('description').value = item.description || '';
             
             document.getElementById('imagePreview').innerHTML = '';
             selectedImages = [];
             
-            document.querySelector('button[type="submit"]').textContent = '수정하기';
+            document.querySelector('button[type="submit"]').textContent = '?섏젙?섍린';
             document.getElementById('name').focus();
             window.scrollTo(0, 0);
         }
         
-        // 폼 제출 처리
+        // ???쒖텧 泥섎━
         document.getElementById('itemForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -2090,14 +2106,14 @@
                     }
                     
                     showMessage(
-                        editingItemId ? '물건이 수정되었습니다!' : '물건이 추가되었습니다!', 
+                        editingItemId ? '臾쇨굔???섏젙?섏뿀?듬땲??' : '臾쇨굔??異붽??섏뿀?듬땲??', 
                         'success'
                     );
                     
                     document.getElementById('itemForm').reset();
                     document.getElementById('imagePreview').innerHTML = '';
                     selectedImages = [];
-                    document.querySelector('button[type="submit"]').textContent = '물건 등록';
+                    document.querySelector('button[type="submit"]').textContent = '臾쇨굔 ?깅줉';
                     editingItemId = null;
                     
                     if (currentSearchQuery || currentLocationFilter || currentCategoryFilter) {
@@ -2106,21 +2122,21 @@
                         loadItems();
                     }
                 } else {
-                    showMessage('작업에 실패했습니다.', 'error');
+                    showMessage('?묒뾽???ㅽ뙣?덉뒿?덈떎.', 'error');
                 }
             } catch (error) {
-                showMessage('서버 연결에 실패했습니다.', 'error');
+                showMessage('?쒕쾭 ?곌껐???ㅽ뙣?덉뒿?덈떎.', 'error');
             }
         });
         
-        // Enter 키로 검색
+        // Enter ?ㅻ줈 寃??
         document.getElementById('searchInput').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 searchItems();
             }
         });
         
-        // 초기화
+        // 珥덇린??
         init();
     </script>
 </body>

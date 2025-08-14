@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>위치 관리</title>
+    <title>?꾩튂 愿由?/title>
     <style>
         * {
             box-sizing: border-box;
@@ -218,11 +218,11 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>📍 위치 관리</h1>
+            <h1>?뱧 ?꾩튂 愿由?/h1>
             <div class="nav-links">
-                <a href="index-v5.html">물건 관리</a>
-                <a href="locations.html">위치 관리</a>
-                <a href="upload.html">이미지 업로드</a>
+                <a href="index-v5.html">臾쇨굔 愿由?/a>
+                <a href="locations.html">?꾩튂 愿由?/a>
+                <a href="upload.html">?대?吏 ?낅줈??/a>
             </div>
         </div>
         
@@ -230,32 +230,32 @@
         
         <div class="location-manager">
             <div class="section">
-                <h2>새 위치 추가</h2>
+                <h2>???꾩튂 異붽?</h2>
                 
                 <div class="info-box">
-                    💡 위치는 최대 4단계까지 만들 수 있습니다.<br>
-                    예: 우리집 > 안방 > 선반 > 상단
+                    ?뮕 ?꾩튂??理쒕? 4?④퀎源뚯? 留뚮뱾 ???덉뒿?덈떎.<br>
+                    ?? ?곕━吏?> ?덈갑 > ?좊컲 > ?곷떒
                 </div>
                 
                 <form id="locationForm">
                     <div class="form-group">
-                        <label for="parentLocation">상위 위치</label>
+                        <label for="parentLocation">?곸쐞 ?꾩튂</label>
                         <select id="parentLocation">
-                            <option value="">최상위 위치로 추가</option>
+                            <option value="">理쒖긽???꾩튂濡?異붽?</option>
                         </select>
                     </div>
                     
                     <div class="form-group">
-                        <label for="locationName">위치 이름 *</label>
-                        <input type="text" id="locationName" required placeholder="예: 우리집, 안방, 선반, 상단 등">
+                        <label for="locationName">?꾩튂 ?대쫫 *</label>
+                        <input type="text" id="locationName" required placeholder="?? ?곕━吏? ?덈갑, ?좊컲, ?곷떒 ??>
                     </div>
                     
-                    <button type="submit">위치 추가</button>
+                    <button type="submit">?꾩튂 異붽?</button>
                 </form>
             </div>
             
             <div class="section">
-                <h2>등록된 위치 목록</h2>
+                <h2>?깅줉???꾩튂 紐⑸줉</h2>
                 <div id="locationTree" class="location-tree"></div>
             </div>
         </div>
@@ -266,12 +266,12 @@
         let allLocations = [];
         let locationNumbers = {};
         
-        // 페이지 로드시 초기화
+        // ?섏씠吏 濡쒕뱶??珥덇린??
         async function init() {
             await loadLocations();
         }
         
-        // 위치 데이터 로드
+        // ?꾩튂 ?곗씠??濡쒕뱶
         async function loadLocations() {
             try {
                 const response = await fetch(API_URL + '/locations');
@@ -281,15 +281,15 @@
                 updateParentLocationOptions();
                 renderLocationTree();
             } catch (error) {
-                showMessage('위치 목록을 불러오는데 실패했습니다.', 'error');
+                showMessage('?꾩튂 紐⑸줉??遺덈윭?ㅻ뒗???ㅽ뙣?덉뒿?덈떎.', 'error');
             }
         }
         
-        // 위치 번호 할당
+        // ?꾩튂 踰덊샇 ?좊떦
         function assignLocationNumbers() {
             locationNumbers = {};
             
-            // 최상위 위치들
+            // 理쒖긽???꾩튂??
             const rootLocations = allLocations.filter(loc => !loc.parentId);
             rootLocations.sort((a, b) => a.id - b.id);
             
@@ -300,7 +300,7 @@
             });
         }
         
-        // 하위 위치 번호 할당 (재귀)
+        // ?섏쐞 ?꾩튂 踰덊샇 ?좊떦 (?ш?)
         function assignChildNumbers(parentId, parentNumber) {
             const children = allLocations.filter(loc => loc.parentId === parentId);
             children.sort((a, b) => a.id - b.id);
@@ -312,12 +312,12 @@
             });
         }
         
-        // 상위 위치 옵션 업데이트
+        // ?곸쐞 ?꾩튂 ?듭뀡 ?낅뜲?댄듃
         function updateParentLocationOptions() {
             const select = document.getElementById('parentLocation');
-            select.innerHTML = '<option value="">최상위 위치로 추가</option>';
+            select.innerHTML = '<option value="">理쒖긽???꾩튂濡?異붽?</option>';
             
-            // 3단계 미만인 위치만 상위 위치로 선택 가능
+            // 3?④퀎 誘몃쭔???꾩튂留??곸쐞 ?꾩튂濡??좏깮 媛??
             const selectableLocations = allLocations.filter(loc => loc.level < 3);
             
             selectableLocations.forEach(loc => {
@@ -330,7 +330,7 @@
             });
         }
         
-        // 위치의 전체 경로 가져오기
+        // ?꾩튂???꾩껜 寃쎈줈 媛?몄삤湲?
         function getLocationFullPath(locationId) {
             const location = allLocations.find(loc => loc.id === locationId);
             if (!location) return '';
@@ -351,16 +351,16 @@
             return path.join(' > ');
         }
         
-        // 위치 트리 렌더링
+        // ?꾩튂 ?몃━ ?뚮뜑留?
         function renderLocationTree() {
             const treeEl = document.getElementById('locationTree');
             
             if (allLocations.length === 0) {
-                treeEl.innerHTML = '<p style="text-align: center; color: #7f8c8d;">등록된 위치가 없습니다.</p>';
+                treeEl.innerHTML = '<p style="text-align: center; color: #7f8c8d;">?깅줉???꾩튂媛 ?놁뒿?덈떎.</p>';
                 return;
             }
             
-            // 트리 구조로 정렬
+            // ?몃━ 援ъ“濡??뺣젹
             const rootLocations = allLocations.filter(loc => !loc.parentId);
             rootLocations.sort((a, b) => a.id - b.id);
             
@@ -373,7 +373,7 @@
             treeEl.innerHTML = html;
         }
         
-        // 위치 노드 렌더링 (재귀)
+        // ?꾩튂 ?몃뱶 ?뚮뜑留?(?ш?)
         function renderLocationNode(location, prefix) {
             const children = allLocations.filter(loc => loc.parentId === location.id);
             children.sort((a, b) => a.id - b.id);
@@ -385,31 +385,31 @@
                     <div class="location-name">
                         <span class="location-number">${number}</span>
                         <strong>${location.name}</strong>
-                        ${hasItems ? '<span class="location-path"> (물건 있음)</span>' : ''}
+                        ${hasItems ? '<span class="location-path"> (臾쇨굔 ?덉쓬)</span>' : ''}
                     </div>
                     <button class="delete-btn" onclick="deleteLocation(${location.id})" 
-                        ${hasItems || children.length > 0 ? 'disabled title="하위 위치나 물건이 있어 삭제할 수 없습니다"' : ''}>
-                        삭제
+                        ${hasItems || children.length > 0 ? 'disabled title="?섏쐞 ?꾩튂??臾쇨굔???덉뼱 ??젣?????놁뒿?덈떎"' : ''}>
+                        ??젣
                     </button>
                 </div>
             `;
             
-            // 하위 위치들 렌더링
+            // ?섏쐞 ?꾩튂???뚮뜑留?
             children.forEach((child, index) => {
                 const isLast = index === children.length - 1;
-                html += renderLocationNode(child, prefix + (isLast ? '  ' : '│ '));
+                html += renderLocationNode(child, prefix + (isLast ? '  ' : '??'));
             });
             
             return html;
         }
         
-        // 위치에 물건이 있는지 확인 (실제로는 API 호출 필요)
+        // ?꾩튂??臾쇨굔???덈뒗吏 ?뺤씤 (?ㅼ젣濡쒕뒗 API ?몄텧 ?꾩슂)
         function checkLocationHasItems(locationId) {
-            // TODO: 실제 구현시 API를 통해 확인
+            // TODO: ?ㅼ젣 援ы쁽??API瑜??듯빐 ?뺤씤
             return false;
         }
         
-        // 메시지 표시
+        // 硫붿떆吏 ?쒖떆
         function showMessage(text, type) {
             const messageEl = document.getElementById('message');
             messageEl.textContent = text;
@@ -420,9 +420,9 @@
             }, 3000);
         }
         
-        // 위치 삭제
+        // ?꾩튂 ??젣
         async function deleteLocation(id) {
-            if (!confirm('이 위치를 삭제하시겠습니까?')) return;
+            if (!confirm('???꾩튂瑜???젣?섏떆寃좎뒿?덇퉴?')) return;
             
             try {
                 const response = await fetch(`${API_URL}/locations/${id}`, {
@@ -430,18 +430,18 @@
                 });
                 
                 if (response.ok) {
-                    showMessage('위치가 삭제되었습니다.', 'success');
+                    showMessage('?꾩튂媛 ??젣?섏뿀?듬땲??', 'success');
                     loadLocations();
                 } else {
                     const error = await response.json();
-                    showMessage(error.message || '삭제에 실패했습니다.', 'error');
+                    showMessage(error.message || '??젣???ㅽ뙣?덉뒿?덈떎.', 'error');
                 }
             } catch (error) {
-                showMessage('서버 연결에 실패했습니다.', 'error');
+                showMessage('?쒕쾭 ?곌껐???ㅽ뙣?덉뒿?덈떎.', 'error');
             }
         }
         
-        // 폼 제출 처리
+        // ???쒖텧 泥섎━
         document.getElementById('locationForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -449,7 +449,7 @@
             const name = document.getElementById('locationName').value.trim();
             
             if (!name) {
-                showMessage('위치 이름을 입력하세요.', 'error');
+                showMessage('?꾩튂 ?대쫫???낅젰?섏꽭??', 'error');
                 return;
             }
             
@@ -470,18 +470,18 @@
                 const data = await response.json();
                 
                 if (response.ok) {
-                    showMessage('위치가 추가되었습니다!', 'success');
+                    showMessage('?꾩튂媛 異붽??섏뿀?듬땲??', 'success');
                     document.getElementById('locationForm').reset();
                     loadLocations();
                 } else {
-                    showMessage(data.error || '위치 추가에 실패했습니다.', 'error');
+                    showMessage(data.error || '?꾩튂 異붽????ㅽ뙣?덉뒿?덈떎.', 'error');
                 }
             } catch (error) {
-                showMessage('서버 연결에 실패했습니다.', 'error');
+                showMessage('?쒕쾭 ?곌껐???ㅽ뙣?덉뒿?덈떎.', 'error');
             }
         });
         
-        // 초기화
+        // 珥덇린??
         init();
     </script>
 </body>

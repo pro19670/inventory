@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>내 물건 관리 v5.1 - AI 검색 & 영수증 분석</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#667eea">
+    <title>재물관리 v5.1 - AI 검색 & 영수증 분석</title>
     <style>
         * {
             box-sizing: border-box;
@@ -935,7 +937,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>📦 내 물건 관리 시스템 <span class="version-badge">v5.1 AI & 영수증</span></h1>
+            <h1>🏠 스마트 재물관리 시스템<span class="version-badge">v5.1 AI & 영수증</span></h1>
             <div class="nav-links">
                 <a href="index-v5.html">물건 관리</a>
                 <a href="locations.html">위치 관리</a>
@@ -966,17 +968,17 @@
             </div>
             <div class="stat-card">
                 <div class="stat-number" id="searchResultCount">0</div>
-                <div class="stat-label">검색 결과</div>
+                <div class="stat-label">검색결과</div>
             </div>
         </div>
         
         <!-- 영수증 분석 섹션 -->
         <div class="receipt-section">
-            <h2 style="margin-bottom: 15px;">🧾 영수증으로 물건 추가</h2>
+            <h2 style="margin-bottom: 15px;">📄 영수증으로 물건 추가</h2>
             
             <div class="receipt-upload-area">
                 <div style="margin-bottom: 20px;">
-                    <span style="font-size: 48px;">📸</span>
+                    <span style="font-size: 48px;">📄</span>
                     <h3>영수증 사진을 업로드하세요</h3>
                     <p style="color: #666; margin-top: 10px;">영수증을 분석하여 자동으로 물건을 등록합니다</p>
                 </div>
@@ -992,7 +994,7 @@
             </div>
             
             <div id="receiptAnalyzing" style="display: none; text-align: center; padding: 20px;">
-                <div style="font-size: 24px; margin-bottom: 10px;">🔍</div>
+                <div style="font-size: 24px; margin-bottom: 10px;">🔄</div>
                 <div>영수증을 분석 중입니다...</div>
                 <div style="margin-top: 10px;">
                     <div style="display: inline-block; width: 200px; height: 4px; background: #e0e0e0; border-radius: 2px; overflow: hidden;">
@@ -1002,7 +1004,7 @@
             </div>
             
             <div id="receiptResults" style="display: none; margin-top: 20px;">
-                <h3>📋 인식된 물건들</h3>
+                <h3>🎯 인식된 물건들</h3>
                 <div id="recognizedItems" style="margin-top: 15px;"></div>
                 <div style="margin-top: 20px; text-align: center;">
                     <button onclick="addAllRecognizedItems()" style="background: #27ae60; color: white; padding: 10px 25px; border-radius: 4px; border: none; cursor: pointer; margin-right: 10px;">
@@ -1025,7 +1027,7 @@
                         <input type="text" 
                                id="aiSearchInput" 
                                class="ai-search-input" 
-                               placeholder="자연어로 검색해보세요. 예: '부엌에 뭐가 있지?' '전자제품 보여줘' '재고 부족한 물건'"
+                               placeholder="자연어로 검색해보세요! 예: '부엌에 뭐가 있어?' '전자제품 보여줘' '수고 부족한 물건'"
                                onkeypress="if(event.key==='Enter') aiSearch()">
                         <span class="ai-badge">AI</span>
                     </div>
@@ -1039,10 +1041,10 @@
                 <div id="aiSearchExamples" class="search-examples">
                     <span>예시:</span>
                     <button class="example-btn" onclick="setAISearchExample('부엌에 있는 물건 보여줘')">부엌 물건</button>
-                    <button class="example-btn" onclick="setAISearchExample('전자제품 몇 개 있어?')">전자제품 개수</button>
-                    <button class="example-btn" onclick="setAISearchExample('재고가 부족한 물건')">재고 부족</button>
+                    <button class="example-btn" onclick="setAISearchExample('전자제품 몇 개있어')">전자제품 개수</button>
+                    <button class="example-btn" onclick="setAISearchExample('수고가 부족한 물건')">수고 부족</button>
                     <button class="example-btn" onclick="setAISearchExample('거실에 있는 가구')">거실 가구</button>
-                    <button class="example-btn" onclick="setAISearchExample('냉장고에 뭐가 있지?')">냉장고 확인</button>
+                    <button class="example-btn" onclick="setAISearchExample('냉장고에 뭐가 있지')">냉장고 확인</button>
                 </div>
                 <div id="suggestedQueries" class="suggested-queries" style="display: none;">
                     <h4>자주 검색한 내용:</h4>
@@ -1053,12 +1055,12 @@
             
             <!-- 기존 검색 (접을 수 있게) -->
             <details>
-                <summary>📋 상세 검색 옵션</summary>
+                <summary>🔧 상세 검색 옵션</summary>
                 <div class="search-controls">
                     <input type="text" 
                            id="searchInput" 
                            class="search-input" 
-                           placeholder="물건 이름 또는 설명으로 검색..."
+                           placeholder="물건 이름 또는 키워드로 검색.."
                            onkeypress="if(event.key==='Enter') searchItems()">
                     <select id="locationFilter" class="filter-select">
                         <option value="">모든 위치</option>
@@ -1081,14 +1083,14 @@
                 <h2>물건 등록</h2>
                 
                 <div id="noLocationsMessage" class="no-locations-message" style="display: none;">
-                    ⚠️ 등록된 위치가 없습니다. 
+                    우선 등록된 위치가 없습니다. 
                     <a href="locations.html">위치 관리</a>에서 먼저 위치를 추가해주세요.
                 </div>
                 
                 <form id="itemForm">
                     <div class="form-group">
                         <label for="name">물건 이름 *</label>
-                        <input type="text" id="name" required placeholder="예: 겨울 코트">
+                        <input type="text" id="name" required placeholder="예: 검은 코트">
                     </div>
                     
                     <div class="form-group">
@@ -1105,7 +1107,7 @@
                                 <option value="">장소 선택</option>
                             </select>
                             <select id="location2" onchange="updateLocationOptions(3)" style="display:none">
-                                <option value="">세부 위치</option>
+                                <option value="">하위 위치</option>
                             </select>
                             <select id="location3" onchange="updateLocationOptions(4)" style="display:none">
                                 <option value="">구역</option>
@@ -1122,7 +1124,7 @@
                             <input type="number" id="quantity" min="1" value="1">
                             <select id="unit">
                                 <option value="개">개</option>
-                                <option value="벌">벌</option>
+                                <option value="번">번</option>
                                 <option value="권">권</option>
                                 <option value="병">병</option>
                                 <option value="박스">박스</option>
@@ -1173,7 +1175,25 @@
     </div>
 
     <script>
-        const API_URL = 'http://localhost:3001/api';
+        // ⭐ API URL 설정 - GitHub Pages 배포 대응
+        var API_URL = (function() {
+            var hostname = window.location.hostname;
+            var protocol = window.location.protocol;
+            
+            // GitHub Pages에서 호출 시 -> Render API 사용
+            if (hostname.endsWith('github.io')) {
+                return 'https://inventory.onrender.com/api';
+            }
+            
+            // 로컬 개발 환경
+            if (hostname === 'localhost' || hostname === '127.0.0.1') {
+                return protocol + '//' + hostname + ':3001/api';
+            }
+            
+            // 기본값
+            return 'https://inventory.onrender.com/api';
+        })();
+
         let allLocations = [];
         let allCategories = [];
         let allItems = [];
@@ -1186,7 +1206,7 @@
         let recognition = null;
         let recognizedItems = [];
         
-        // 페이지 로드시 초기화
+        // 페이지 로드 시 초기화
         async function init() {
             await loadCategories();
             await loadLocations();
@@ -1258,7 +1278,7 @@
             container.innerHTML = `
                 <div style="margin-bottom: 15px; text-align: right;">
                     <button onclick="addNewReceiptItem()" style="background: #4CAF50; color: white; padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer;">
-                        ➕ 새 항목 추가
+                        + 새 항목 추가
                     </button>
                 </div>
             ` + items.map((item, index) => `
@@ -1473,7 +1493,7 @@
             const responseDiv = document.getElementById('aiResponse');
             responseDiv.style.display = 'block';
             responseDiv.className = 'ai-response thinking';
-            responseDiv.innerHTML = '🤔 생각 중...';
+            responseDiv.innerHTML = '🤖 생각 중...';
             
             try {
                 const response = await fetch(API_URL + '/ai-search', {
@@ -1490,14 +1510,14 @@
                     responseDiv.className = 'ai-response';
                     responseDiv.innerHTML = `
                         <div style="margin-bottom: 10px;">
-                            <strong>🤖 AI 응답:</strong> ${data.aiResponse}
+                            <strong>🤖 AI 답변:</strong> ${data.aiResponse}
                         </div>
                         ${data.interpretation ? `
                             <div class="interpretation-box">
-                                <strong>이해한 내용:</strong>
-                                ${data.interpretation.locations.length > 0 ? `<br>📍 위치: ${data.interpretation.locations.join(', ')}` : ''}
-                                ${data.interpretation.categories.length > 0 ? `<br>📂 카테고리: ${data.interpretation.categories.join(', ')}` : ''}
-                                ${data.interpretation.keywords.length > 0 ? `<br>🔑 키워드: ${data.interpretation.keywords.join(', ')}` : ''}
+                                <strong>해석된 내용:</strong>
+                                ${data.interpretation.locations.length > 0 ? `<br>🏠 위치: ${data.interpretation.locations.join(', ')}` : ''}
+                                ${data.interpretation.categories.length > 0 ? `<br>🏷️ 카테고리: ${data.interpretation.categories.join(', ')}` : ''}
+                                ${data.interpretation.keywords.length > 0 ? `<br>🔍 키워드: ${data.interpretation.keywords.join(', ')}` : ''}
                                 ${data.interpretation.quantity ? `<br>📊 수량 조건: ${
                                     data.interpretation.quantity.operator === 'low' ? '부족' :
                                     data.interpretation.quantity.operator === 'high' ? '충분' :
@@ -1514,13 +1534,13 @@
                     
                     const resultsDiv = document.getElementById('searchResults');
                     resultsDiv.style.display = 'block';
-                    resultsDiv.textContent = `AI 검색 결과: ${data.count}개 물건 발견`;
+                    resultsDiv.textContent = `AI 검색결과: ${data.count}개 물건 발견`;
                     
                     updateSearchSuccess(query, data.count > 0);
                 }
             } catch (error) {
                 responseDiv.className = 'ai-response';
-                responseDiv.innerHTML = '❌ 검색 중 오류가 발생했습니다.';
+                responseDiv.innerHTML = 'AI 검색 중 오류가 발생했습니다.';
                 console.error('AI 검색 오류:', error);
             }
         }
@@ -1695,7 +1715,7 @@
             
             const children = allLocations.filter(loc => loc.parentId === location.id);
             children.forEach(child => {
-                addLocationToFilter(child, prefix + '　');
+                addLocationToFilter(child, prefix + '└ ');
             });
         }
         
@@ -1728,7 +1748,7 @@
                 const resultsDiv = document.getElementById('searchResults');
                 if (searchQuery || locationId || categoryId) {
                     resultsDiv.style.display = 'block';
-                    let message = `검색 결과: ${data.count}개`;
+                    let message = `검색결과: ${data.count}개`;
                     if (searchQuery) message += ` (검색어: "${searchQuery}")`;
                     if (locationId) {
                         const location = allLocations.find(loc => loc.id == locationId);
@@ -1833,7 +1853,7 @@
             }
         }
         
-        // 텍스트 하이라이트
+        // 텍스트 하이라이팅
         function highlightText(text, query) {
             if (!query || !text) return text;
             const regex = new RegExp('(' + query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
@@ -1846,7 +1866,7 @@
             
             if (allItems.length === 0) {
                 if (currentSearchQuery || currentLocationFilter || currentCategoryFilter) {
-                    itemsEl.innerHTML = '<div class="no-results">검색 결과가 없습니다.</div>';
+                    itemsEl.innerHTML = '<div class="no-results">검색결과가 없습니다.</div>';
                 } else {
                     itemsEl.innerHTML = '<p style="text-align: center; color: #7f8c8d;">등록된 물건이 없습니다.</p>';
                 }
@@ -1885,7 +1905,7 @@
                                 <div style="margin: 5px 0;">
                                     ${categoryBadge}
                                 </div>
-                                <div class="item-location">📍 ${item.locationName || '위치 미지정'}</div>
+                                <div class="item-location">📍 ${item.locationName || '위치 미설정'}</div>
                             </div>
                             <div class="item-quantity">${item.quantity} ${item.unit}</div>
                         </div>
@@ -1958,7 +1978,7 @@
             
             await loadItemImages(currentModalItemId);
             loadItems();
-            showMessage('이미지가 추가되었습니다.', 'success');
+            showMessage('이미지가 추가되었습니다!', 'success');
         }
         
         // 이미지 삭제
@@ -1973,7 +1993,7 @@
                 if (response.ok) {
                     await loadItemImages(currentModalItemId);
                     loadItems();
-                    showMessage('이미지가 삭제되었습니다.', 'success');
+                    showMessage('이미지가 삭제되었습니다!', 'success');
                 }
             } catch (error) {
                 console.error('이미지 삭제 실패:', error);
@@ -2001,7 +2021,7 @@
         
         // 물건 삭제
         async function deleteItem(id) {
-            if (!confirm('정말 삭제하시겠습니까? 관련 이미지도 모두 삭제됩니다.')) return;
+            if (!confirm('정말 삭제하시겠습니까? 관련 이미지도 모두 삭제됩니다!')) return;
             
             try {
                 const response = await fetch(`${API_URL}/items/${id}`, {
@@ -2009,7 +2029,7 @@
                 });
                 
                 if (response.ok) {
-                    showMessage('물건이 삭제되었습니다.', 'success');
+                    showMessage('물건이 삭제되었습니다!', 'success');
                     if (currentSearchQuery || currentLocationFilter || currentCategoryFilter) {
                         searchItems();
                     } else {
@@ -2113,12 +2133,26 @@
             }
         });
         
-        // Enter 키로 검색
+        // Enter로 검색
         document.getElementById('searchInput').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 searchItems();
             }
         });
+        
+        // ⭐ Service Worker 등록
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(registration => {
+                        console.log('SW 등록 성공:', registration);
+                        console.log('Scope:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('SW 등록 실패:', error);
+                    });
+            });
+        }
         
         // 초기화
         init();

@@ -1,11 +1,11 @@
-# PowerShell에서
+# PowerShell?먯꽌
 @'
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>내 물건 관리</title>
+    <title>??臾쇨굔 愿由?/title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -116,36 +116,36 @@
 </head>
 <body>
     <div class="container">
-        <h1>내 물건 관리</h1>
+        <h1>??臾쇨굔 愿由?/h1>
         
         <div class="nav-links">
-            <a href="index.html">물건 관리</a>
-            <a href="upload.html">이미지 업로드</a>
+            <a href="index.html">臾쇨굔 愿由?/a>
+            <a href="upload.html">?대?吏 ?낅줈??/a>
         </div>
         
         <div id="message" class="message"></div>
         
         <form id="itemForm">
             <div class="form-group">
-                <label for="name">물건 이름</label>
+                <label for="name">臾쇨굔 ?대쫫</label>
                 <input type="text" id="name" required>
             </div>
             
             <div class="form-group">
-                <label for="location">위치</label>
-                <input type="text" id="location" placeholder="예: 거실 책장">
+                <label for="location">?꾩튂</label>
+                <input type="text" id="location" placeholder="?? 嫄곗떎 梨낆옣">
             </div>
             
             <div class="form-group">
-                <label for="description">설명</label>
-                <textarea id="description" rows="3" placeholder="물건에 대한 설명을 입력하세요"></textarea>
+                <label for="description">?ㅻ챸</label>
+                <textarea id="description" rows="3" placeholder="臾쇨굔??????ㅻ챸???낅젰?섏꽭??></textarea>
             </div>
             
-            <button type="submit">물건 추가</button>
+            <button type="submit">臾쇨굔 異붽?</button>
         </form>
         
         <div class="item-list">
-            <h2>내 물건 목록</h2>
+            <h2>??臾쇨굔 紐⑸줉</h2>
             <div id="items"></div>
         </div>
     </div>
@@ -153,7 +153,7 @@
     <script>
         const API_URL = 'http://localhost:3001/api';
         
-        // 메시지 표시
+        // 硫붿떆吏 ?쒖떆
         function showMessage(text, type) {
             const messageEl = document.getElementById('message');
             messageEl.textContent = text;
@@ -164,7 +164,7 @@
             }, 3000);
         }
         
-        // 물건 목록 로드
+        // 臾쇨굔 紐⑸줉 濡쒕뱶
         async function loadItems() {
             try {
                 const response = await fetch(API_URL + '/items');
@@ -173,26 +173,26 @@
                 const itemsEl = document.getElementById('items');
                 
                 if (data.items.length === 0) {
-                    itemsEl.innerHTML = '<p>등록된 물건이 없습니다.</p>';
+                    itemsEl.innerHTML = '<p>?깅줉??臾쇨굔???놁뒿?덈떎.</p>';
                 } else {
                     itemsEl.innerHTML = data.items.map(item => `
                         <div class="item">
-                            <button class="delete-btn" onclick="deleteItem(${item.id})">삭제</button>
+                            <button class="delete-btn" onclick="deleteItem(${item.id})">??젣</button>
                             <h3>${item.name}</h3>
-                            <p><strong>위치:</strong> ${item.location || '미지정'}</p>
-                            <p><strong>설명:</strong> ${item.description || '설명 없음'}</p>
-                            <small>등록일: ${new Date(item.createdAt).toLocaleString()}</small>
+                            <p><strong>?꾩튂:</strong> ${item.location || '誘몄???}</p>
+                            <p><strong>?ㅻ챸:</strong> ${item.description || '?ㅻ챸 ?놁쓬'}</p>
+                            <small>?깅줉?? ${new Date(item.createdAt).toLocaleString()}</small>
                         </div>
                     `).join('');
                 }
             } catch (error) {
-                showMessage('물건 목록을 불러오는데 실패했습니다.', 'error');
+                showMessage('臾쇨굔 紐⑸줉??遺덈윭?ㅻ뒗???ㅽ뙣?덉뒿?덈떎.', 'error');
             }
         }
         
-        // 물건 삭제
+        // 臾쇨굔 ??젣
         async function deleteItem(id) {
-            if (!confirm('정말 삭제하시겠습니까?')) return;
+            if (!confirm('?뺣쭚 ??젣?섏떆寃좎뒿?덇퉴?')) return;
             
             try {
                 const response = await fetch(`${API_URL}/items/${id}`, {
@@ -200,17 +200,17 @@
                 });
                 
                 if (response.ok) {
-                    showMessage('물건이 삭제되었습니다.', 'success');
+                    showMessage('臾쇨굔????젣?섏뿀?듬땲??', 'success');
                     loadItems();
                 } else {
-                    showMessage('삭제에 실패했습니다.', 'error');
+                    showMessage('??젣???ㅽ뙣?덉뒿?덈떎.', 'error');
                 }
             } catch (error) {
-                showMessage('서버 연결에 실패했습니다.', 'error');
+                showMessage('?쒕쾭 ?곌껐???ㅽ뙣?덉뒿?덈떎.', 'error');
             }
         }
         
-        // 폼 제출 처리
+        // ???쒖텧 泥섎━
         document.getElementById('itemForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -232,18 +232,18 @@
                 const data = await response.json();
                 
                 if (response.ok) {
-                    showMessage('물건이 추가되었습니다!', 'success');
+                    showMessage('臾쇨굔??異붽??섏뿀?듬땲??', 'success');
                     document.getElementById('itemForm').reset();
                     loadItems();
                 } else {
-                    showMessage('물건 추가에 실패했습니다.', 'error');
+                    showMessage('臾쇨굔 異붽????ㅽ뙣?덉뒿?덈떎.', 'error');
                 }
             } catch (error) {
-                showMessage('서버 연결에 실패했습니다.', 'error');
+                showMessage('?쒕쾭 ?곌껐???ㅽ뙣?덉뒿?덈떎.', 'error');
             }
         });
         
-        // 페이지 로드시 물건 목록 불러오기
+        // ?섏씠吏 濡쒕뱶??臾쇨굔 紐⑸줉 遺덈윭?ㅺ린
         loadItems();
     </script>
 </body>
