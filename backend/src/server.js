@@ -1116,28 +1116,51 @@ const server = http.createServer((req, res) => {
                     // 이미지 처리
                     if (imagePart && imagePart.data && imagePart.data.length > 0) {
                         try {
+                            console.log(`이미지 파트 수신: ${imagePart.data.length} bytes, 타입: ${imagePart.contentType}`);
+                            
                             const fileExtension = getFileExtension(imagePart.filename || imagePart.contentType);
                             const filename = `item_${newItem.id}_${Date.now()}${fileExtension}`;
                             const filepath = path.join(IMAGES_DIR, filename);
                             
+                            console.log(`이미지 저장 시작: ${filepath}`);
                             // 이미지 저장
                             fs.writeFileSync(filepath, imagePart.data);
+                            console.log('이미지 파일 저장 완료');
                             
                             // 썸네일 생성
                             const thumbnailFilename = `thumb_${filename}`;
                             const thumbnailPath = path.join(THUMBNAILS_DIR, thumbnailFilename);
                             
                             try {
-                                await sharp(imagePart.data)
-                                    .resize(200, 200, { fit: 'cover' })
-                                    .jpeg({ quality: 80 })
-                                    .toFile(thumbnailPath);
+                                console.log(`이미지 처리 시작: ${filename} (${imagePart.data.length} bytes)`);
+                                
+                                // 이미지 크기 제한 (2MB)
+                                if (imagePart.data.length > 2 * 1024 * 1024) {
+                                    throw new Error('이미지 크기가 너무 큽니다 (최대 2MB)');
+                                }
+                                
+                                // 타임아웃 설정으로 Sharp 처리
+                                const processImage = () => {
+                                    return Promise.race([
+                                        sharp(imagePart.data)
+                                            .resize(200, 200, { fit: 'cover' })
+                                            .jpeg({ quality: 80 })
+                                            .toFile(thumbnailPath),
+                                        new Promise((_, reject) => 
+                                            setTimeout(() => reject(new Error('이미지 처리 타임아웃')), 10000)
+                                        )
+                                    ]);
+                                };
+                                
+                                await processImage();
+                                console.log('썸네일 생성 완료');
                                 
                                 newItem.imageUrl = `/images/${filename}`;
                                 newItem.thumbnailUrl = `/thumbnails/${thumbnailFilename}`;
                             } catch (error) {
-                                console.warn('썸네일 생성 실패:', error);
+                                console.warn('썸네일 생성 실패:', error.message);
                                 newItem.imageUrl = `/images/${filename}`;
+                                // 썸네일 실패시에도 원본 이미지는 사용
                             }
                             
                             // S3 업로드 (옵션)

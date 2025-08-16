@@ -2090,7 +2090,17 @@
                 
                 try {
                     console.log('물품 등록 요청 시작:', nameInput.value.trim());
+                    
+                    // 타임아웃 설정 (30초)
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => {
+                        controller.abort();
+                    }, 30000); // 30초 타임아웃
+                    
+                    requestOptions.signal = controller.signal;
+                    
                     const response = await fetch(`${API_URL}/items`, requestOptions);
+                    clearTimeout(timeoutId);
                     
                     console.log('서버 응답 상태:', response.status);
                     
@@ -2125,7 +2135,12 @@
                     }
                 } catch (error) {
                     console.error('저장 실패:', error);
-                    showToast(`저장에 실패했습니다: ${error.message}`);
+                    
+                    if (error.name === 'AbortError') {
+                        showToast('요청 시간이 초과되었습니다. 다시 시도해주세요.');
+                    } else {
+                        showToast(`저장에 실패했습니다: ${error.message}`);
+                    }
                 } finally {
                     hideLoading();
                 }
