@@ -1,10 +1,9 @@
-@'
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>?꾩튂 愿由?/title>
+    <title>📍 위치 관리 - 스마트 물건관리</title>
     <style>
         * {
             box-sizing: border-box;
@@ -13,203 +12,420 @@
         }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background-color: #f5f5f5;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             color: #333;
+            min-height: 100vh;
         }
         
         .container {
-            max-width: 1000px;
+            max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
         }
         
         .header {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            text-align: center;
         }
         
         .header h1 {
-            color: #2c3e50;
+            font-size: 2.5rem;
+            font-weight: 700;
             margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
         
-        .nav-links a {
-            margin-right: 15px;
-            color: #3498db;
-            text-decoration: none;
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 20px;
         }
         
-        .nav-links a:hover {
-            text-decoration: underline;
-        }
-        
-        .location-manager {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
+        .nav-links {
+            display: flex;
+            justify-content: center;
             gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .nav-link {
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+        
+        .nav-link.active {
+            background: rgba(255, 255, 255, 0.3);
+            color: white;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+            margin-bottom: 30px;
         }
         
         .section {
             background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            border: 1px solid rgba(0,0,0,0.05);
         }
         
         .section h2 {
             color: #2c3e50;
-            margin-bottom: 15px;
-            font-size: 20px;
+            margin-bottom: 25px;
+            font-size: 1.8rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .section-icon {
+            font-size: 1.5rem;
         }
         
         .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+            font-size: 1rem;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e1e8ed;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: #fff;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .form-select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e1e8ed;
+            border-radius: 12px;
+            font-size: 1rem;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .form-select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            justify-content: center;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+        }
+        
+        .btn-danger:hover {
+            box-shadow: 0 10px 25px rgba(255, 107, 107, 0.3);
+        }
+        
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 0.9rem;
+        }
+        
+        .locations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        
+        .location-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            border: 2px solid rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .location-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .location-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            border-color: rgba(102, 126, 234, 0.2);
+        }
+        
+        .location-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
             margin-bottom: 15px;
         }
         
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 600;
-            color: #555;
-        }
-        
-        input, select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-        
-        button {
-            background-color: #3498db;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-            transition: background-color 0.3s;
-        }
-        
-        button:hover {
-            background-color: #2980b9;
-        }
-        
-        .delete-btn {
-            background-color: #e74c3c;
-            padding: 5px 10px;
-            font-size: 12px;
-        }
-        
-        .delete-btn:hover {
-            background-color: #c0392b;
-        }
-        
-        .location-tree {
-            margin-top: 15px;
-            font-family: 'Courier New', monospace;
-        }
-        
-        .tree-item {
-            padding: 8px;
-            margin: 2px 0;
-            background: #f8f9fa;
-            border-radius: 4px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-left: 3px solid transparent;
-        }
-        
-        .tree-item.level-0 {
-            background: #e3f2fd;
-            font-weight: 600;
-            border-left-color: #2196f3;
-        }
-        
-        .tree-item.level-1 {
-            margin-left: 30px;
-            background: #f3e5f5;
-            border-left-color: #9c27b0;
-        }
-        
-        .tree-item.level-2 {
-            margin-left: 60px;
-            background: #fff3e0;
-            border-left-color: #ff9800;
-        }
-        
-        .tree-item.level-3 {
-            margin-left: 90px;
-            background: #e8f5e9;
-            border-left-color: #4caf50;
-        }
-        
-        .location-number {
-            font-family: 'Courier New', monospace;
-            color: #666;
-            margin-right: 10px;
-            font-weight: bold;
-        }
-        
         .location-name {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        
+        .location-type {
+            font-size: 0.9rem;
+            color: #666;
+            background: #f8f9fa;
+            padding: 4px 12px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+        
+        .location-stats {
+            display: flex;
+            gap: 15px;
+            margin: 15px 0;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .stat-item {
+            text-align: center;
             flex: 1;
         }
         
-        .location-path {
-            font-size: 12px;
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #667eea;
+            display: block;
+        }
+        
+        .stat-label {
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 2px;
+        }
+        
+        .location-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        .delete-btn {
+            background: none;
+            border: 2px solid #ff6b6b;
+            color: #ff6b6b;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .delete-btn:hover {
+            background: #ff6b6b;
+            color: white;
+        }
+        
+        .delete-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            border-color: #ccc;
+            color: #ccc;
+        }
+        
+        .delete-btn:disabled:hover {
+            background: none;
+            color: #ccc;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
             color: #666;
         }
         
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
         .message {
-            padding: 12px;
-            margin: 10px 0;
-            border-radius: 4px;
+            padding: 15px 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            font-weight: 500;
             display: none;
         }
         
-        .success {
-            background-color: #d4edda;
+        .message.success {
+            background: #d4edda;
             color: #155724;
             border: 1px solid #c3e6cb;
         }
         
-        .error {
-            background-color: #f8d7da;
+        .message.error {
+            background: #f8d7da;
             color: #721c24;
             border: 1px solid #f5c6cb;
         }
         
-        .info-box {
-            background: #e3f2fd;
-            padding: 15px;
-            border-radius: 4px;
-            margin-bottom: 15px;
-            font-size: 14px;
-            color: #1565c0;
+        .message.show {
+            display: block;
+            animation: slideIn 0.3s ease;
         }
         
-        .tree-structure {
-            background: #f5f5f5;
-            padding: 15px;
-            border-radius: 4px;
-            margin-top: 15px;
-            font-size: 14px;
-            line-height: 1.6;
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
         
-        .tree-line {
-            color: #999;
+        .quick-locations {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .quick-location-btn {
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            color: #666;
+            padding: 15px 10px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .quick-location-btn:hover {
+            background: #e9ecef;
+            border-color: #667eea;
+            color: #667eea;
+        }
+        
+        .quick-location-icon {
+            font-size: 1.2rem;
         }
         
         @media (max-width: 768px) {
-            .location-manager {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .nav-links {
+                gap: 10px;
+            }
+            
+            .nav-link {
+                padding: 6px 12px;
+                font-size: 0.9rem;
+            }
+            
+            .locations-grid {
                 grid-template-columns: 1fr;
             }
         }
@@ -217,273 +433,356 @@
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>?뱧 ?꾩튂 愿由?/h1>
-            <div class="nav-links">
-                <a href="index-v5.html">臾쇨굔 愿由?/a>
-                <a href="locations.html">?꾩튂 愿由?/a>
-                <a href="upload.html">?대?吏 ?낅줈??/a>
-            </div>
-        </div>
+        <header class="header">
+            <h1>📍 위치 관리</h1>
+            <p>집, 사무실 등 물건을 보관하는 장소를 관리하세요</p>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-link">🏠 메인</a>
+                <a href="index-mobile.html" class="nav-link">📱 모바일</a>
+                <a href="categories.html" class="nav-link">🏷️ 카테고리</a>
+                <a href="locations.html" class="nav-link active">📍 위치</a>
+                <a href="upload.html" class="nav-link">📷 업로드</a>
+            </nav>
+        </header>
         
         <div id="message" class="message"></div>
         
-        <div class="location-manager">
+        <div class="main-content">
             <div class="section">
-                <h2>???꾩튂 異붽?</h2>
+                <h2>
+                    <span class="section-icon">➕</span>
+                    새 위치 추가
+                </h2>
                 
-                <div class="info-box">
-                    ?뮕 ?꾩튂??理쒕? 4?④퀎源뚯? 留뚮뱾 ???덉뒿?덈떎.<br>
-                    ?? ?곕━吏?> ?덈갑 > ?좊컲 > ?곷떒
+                <div class="form-group">
+                    <label>빠른 추가</label>
+                    <div class="quick-locations">
+                        <button class="quick-location-btn" onclick="quickAddLocation('집', '🏠')">
+                            <span class="quick-location-icon">🏠</span>
+                            집
+                        </button>
+                        <button class="quick-location-btn" onclick="quickAddLocation('사무실', '🏢')">
+                            <span class="quick-location-icon">🏢</span>
+                            사무실
+                        </button>
+                        <button class="quick-location-btn" onclick="quickAddLocation('차고', '🚗')">
+                            <span class="quick-location-icon">🚗</span>
+                            차고
+                        </button>
+                        <button class="quick-location-btn" onclick="quickAddLocation('창고', '📦')">
+                            <span class="quick-location-icon">📦</span>
+                            창고
+                        </button>
+                        <button class="quick-location-btn" onclick="quickAddLocation('지하실', '🏠')">
+                            <span class="quick-location-icon">🏠</span>
+                            지하실
+                        </button>
+                        <button class="quick-location-btn" onclick="quickAddLocation('다락방', '🏠')">
+                            <span class="quick-location-icon">🏠</span>
+                            다락방
+                        </button>
+                    </div>
                 </div>
                 
                 <form id="locationForm">
                     <div class="form-group">
-                        <label for="parentLocation">?곸쐞 ?꾩튂</label>
-                        <select id="parentLocation">
-                            <option value="">理쒖긽???꾩튂濡?異붽?</option>
-                        </select>
+                        <label for="locationName">위치 이름 *</label>
+                        <input type="text" id="locationName" class="form-input" required 
+                               placeholder="예: 우리집 거실, 회사 회의실">
                     </div>
                     
                     <div class="form-group">
-                        <label for="locationName">?꾩튂 ?대쫫 *</label>
-                        <input type="text" id="locationName" required placeholder="?? ?곕━吏? ?덈갑, ?좊컲, ?곷떒 ??>
+                        <label for="parentLocation">상위 위치 (선택사항)</label>
+                        <select id="parentLocation" class="form-select">
+                            <option value="">-- 상위 위치 없음 --</option>
+                        </select>
+                        <small style="color: #666; font-size: 0.9rem;">
+                            예: "거실"의 상위 위치는 "집"
+                        </small>
                     </div>
                     
-                    <button type="submit">?꾩튂 異붽?</button>
+                    <button type="submit" class="btn">
+                        ➕ 위치 추가하기
+                    </button>
                 </form>
             </div>
             
             <div class="section">
-                <h2>?깅줉???꾩튂 紐⑸줉</h2>
-                <div id="locationTree" class="location-tree"></div>
+                <h2>
+                    <span class="section-icon">📋</span>
+                    위치 목록
+                </h2>
+                <div id="locationsList" class="locations-grid">
+                    <div class="loading">
+                        <div class="loading-spinner"></div>
+                        <p>위치 목록을 불러오는 중...</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-
+    
     <script>
-        const API_URL = 'https://3001-i72krmbsmpnff1c7v14w6-6532622b.e2b.dev/api';
-        let allLocations = [];
-        let locationNumbers = {};
+        // API URL 자동 감지
+        const API_URL = (function() {
+            const hostname = window.location.hostname;
+            const protocol = window.location.protocol;
+            
+            // E2B Sandbox 환경
+            if (hostname.includes('e2b.dev')) {
+                return 'https://3001-i72krmbsmpnff1c7v14w6-6532622b.e2b.dev/api';
+            }
+            
+            // GitHub Pages
+            if (hostname.endsWith('github.io')) {
+                return 'https://3001-i72krmbsmpnff1c7v14w6-6532622b.e2b.dev/api';
+            }
+            
+            // 로컬 개발 환경
+            if (hostname === 'localhost' || hostname === '127.0.0.1') {
+                return protocol + '//' + hostname + ':3001/api';
+            }
+            
+            // 기본값
+            return 'https://3001-i72krmbsmpnff1c7v14w6-6532622b.e2b.dev/api';
+        })();
         
-        // ?섏씠吏 濡쒕뱶??珥덇린??
+        // 앱 상태
+        let appData = {
+            locations: [],
+            items: [],
+            isOnline: false
+        };
+        
+        // 초기화
         async function init() {
-            await loadLocations();
-        }
-        
-        // ?꾩튂 ?곗씠??濡쒕뱶
-        async function loadLocations() {
             try {
-                const response = await fetch(API_URL + '/locations');
-                const data = await response.json();
-                allLocations = data.locations;
-                assignLocationNumbers();
-                updateParentLocationOptions();
-                renderLocationTree();
+                await loadAllData();
+                updateUI();
+                setupEventListeners();
             } catch (error) {
-                showMessage('?꾩튂 紐⑸줉??遺덈윭?ㅻ뒗???ㅽ뙣?덉뒿?덈떎.', 'error');
+                console.error('초기화 실패:', error);
+                showMessage('앱 초기화에 실패했습니다.', 'error');
             }
         }
         
-        // ?꾩튂 踰덊샇 ?좊떦
-        function assignLocationNumbers() {
-            locationNumbers = {};
-            
-            // 理쒖긽???꾩튂??
-            const rootLocations = allLocations.filter(loc => !loc.parentId);
-            rootLocations.sort((a, b) => a.id - b.id);
-            
-            rootLocations.forEach((root, index) => {
-                const rootNumber = (index + 1).toString();
-                locationNumbers[root.id] = rootNumber;
-                assignChildNumbers(root.id, rootNumber);
-            });
-        }
-        
-        // ?섏쐞 ?꾩튂 踰덊샇 ?좊떦 (?ш?)
-        function assignChildNumbers(parentId, parentNumber) {
-            const children = allLocations.filter(loc => loc.parentId === parentId);
-            children.sort((a, b) => a.id - b.id);
-            
-            children.forEach((child, index) => {
-                const childNumber = parentNumber + '.' + (index + 1);
-                locationNumbers[child.id] = childNumber;
-                assignChildNumbers(child.id, childNumber);
-            });
-        }
-        
-        // ?곸쐞 ?꾩튂 ?듭뀡 ?낅뜲?댄듃
-        function updateParentLocationOptions() {
-            const select = document.getElementById('parentLocation');
-            select.innerHTML = '<option value="">理쒖긽???꾩튂濡?異붽?</option>';
-            
-            // 3?④퀎 誘몃쭔???꾩튂留??곸쐞 ?꾩튂濡??좏깮 媛??
-            const selectableLocations = allLocations.filter(loc => loc.level < 3);
-            
-            selectableLocations.forEach(loc => {
-                const option = document.createElement('option');
-                option.value = loc.id;
-                const number = locationNumbers[loc.id] || '';
-                const path = getLocationFullPath(loc.id);
-                option.textContent = number ? `${number}. ${path}` : path;
-                select.appendChild(option);
-            });
-        }
-        
-        // ?꾩튂???꾩껜 寃쎈줈 媛?몄삤湲?
-        function getLocationFullPath(locationId) {
-            const location = allLocations.find(loc => loc.id === locationId);
-            if (!location) return '';
-            
-            const path = [location.name];
-            let currentLocation = location;
-            
-            while (currentLocation.parentId) {
-                const parent = allLocations.find(loc => loc.id === currentLocation.parentId);
-                if (parent) {
-                    path.unshift(parent.name);
-                    currentLocation = parent;
-                } else {
-                    break;
-                }
-            }
-            
-            return path.join(' > ');
-        }
-        
-        // ?꾩튂 ?몃━ ?뚮뜑留?
-        function renderLocationTree() {
-            const treeEl = document.getElementById('locationTree');
-            
-            if (allLocations.length === 0) {
-                treeEl.innerHTML = '<p style="text-align: center; color: #7f8c8d;">?깅줉???꾩튂媛 ?놁뒿?덈떎.</p>';
-                return;
-            }
-            
-            // ?몃━ 援ъ“濡??뺣젹
-            const rootLocations = allLocations.filter(loc => !loc.parentId);
-            rootLocations.sort((a, b) => a.id - b.id);
-            
-            let html = '<div class="tree-structure">';
-            rootLocations.forEach(root => {
-                html += renderLocationNode(root, '');
-            });
-            html += '</div>';
-            
-            treeEl.innerHTML = html;
-        }
-        
-        // ?꾩튂 ?몃뱶 ?뚮뜑留?(?ш?)
-        function renderLocationNode(location, prefix) {
-            const children = allLocations.filter(loc => loc.parentId === location.id);
-            children.sort((a, b) => a.id - b.id);
-            const hasItems = checkLocationHasItems(location.id);
-            const number = locationNumbers[location.id] || '';
-            
-            let html = `
-                <div class="tree-item level-${location.level}">
-                    <div class="location-name">
-                        <span class="location-number">${number}</span>
-                        <strong>${location.name}</strong>
-                        ${hasItems ? '<span class="location-path"> (臾쇨굔 ?덉쓬)</span>' : ''}
-                    </div>
-                    <button class="delete-btn" onclick="deleteLocation(${location.id})" 
-                        ${hasItems || children.length > 0 ? 'disabled title="?섏쐞 ?꾩튂??臾쇨굔???덉뼱 ??젣?????놁뒿?덈떎"' : ''}>
-                        ??젣
-                    </button>
-                </div>
-            `;
-            
-            // ?섏쐞 ?꾩튂???뚮뜑留?
-            children.forEach((child, index) => {
-                const isLast = index === children.length - 1;
-                html += renderLocationNode(child, prefix + (isLast ? '  ' : '??'));
-            });
-            
-            return html;
-        }
-        
-        // ?꾩튂??臾쇨굔???덈뒗吏 ?뺤씤 (?ㅼ젣濡쒕뒗 API ?몄텧 ?꾩슂)
-        function checkLocationHasItems(locationId) {
-            // TODO: ?ㅼ젣 援ы쁽??API瑜??듯빐 ?뺤씤
-            return false;
-        }
-        
-        // 硫붿떆吏 ?쒖떆
-        function showMessage(text, type) {
-            const messageEl = document.getElementById('message');
-            messageEl.textContent = text;
-            messageEl.className = 'message ' + type;
-            messageEl.style.display = 'block';
-            setTimeout(() => {
-                messageEl.style.display = 'none';
-            }, 3000);
-        }
-        
-        // ?꾩튂 ??젣
-        async function deleteLocation(id) {
-            if (!confirm('???꾩튂瑜???젣?섏떆寃좎뒿?덇퉴?')) return;
-            
+        // 모든 데이터 로드
+        async function loadAllData() {
             try {
-                const response = await fetch(`${API_URL}/locations/${id}`, {
-                    method: 'DELETE'
-                });
+                const [locationsRes, itemsRes] = await Promise.all([
+                    fetch(`${API_URL}/locations`),
+                    fetch(`${API_URL}/items`)
+                ]);
                 
-                if (response.ok) {
-                    showMessage('?꾩튂媛 ??젣?섏뿀?듬땲??', 'success');
-                    loadLocations();
-                } else {
-                    const error = await response.json();
-                    showMessage(error.message || '??젣???ㅽ뙣?덉뒿?덈떎.', 'error');
+                if (locationsRes.ok) {
+                    const locationsData = await locationsRes.json();
+                    appData.locations = locationsData.locations || [];
+                    appData.isOnline = true;
                 }
+                
+                if (itemsRes.ok) {
+                    const itemsData = await itemsRes.json();
+                    appData.items = itemsData.items || [];
+                }
+                
             } catch (error) {
-                showMessage('?쒕쾭 ?곌껐???ㅽ뙣?덉뒿?덈떎.', 'error');
+                console.error('데이터 로드 실패:', error);
+                appData.isOnline = false;
+                showMessage('서버에 연결할 수 없습니다.', 'error');
             }
         }
         
-        // ???쒖텧 泥섎━
-        document.getElementById('locationForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
+        // UI 업데이트
+        function updateUI() {
+            updateLocationsList();
+            updateParentSelect();
+        }
+        
+        // 위치 목록 업데이트
+        function updateLocationsList() {
+            const container = document.getElementById('locationsList');
             
-            const parentId = document.getElementById('parentLocation').value;
-            const name = document.getElementById('locationName').value.trim();
-            
-            if (!name) {
-                showMessage('?꾩튂 ?대쫫???낅젰?섏꽭??', 'error');
+            if (!appData.isOnline) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-icon">🔌</div><h3>오프라인 상태</h3><p>서버에 연결할 수 없습니다.</p></div>';
                 return;
             }
             
-            const formData = {
-                name: name,
-                parentId: parentId ? parseInt(parentId) : null
-            };
+            if (appData.locations.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📍</div>
+                        <h3>등록된 위치가 없습니다</h3>
+                        <p>왼쪽에서 새 위치를 추가해보세요!</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const locationsHtml = appData.locations.map(location => {
+                // 해당 위치에 있는 물건 수 계산
+                const itemCount = appData.items.filter(item => item.locationId === location.id).length;
+                
+                // 하위 위치 수 계산
+                const subLocations = appData.locations.filter(loc => loc.parentId === location.id).length;
+                
+                return `
+                    <div class="location-card">
+                        <div class="location-header">
+                            <div>
+                                <div class="location-name">${location.name}</div>
+                                <div class="location-type">
+                                    ${location.level === 0 ? '최상위 위치' : '하위 위치'}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="location-stats">
+                            <div class="stat-item">
+                                <span class="stat-number">${itemCount}</span>
+                                <span class="stat-label">물건</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number">${subLocations}</span>
+                                <span class="stat-label">하위 위치</span>
+                            </div>
+                        </div>
+                        
+                        <div class="location-actions">
+                            <button class="delete-btn" 
+                                    onclick="deleteLocation(${location.id}, '${location.name}')"
+                                    ${itemCount > 0 ? 'disabled title="이 위치에 물건이 있어서 삭제할 수 없습니다"' : ''}>
+                                🗑️ 삭제
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            container.innerHTML = locationsHtml;
+        }
+        
+        // 상위 위치 선택 업데이트
+        function updateParentSelect() {
+            const select = document.getElementById('parentLocation');
+            const currentOptions = select.innerHTML;
+            
+            const topLevelLocations = appData.locations.filter(loc => loc.level === 0);
+            
+            select.innerHTML = '<option value="">-- 상위 위치 없음 --</option>' + 
+                topLevelLocations.map(location => 
+                    `<option value="${location.id}">${location.name}</option>`
+                ).join('');
+        }
+        
+        // 빠른 위치 추가
+        function quickAddLocation(name, icon) {
+            document.getElementById('locationName').value = name;
+            document.getElementById('locationName').focus();
+        }
+        
+        // 위치 추가
+        async function addLocation(name, parentId = null) {
+            if (!appData.isOnline) {
+                showMessage('오프라인 상태에서는 위치를 추가할 수 없습니다.', 'error');
+                return false;
+            }
             
             try {
-                const response = await fetch(API_URL + '/locations', {
+                const response = await fetch(`${API_URL}/locations`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify(formData)
+                    body: JSON.stringify({
+                        name: name.trim(),
+                        parentId: parentId || null
+                    })
                 });
                 
                 const data = await response.json();
                 
-                if (response.ok) {
-                    showMessage('?꾩튂媛 異붽??섏뿀?듬땲??', 'success');
-                    document.getElementById('locationForm').reset();
-                    loadLocations();
+                if (data.success) {
+                    showMessage(`"${name}" 위치가 추가되었습니다!`, 'success');
+                    await loadAllData();
+                    updateUI();
+                    return true;
                 } else {
-                    showMessage(data.error || '?꾩튂 異붽????ㅽ뙣?덉뒿?덈떎.', 'error');
+                    showMessage(data.error || '위치 추가에 실패했습니다.', 'error');
+                    return false;
                 }
             } catch (error) {
-                showMessage('?쒕쾭 ?곌껐???ㅽ뙣?덉뒿?덈떎.', 'error');
+                console.error('위치 추가 실패:', error);
+                showMessage('위치 추가 중 오류가 발생했습니다.', 'error');
+                return false;
             }
-        });
+        }
         
-        // 珥덇린??
-        init();
+        // 위치 삭제
+        async function deleteLocation(locationId, locationName) {
+            if (!confirm(`"${locationName}" 위치를 정말 삭제하시겠습니까?`)) {
+                return;
+            }
+            
+            if (!appData.isOnline) {
+                showMessage('오프라인 상태에서는 위치를 삭제할 수 없습니다.', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/locations/${locationId}`, {
+                    method: 'DELETE'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage(`"${locationName}" 위치가 삭제되었습니다.`, 'success');
+                    await loadAllData();
+                    updateUI();
+                } else {
+                    showMessage(data.error || '위치 삭제에 실패했습니다.', 'error');
+                }
+            } catch (error) {
+                console.error('위치 삭제 실패:', error);
+                showMessage('위치 삭제 중 오류가 발생했습니다.', 'error');
+            }
+        }
+        
+        // 이벤트 리스너 설정
+        function setupEventListeners() {
+            // 위치 추가 폼 제출
+            document.getElementById('locationForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const name = document.getElementById('locationName').value.trim();
+                const parentId = document.getElementById('parentLocation').value || null;
+                
+                if (!name) {
+                    showMessage('위치 이름을 입력해주세요.', 'error');
+                    return;
+                }
+                
+                const success = await addLocation(name, parentId);
+                if (success) {
+                    // 폼 초기화
+                    document.getElementById('locationForm').reset();
+                }
+            });
+        }
+        
+        // 메시지 표시
+        function showMessage(text, type) {
+            const messageEl = document.getElementById('message');
+            messageEl.textContent = text;
+            messageEl.className = `message ${type} show`;
+            
+            setTimeout(() => {
+                messageEl.classList.remove('show');
+            }, 5000);
+        }
+        
+        // 페이지 로드 시 초기화
+        document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>
-'@ | Out-File -FilePath frontend\locations.html -Encoding UTF8

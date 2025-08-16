@@ -860,6 +860,76 @@ const server = http.createServer((req, res) => {
             }
         });
     }
+    // 위치 삭제
+    else if (pathname.match(/^\/api\/locations\/(\d+)$/) && method === 'DELETE') {
+        const locationId = parseInt(pathname.split('/')[3]);
+        
+        try {
+            // 해당 위치를 사용하는 물건이 있는지 확인
+            const itemsUsingLocation = items.filter(item => item.locationId === locationId);
+            
+            if (itemsUsingLocation.length > 0) {
+                sendErrorResponse(res, 400, `이 위치에 ${itemsUsingLocation.length}개의 물건이 있습니다. 먼저 물건을 다른 곳으로 이동해주세요.`);
+                return;
+            }
+            
+            // 위치 삭제
+            const locationIndex = locations.findIndex(location => location.id === locationId);
+            
+            if (locationIndex === -1) {
+                sendErrorResponse(res, 404, 'Location not found');
+                return;
+            }
+            
+            const deletedLocation = locations.splice(locationIndex, 1)[0];
+            scheduleSave();
+            
+            sendJsonResponse(res, 200, {
+                success: true,
+                message: 'Location deleted successfully',
+                deletedLocation: deletedLocation
+            });
+            
+        } catch (error) {
+            console.error('위치 삭제 실패:', error);
+            sendErrorResponse(res, 500, 'Failed to delete location');
+        }
+    }
+    // 카테고리 삭제
+    else if (pathname.match(/^\/api\/categories\/(\d+)$/) && method === 'DELETE') {
+        const categoryId = parseInt(pathname.split('/')[3]);
+        
+        try {
+            // 해당 카테고리를 사용하는 물건이 있는지 확인
+            const itemsUsingCategory = items.filter(item => item.categoryId === categoryId);
+            
+            if (itemsUsingCategory.length > 0) {
+                sendErrorResponse(res, 400, `이 카테고리에 ${itemsUsingCategory.length}개의 물건이 있습니다. 먼저 물건의 카테고리를 변경해주세요.`);
+                return;
+            }
+            
+            // 카테고리 삭제
+            const categoryIndex = categories.findIndex(category => category.id === categoryId);
+            
+            if (categoryIndex === -1) {
+                sendErrorResponse(res, 404, 'Category not found');
+                return;
+            }
+            
+            const deletedCategory = categories.splice(categoryIndex, 1)[0];
+            scheduleSave();
+            
+            sendJsonResponse(res, 200, {
+                success: true,
+                message: 'Category deleted successfully',
+                deletedCategory: deletedCategory
+            });
+            
+        } catch (error) {
+            console.error('카테고리 삭제 실패:', error);
+            sendErrorResponse(res, 500, 'Failed to delete category');
+        }
+    }
     // AI 자연어 검색
     else if (pathname === '/api/ai-search' && method === 'POST') {
         let body = '';
