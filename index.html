@@ -809,6 +809,51 @@
         .chat-messages::-webkit-scrollbar-thumb:hover {
             background: #a8a8a8;
         }
+        
+        /* 타이핑 표시 애니메이션 */
+        .typing-indicator {
+            opacity: 0.8;
+        }
+        
+        .typing-dots {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 12px 16px !important;
+        }
+        
+        .typing-dots span {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #999;
+            animation: typing 1.4s infinite;
+        }
+        
+        .typing-dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .typing-dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+                opacity: 0.4;
+            }
+            30% {
+                transform: translateY(-10px);
+                opacity: 1;
+            }
+        }
+        
+        /* 비활성화된 입력 필드 */
+        .chat-input:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
@@ -1205,7 +1250,7 @@
         let chatHistory = JSON.parse(localStorage.getItem('chatHistory') || '[]');
         
         // 메시지 전송
-        function sendMessage() {
+        async function sendMessage() {
             const input = document.getElementById('chatInput');
             const message = input.value.trim();
             
@@ -1215,11 +1260,62 @@
             addMessage(message, 'user');
             input.value = '';
             
-            // 봇 응답 처리
-            setTimeout(() => {
-                const botResponse = generateBotResponse(message);
+            // 입력 비활성화 및 로딩 표시
+            input.disabled = true;
+            
+            // 타이핑 표시 추가
+            const typingId = addTypingIndicator();
+            
+            try {
+                // 봇 응답 처리
+                const botResponse = await generateBotResponse(message);
+                
+                // 타이핑 표시 제거
+                removeTypingIndicator(typingId);
+                
+                // 봇 응답 추가
                 addMessage(botResponse, 'bot');
-            }, 500);
+                
+            } catch (error) {
+                console.error('메시지 전송 오류:', error);
+                removeTypingIndicator(typingId);
+                addMessage('죄송해요, 응답 중 오류가 발생했습니다. 다시 시도해주세요. 😅', 'bot');
+            } finally {
+                // 입력 다시 활성화
+                input.disabled = false;
+                input.focus();
+            }
+        }
+        
+        // 타이핑 표시 추가
+        function addTypingIndicator() {
+            const messagesContainer = document.getElementById('chatMessages');
+            const typingElement = document.createElement('div');
+            const typingId = 'typing-' + Date.now();
+            typingElement.id = typingId;
+            typingElement.className = 'message bot-message typing-indicator';
+            
+            typingElement.innerHTML = `
+                <div class="message-avatar">🤖</div>
+                <div class="message-content">
+                    <div class="message-bubble typing-dots">
+                        <span></span><span></span><span></span>
+                    </div>
+                </div>
+            `;
+            
+            messagesContainer.appendChild(typingElement);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            
+            return typingId;
+        }
+        
+        // 타이핑 표시 제거
+        function removeTypingIndicator(typingId) {
+            const typingElement = document.getElementById(typingId);
+            if (typingElement) {
+                typingElement.remove();
+            }
         }
         
         // 빠른 메시지 전송
@@ -1263,50 +1359,58 @@
             localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
         }
         
-        // 봇 응답 생성
-        function generateBotResponse(userMessage) {
+        // 봇 응답 생성 (API 호출)
+        async function generateBotResponse(userMessage) {
+            try {
+                // 백엔드 챗봇 API 호출
+                const response = await fetch(`${API_URL}/chatbot`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: userMessage
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        return data.response;
+                    }
+                }
+                
+                // API 실패 시 대체 응답
+                throw new Error('API 응답 실패');
+                
+            } catch (error) {
+                console.error('챗봇 API 오류:', error);
+                
+                // 오프라인 또는 API 실패 시 기본 응답
+                return generateFallbackResponse(userMessage);
+            }
+        }
+        
+        // API 실패 시 대체 응답
+        function generateFallbackResponse(userMessage) {
             const message = userMessage.toLowerCase();
             
-            // 재고 관련 질문
+            // 기본적인 키워드 기반 응답
             if (message.includes('재고') || message.includes('현황')) {
                 const totalItems = appState.items ? appState.items.length : 0;
                 const totalQuantity = appState.items ? appState.items.reduce((sum, item) => sum + (item.quantity || 0), 0) : 0;
-                return `📊 현재 재고 현황입니다:<br><br>• 전체 물품: ${totalItems}개<br>• 총 수량: ${totalQuantity}개<br><br>자세한 재고 관리는 하단의 '재고관리' 메뉴를 이용해주세요!`;
+                return `📊 현재 재고 현황:<br>• 전체 물품: ${totalItems}개<br>• 총 수량: ${totalQuantity}개<br><br>자세한 정보는 '재고관리' 메뉴를 확인해주세요!`;
             }
             
-            // 물건 추가 관련
-            if (message.includes('물건') && (message.includes('추가') || message.includes('등록'))) {
-                return `➕ 새 물건을 등록하시려면:<br><br>1. 우측 하단의 ➕ 버튼을 클릭<br>2. '📝 새 물건 등록' 선택<br>3. 물건 정보를 입력해주세요<br><br>물건명, 카테고리, 위치, 수량 등을 설정할 수 있어요!`;
+            if (message.includes('안녕') || message.includes('hi')) {
+                return `안녕하세요! 😊 물품관리 도우미입니다.<br>현재 오프라인 모드로 제한적인 응답만 가능합니다.<br><br>기본적인 질문은 언제든 해주세요!`;
             }
             
-            // 사용 등록 관련
-            if (message.includes('사용') && message.includes('등록')) {
-                return `📝 물건 사용을 등록하시려면:<br><br>1. '재고관리' 메뉴로 이동<br>2. '출고' 기능을 이용<br>3. 사용할 물건과 수량을 선택<br><br>또는 우측 하단 ➕ 버튼에서 빠른 등록도 가능해요!`;
+            if (message.includes('도움') || message.includes('help')) {
+                return `❓ 기본 사용법:<br><br>📦 재고관리: 하단 메뉴<br>➕ 물건 추가: ➕ 버튼<br>📍 위치 관리: 위치 메뉴<br><br>더 자세한 도움이 필요하시면 네트워크 연결을 확인해주세요.`;
             }
             
-            // 위치 관리 관련
-            if (message.includes('위치') || message.includes('장소')) {
-                return `📍 위치 관리 기능:<br><br>• 계층형 위치 설정 가능<br>• 예: 집 > 거실 > TV장<br>• 하단 '위치' 메뉴에서 관리<br><br>정확한 위치 설정으로 물건을 쉽게 찾을 수 있어요!`;
-            }
-            
-            // 도움말
-            if (message.includes('도움') || message.includes('help') || message.includes('사용법')) {
-                return `❓ 물품관리 시스템 사용법:<br><br>🏠 <strong>홈</strong>: 메인 화면 (현재)<br>📍 <strong>위치</strong>: 위치 관리<br>🏷️ <strong>카테고리</strong>: 분류 관리<br>📦 <strong>재고관리</strong>: 입고/출고 처리<br>⚙️ <strong>설정</strong>: 앱 설정<br><br>궁금한 것이 있으면 언제든 물어보세요!`;
-            }
-            
-            // 인사
-            if (message.includes('안녕') || message.includes('hi') || message.includes('hello')) {
-                return `안녕하세요! 😊<br>물품관리 도우미입니다.<br><br>무엇을 도와드릴까요?<br>재고 현황, 물건 등록, 사용법 등에 대해 질문해보세요!`;
-            }
-            
-            // 기본 응답
-            const responses = [
-                `죄송해요, 정확히 이해하지 못했어요. 😅<br><br>다음과 같이 질문해보세요:<br>• "재고 현황 알려줘"<br>• "물건 추가하는 방법"<br>• "도움말"`,
-                `좋은 질문이네요! 🤔<br><br>더 구체적으로 물어보시면 정확한 답변을 드릴 수 있어요.<br>예를 들어 "휴지 재고 확인" 같이요!`,
-                `흠, 그 부분은 잘 모르겠어요. 😊<br><br>물품관리와 관련된 질문을 해주시면<br>더 정확한 도움을 드릴 수 있어요!`
-            ];
-            
-            return responses[Math.floor(Math.random() * responses.length)];
+            return `죄송해요, 현재 네트워크 연결에 문제가 있어 제한적인 응답만 가능합니다. 😅<br><br>다음을 확인해보세요:<br>• 인터넷 연결 상태<br>• 서버 상태<br><br>기본적인 앱 기능은 정상적으로 사용 가능합니다!`;
         }
         
         // 채팅 초기화

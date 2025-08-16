@@ -505,6 +505,265 @@ function sendErrorResponse(res, statusCode, message, details = null) {
     sendJsonResponse(res, statusCode, errorResponse);
 }
 
+// 지능적인 챗봇 응답 생성
+async function generateIntelligentResponse(userMessage, context) {
+    const message = userMessage.toLowerCase().trim();
+    const { items, locations, categories, inventoryHistory } = context;
+    
+    // 현재 시간
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+    
+    // 데이터 분석
+    const totalItems = items.length;
+    const totalQuantity = items.reduce((sum, item) => sum + (item.quantity || 0), 0);
+    const totalCategories = categories.length;
+    const totalLocations = locations.length;
+    
+    // 재고 부족 아이템
+    const lowStockItems = items.filter(item => (item.quantity || 0) <= 2);
+    
+    // 최근 입출고 이력
+    const recentHistory = inventoryHistory
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        .slice(0, 5);
+    
+    // 인사 및 기본 상호작용
+    if (message.includes('안녕') || message.includes('hi') || message.includes('hello') || message === '안녕하세요') {
+        const greetings = [
+            `안녕하세요! 😊 현재 시간은 ${timeStr}입니다.<br>총 ${totalItems}개의 물품을 관리하고 있어요. 무엇을 도와드릴까요?`,
+            `반갑습니다! 🤗 물품관리 도우미입니다.<br>현재 ${totalCategories}개 카테고리에 ${totalItems}개 물품이 등록되어 있어요.`,
+            `안녕하세요! ✨ 오늘도 물품관리를 도와드릴게요.<br>총 ${totalLocations}개 위치에 물품들이 정리되어 있습니다.`
+        ];
+        return greetings[Math.floor(Math.random() * greetings.length)];
+    }
+    
+    // 재고 현황 관련
+    if (message.includes('재고') || message.includes('현황') || message.includes('수량') || message.includes('얼마')) {
+        let response = `📊 <strong>현재 재고 현황</strong><br><br>`;
+        response += `• 전체 물품: ${totalItems}개<br>`;
+        response += `• 총 수량: ${totalQuantity}개<br>`;
+        response += `• 카테고리: ${totalCategories}개<br>`;
+        response += `• 위치: ${totalLocations}개<br><br>`;
+        
+        if (lowStockItems.length > 0) {
+            response += `⚠️ <strong>재고 부족 알림</strong><br>`;
+            lowStockItems.slice(0, 3).forEach(item => {
+                response += `• ${item.name}: ${item.quantity || 0}${item.unit || '개'}<br>`;
+            });
+            if (lowStockItems.length > 3) {
+                response += `• 외 ${lowStockItems.length - 3}개 품목<br>`;
+            }
+        } else {
+            response += `✅ 모든 물품의 재고가 충분합니다!`;
+        }
+        
+        return response;
+    }
+    
+    // 특정 물품 조회
+    const foundItems = items.filter(item => 
+        message.includes(item.name.toLowerCase()) || 
+        item.name.toLowerCase().includes(message.replace(/재고|현황|수량|얼마|있어|없어|찾아|어디/g, '').trim())
+    );
+    
+    if (foundItems.length > 0) {
+        const item = foundItems[0];
+        const category = categories.find(cat => cat.id === item.categoryId);
+        const location = getLocationPath(item.locationId).join(' > ');
+        
+        let response = `🔍 <strong>${item.name}</strong> 정보<br><br>`;
+        response += `📦 현재 수량: <strong>${item.quantity || 0}${item.unit || '개'}</strong><br>`;
+        response += `🏷️ 카테고리: ${category ? category.name : '미분류'}<br>`;
+        response += `📍 위치: ${location}<br>`;
+        
+        if (item.description) {
+            response += `📝 설명: ${item.description}<br>`;
+        }
+        
+        // 최근 이력
+        const itemHistory = recentHistory.filter(h => h.itemId === item.id).slice(0, 2);
+        if (itemHistory.length > 0) {
+            response += `<br>📋 <strong>최근 이력</strong><br>`;
+            itemHistory.forEach(history => {
+                const date = new Date(history.createdAt).toLocaleDateString('ko-KR');
+                const type = history.type === 'stock-in' ? '입고' : '출고';
+                response += `• ${date} ${type}: ${history.quantity}${history.unit || '개'}<br>`;
+            });
+        }
+        
+        return response;
+    }
+    
+    // 물건 추가 관련
+    if (message.includes('추가') || message.includes('등록') || message.includes('새로') || message.includes('넣기')) {
+        return `➕ <strong>새 물건 등록하기</strong><br><br>` +
+               `1️⃣ 우측 하단 ➕ 버튼 클릭<br>` +
+               `2️⃣ '📝 새 물건 등록' 선택<br>` +
+               `3️⃣ 다음 정보 입력:<br>` +
+               `   • 물건명 (필수)<br>` +
+               `   • 카테고리 선택<br>` +
+               `   • 위치 선택<br>` +
+               `   • 수량 및 단위<br>` +
+               `   • 설명 (선택사항)<br>` +
+               `4️⃣ 저장 버튼 클릭<br><br>` +
+               `💡 팁: 사진을 찍어서 물건을 등록할 수도 있어요!`;
+    }
+    
+    // 사용/출고 관련
+    if (message.includes('사용') || message.includes('출고') || message.includes('빼기') || message.includes('소모')) {
+        return `📤 <strong>물건 사용(출고) 등록</strong><br><br>` +
+               `<strong>방법 1: 재고관리 페이지</strong><br>` +
+               `1️⃣ 하단 '재고관리' 메뉴 클릭<br>` +
+               `2️⃣ '출고' 탭 선택<br>` +
+               `3️⃣ 물건과 수량 선택<br>` +
+               `4️⃣ 사용 목적 입력<br>` +
+               `5️⃣ 등록 완료<br><br>` +
+               `<strong>방법 2: 빠른 등록</strong><br>` +
+               `• ➕ 버튼 > 빠른 출고 등록<br><br>` +
+               `💡 출고 시 재고가 자동으로 차감됩니다!`;
+    }
+    
+    // 위치 관련
+    if (message.includes('위치') || message.includes('장소') || message.includes('어디') || message.includes('찾기')) {
+        return `📍 <strong>위치 관리 시스템</strong><br><br>` +
+               `<strong>계층형 위치 구조:</strong><br>` +
+               `🏠 Level 0: 집, 사무실, 창고<br>` +
+               `🏢 Level 1: 1층, 2층, 지하<br>` +
+               `🚪 Level 2: 거실, 침실, 부엌<br>` +
+               `📦 Level 3: 서랍, 선반, 냉장고<br><br>` +
+               `<strong>위치 관리 방법:</strong><br>` +
+               `1️⃣ 하단 '위치' 메뉴 클릭<br>` +
+               `2️⃣ 새 위치 추가 또는 수정<br>` +
+               `3️⃣ 상위 위치 선택<br>` +
+               `4️⃣ 위치명 입력 후 저장<br><br>` +
+               `💡 정확한 위치 설정으로 물건을 쉽게 찾을 수 있어요!`;
+    }
+    
+    // 카테고리 관련
+    if (message.includes('카테고리') || message.includes('분류') || message.includes('종류')) {
+        const categoryList = categories.slice(0, 5).map(cat => 
+            `${cat.icon || '📁'} ${cat.name}`
+        ).join('<br>');
+        
+        return `🏷️ <strong>카테고리 관리</strong><br><br>` +
+               `<strong>현재 카테고리 (${categories.length}개):</strong><br>` +
+               `${categoryList}<br>` +
+               `${categories.length > 5 ? `외 ${categories.length - 5}개...<br>` : ''}<br>` +
+               `<strong>카테고리 추가 방법:</strong><br>` +
+               `1️⃣ 하단 '카테고리' 메뉴 클릭<br>` +
+               `2️⃣ ➕ 버튼으로 새 카테고리 추가<br>` +
+               `3️⃣ 이름, 색상, 아이콘 설정<br><br>` +
+               `💡 카테고리별로 물건을 체계적으로 관리하세요!`;
+    }
+    
+    // 통계 관련
+    if (message.includes('통계') || message.includes('분석') || message.includes('리포트') || message.includes('요약')) {
+        const topCategories = categories
+            .map(cat => ({
+                ...cat,
+                itemCount: items.filter(item => item.categoryId === cat.id).length
+            }))
+            .sort((a, b) => b.itemCount - a.itemCount)
+            .slice(0, 3);
+            
+        let response = `📈 <strong>물품관리 통계</strong><br><br>`;
+        response += `📊 <strong>전체 현황</strong><br>`;
+        response += `• 총 물품: ${totalItems}개<br>`;
+        response += `• 총 수량: ${totalQuantity}개<br>`;
+        response += `• 카테고리: ${totalCategories}개<br>`;
+        response += `• 위치: ${totalLocations}개<br><br>`;
+        
+        if (topCategories.length > 0) {
+            response += `🏆 <strong>카테고리별 물품 수</strong><br>`;
+            topCategories.forEach((cat, index) => {
+                response += `${index + 1}. ${cat.name}: ${cat.itemCount}개<br>`;
+            });
+            response += `<br>`;
+        }
+        
+        if (recentHistory.length > 0) {
+            response += `📋 <strong>최근 활동</strong><br>`;
+            recentHistory.slice(0, 3).forEach(history => {
+                const date = new Date(history.createdAt).toLocaleDateString('ko-KR');
+                const type = history.type === 'stock-in' ? '입고' : '출고';
+                response += `• ${date} ${type}: ${history.quantity}${history.unit || '개'}<br>`;
+            });
+        }
+        
+        return response;
+    }
+    
+    // 도움말
+    if (message.includes('도움') || message.includes('help') || message.includes('사용법') || message.includes('매뉴얼')) {
+        return `❓ <strong>물품관리 시스템 사용법</strong><br><br>` +
+               `🏠 <strong>홈</strong>: 챗봇과 대화<br>` +
+               `📍 <strong>위치</strong>: 물건 보관 장소 관리<br>` +
+               `🏷️ <strong>카테고리</strong>: 물건 분류 관리<br>` +
+               `📦 <strong>재고관리</strong>: 입고/출고 처리<br>` +
+               `⚙️ <strong>설정</strong>: 앱 환경 설정<br><br>` +
+               `<strong>자주 사용하는 질문:</strong><br>` +
+               `• "휴지 재고 확인해줘"<br>` +
+               `• "물건 추가하는 방법"<br>` +
+               `• "재고 현황 보여줘"<br>` +
+               `• "위치 설정하는 법"<br><br>` +
+               `💬 자연스럽게 대화하듯 질문해보세요!`;
+    }
+    
+    // 감사 인사
+    if (message.includes('고마워') || message.includes('감사') || message.includes('thanks') || message.includes('thank you')) {
+        const thanks = [
+            `천만에요! 😊 언제든지 물품관리에 대해 궁금한 게 있으면 물어보세요!`,
+            `도움이 되었다니 기뻐요! 🤗 다른 궁금한 것도 언제든 말씀해주세요.`,
+            `별말씀을요! ✨ 효율적인 물품관리를 위해 항상 여기 있을게요!`
+        ];
+        return thanks[Math.floor(Math.random() * thanks.length)];
+    }
+    
+    // 기본 응답 - 더 지능적이고 맥락을 고려한 응답
+    const contextualResponses = [
+        `🤔 "${userMessage}"에 대해 더 구체적으로 알려주시면 정확한 답변을 드릴 수 있어요!<br><br>` +
+        `예를 들어:<br>` +
+        `• "휴지 재고 얼마나 있어?" (특정 물품 조회)<br>` +
+        `• "물건 어떻게 추가해?" (기능 사용법)<br>` +
+        `• "전체 재고 현황 보여줘" (통계 요청)`,
+        
+        `💡 좋은 질문이네요! 다음 중 어떤 것을 도와드릴까요?<br><br>` +
+        `📊 재고 현황 확인<br>` +
+        `➕ 새 물건 등록<br>` +
+        `📤 물건 사용 등록<br>` +
+        `📍 위치 관리<br>` +
+        `❓ 사용법 안내`,
+        
+        `🔍 "${userMessage}"와 관련해서 이런 기능들을 사용할 수 있어요:<br><br>` +
+        `• 현재 ${totalItems}개 물품 관리 중<br>` +
+        `• ${totalCategories}개 카테고리로 분류<br>` +
+        `• ${totalLocations}개 위치에 보관<br><br>` +
+        `더 구체적으로 무엇을 도와드릴까요?`
+    ];
+    
+    return contextualResponses[Math.floor(Math.random() * contextualResponses.length)];
+}
+
+// 위치 경로 가져오기 헬퍼 함수
+function getLocationPath(locationId) {
+    if (!locationId) return ['위치 미설정'];
+    
+    const path = [];
+    let currentLocation = locations.find(loc => loc.id === locationId);
+    
+    while (currentLocation) {
+        path.unshift(currentLocation.name);
+        if (currentLocation.parentId) {
+            currentLocation = locations.find(loc => loc.id === currentLocation.parentId);
+        } else {
+            break;
+        }
+    }
+    
+    return path.length > 0 ? path : ['위치 미설정'];
+}
+
 // HTML 파일에서 API URL 동적 교체
 function replaceApiUrl(htmlContent, req) {
     const hostname = req.headers.host || 'localhost:3001';
@@ -1861,6 +2120,40 @@ const server = http.createServer((req, res) => {
             sendErrorResponse(res, 500, 'Failed to fetch inventory status');
         }
     }
+    // 챗봇 API
+    else if (pathname === '/api/chatbot' && method === 'POST') {
+        let body = '';
+        req.on('data', chunk => body += chunk);
+        req.on('end', async () => {
+            try {
+                const data = JSON.parse(body);
+                const userMessage = data.message;
+                
+                if (!userMessage || typeof userMessage !== 'string') {
+                    sendErrorResponse(res, 400, 'Message is required');
+                    return;
+                }
+                
+                // 지능적인 응답 생성
+                const botResponse = await generateIntelligentResponse(userMessage, {
+                    items,
+                    locations,
+                    categories,
+                    inventoryHistory
+                });
+                
+                sendJsonResponse(res, 200, {
+                    success: true,
+                    response: botResponse,
+                    timestamp: new Date().toISOString()
+                });
+                
+            } catch (error) {
+                console.error('챗봇 API 오류:', error);
+                sendErrorResponse(res, 500, 'Failed to process chatbot request');
+            }
+        });
+    }
     // 404 처리
     else {
         sendErrorResponse(res, 404, 'Not Found', { path: pathname });
@@ -1909,6 +2202,8 @@ server.listen(PORT, '0.0.0.0', () => {
     console.log('  GET  /api/inventory/history - 재고 이력');
     console.log('  POST /api/inventory/stock-in - 입고 처리');
     console.log('  POST /api/inventory/stock-out - 출고 처리');
+    console.log('  🤖 챗봇 API:');
+    console.log('  POST /api/chatbot - 지능형 챗봇 응답');
     console.log('=====================================');
     console.log(`📁 데이터 저장: ${DATA_DIR}`);
     console.log(`🖼️ 이미지 저장: ${IMAGES_DIR}`);
