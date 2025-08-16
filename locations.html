@@ -314,6 +314,36 @@
             color: #666;
         }
         
+        .location-path {
+            font-size: 0.8rem;
+            color: #999;
+            margin-top: 3px;
+            font-style: italic;
+        }
+        
+        .location-image {
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            object-fit: cover;
+            margin-right: 10px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .location-image-placeholder {
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            background: #f5f5f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            border: 1px solid #e0e0e0;
+            font-size: 1.2rem;
+            color: #999;
+        }
+        
         /* 메시지 스타일 */
         .message {
             padding: 12px 16px;
@@ -452,6 +482,21 @@
                         </select>
                     </div>
                     
+                    <div class="form-group">
+                        <label for="locationDescription">설명 (선택사항)</label>
+                        <input type="text" id="locationDescription" class="form-input" 
+                               placeholder="예: 큰 서랍이 있는 책상">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="locationImage">위치 사진 (선택사항)</label>
+                        <input type="file" id="locationImage" class="form-input" 
+                               accept="image/*" style="padding: 8px;">
+                        <small style="color: #666; font-size: 0.85rem; display: block; margin-top: 5px;">
+                            위치를 쉽게 식별할 수 있는 사진을 추가하세요
+                        </small>
+                    </div>
+                    
                     <div style="display: flex; gap: 10px;">
                         <button type="submit" class="btn-add" style="flex: 1;">
                             ➕ 위치 추가하기
@@ -584,20 +629,32 @@
             
             const locationsHtml = topLevelLocations.map(location => {
                 // 해당 위치에 있는 물건 수 계산
-                const itemCount = appData.items.filter(item => item.locationId === location.id).length;
+                const itemCount = location.itemCount || appData.items.filter(item => item.locationId === location.id).length;
                 
                 // 하위 위치들
                 const subLocations = appData.locations.filter(loc => loc.parentId === location.id);
+                
+                // 위치 이미지 처리
+                const locationImage = location.imageUrl ? 
+                    `<img src="${location.imageUrl}" class="location-image" alt="${location.name}">` :
+                    `<div class="location-image-placeholder">${getLocationIcon(location.name)}</div>`;
+                
+                // 위치 경로 표시
+                const pathString = location.pathString || location.name;
                 
                 return `
                     <div class="location-item" data-id="${location.id}">
                         <div class="location-main" onclick="toggleLocation(${location.id})">
                             <div class="location-info">
-                                <span class="location-icon">${getLocationIcon(location.name)}</span>
-                                <span class="location-name">${location.name}</span>
-                                <div class="location-stats">
-                                    <span>물건 ${itemCount}개</span>
-                                    ${subLocations.length > 0 ? `<span>하위 ${subLocations.length}개</span>` : ''}
+                                ${locationImage}
+                                <div style="flex: 1;">
+                                    <div class="location-name">${location.name}</div>
+                                    ${location.type ? `<div class="location-path">${location.type}</div>` : ''}
+                                    ${location.description ? `<div class="location-path">${location.description}</div>` : ''}
+                                    <div class="location-stats">
+                                        <span>물건 ${itemCount}개</span>
+                                        ${subLocations.length > 0 ? `<span>하위 ${subLocations.length}개</span>` : ''}
+                                    </div>
                                 </div>
                             </div>
                             <div class="location-actions">
@@ -612,13 +669,20 @@
                         ${subLocations.length > 0 ? `
                             <div class="sub-locations">
                                 ${subLocations.map(subLoc => {
-                                    const subItemCount = appData.items.filter(item => item.locationId === subLoc.id).length;
+                                    const subItemCount = subLoc.itemCount || appData.items.filter(item => item.locationId === subLoc.id).length;
+                                    const subImage = subLoc.imageUrl ? 
+                                        `<img src="${subLoc.imageUrl}" class="location-image" alt="${subLoc.name}" style="width: 30px; height: 30px;">` :
+                                        `<span style="margin-right: 8px;">${getLocationIcon(subLoc.name)}</span>`;
+                                    
                                     return `
                                         <div class="sub-location">
                                             <div class="sub-location-info">
-                                                <span>${getLocationIcon(subLoc.name)}</span>
-                                                <span class="sub-location-name">${subLoc.name}</span>
-                                                <span class="sub-location-count">물건 ${subItemCount}개</span>
+                                                ${subImage}
+                                                <div>
+                                                    <span class="sub-location-name">${subLoc.name}</span>
+                                                    ${subLoc.type ? `<div class="location-path">${subLoc.type}</div>` : ''}
+                                                    <span class="sub-location-count">물건 ${subItemCount}개</span>
+                                                </div>
                                             </div>
                                             <button class="btn-delete" 
                                                     onclick="deleteLocation(${subLoc.id}, '${subLoc.name}')"
@@ -688,13 +752,14 @@
         }
         
         // 위치 추가
-        async function addLocation(name, parentId = null) {
+        async function addLocation(name, parentId = null, description = '', imageFile = null) {
             if (!appData.isOnline) {
                 showMessage('오프라인 상태에서는 위치를 추가할 수 없습니다.', 'error');
                 return false;
             }
             
             try {
+                // 기본 위치 정보 추가
                 const response = await fetch(`${API_URL}/locations`, {
                     method: 'POST',
                     headers: {
@@ -702,13 +767,30 @@
                     },
                     body: JSON.stringify({
                         name: name.trim(),
-                        parentId: parentId || null
+                        parentId: parentId || null,
+                        description: description.trim()
                     })
                 });
                 
                 const data = await response.json();
                 
                 if (data.success) {
+                    let locationId = data.location.id;
+                    
+                    // 이미지가 있으면 업로드
+                    if (imageFile) {
+                        try {
+                            const imageUrl = await uploadLocationImage(locationId, imageFile);
+                            if (imageUrl) {
+                                // 위치 정보에 이미지 URL 업데이트
+                                await updateLocationImage(locationId, imageUrl);
+                            }
+                        } catch (error) {
+                            console.warn('이미지 업로드 실패:', error);
+                            showMessage(`위치는 추가되었지만 이미지 업로드에 실패했습니다.`, 'warning');
+                        }
+                    }
+                    
                     showMessage(`"${name}" 위치가 추가되었습니다!`, 'success');
                     await loadAllData();
                     updateUI();
@@ -721,6 +803,45 @@
                 console.error('위치 추가 실패:', error);
                 showMessage('위치 추가 중 오류가 발생했습니다.', 'error');
                 return false;
+            }
+        }
+        
+        // 위치 이미지 업로드
+        async function uploadLocationImage(locationId, imageFile) {
+            const formData = new FormData();
+            formData.append('image', imageFile);
+            formData.append('locationId', locationId);
+            
+            const response = await fetch(`${API_URL}/locations/${locationId}/image`, {
+                method: 'POST',
+                body: formData
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                return data.imageUrl;
+            } else {
+                throw new Error(data.error || 'Image upload failed');
+            }
+        }
+        
+        // 위치 이미지 URL 업데이트
+        async function updateLocationImage(locationId, imageUrl) {
+            const response = await fetch(`${API_URL}/locations/${locationId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    imageUrl: imageUrl
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (!data.success) {
+                throw new Error(data.error || 'Failed to update location image');
             }
         }
         
@@ -763,16 +884,19 @@
                 
                 const name = document.getElementById('locationName').value.trim();
                 const parentId = document.getElementById('parentLocation').value || null;
+                const description = document.getElementById('locationDescription').value.trim();
+                const imageFile = document.getElementById('locationImage').files[0] || null;
                 
                 if (!name) {
                     showMessage('위치 이름을 입력해주세요.', 'error');
                     return;
                 }
                 
-                const success = await addLocation(name, parentId);
+                const success = await addLocation(name, parentId, description, imageFile);
                 if (success) {
                     // 폼 초기화
                     document.getElementById('locationForm').reset();
+                    hideDetailedForm();
                 }
             });
         }

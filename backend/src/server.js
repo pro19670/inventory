@@ -365,6 +365,36 @@ function getLocationPath(locationId) {
     return path;
 }
 
+// 위치 전체 경로 계산 (타입 포함)
+function getLocationPathWithTypes(locationId) {
+    if (!locationId) return [];
+    
+    const path = [];
+    let currentLocation = locations.find(loc => loc.id === locationId);
+    
+    while (currentLocation) {
+        path.unshift({
+            id: currentLocation.id,
+            name: currentLocation.name,
+            type: currentLocation.type || '위치',
+            level: currentLocation.level
+        });
+        currentLocation = locations.find(loc => loc.id === currentLocation.parentId);
+    }
+    
+    return path;
+}
+
+// 파일 확장자 추출
+function getFileExtension(filename) {
+    if (!filename) return '.jpg';
+    
+    const ext = path.extname(filename).toLowerCase();
+    const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+    
+    return allowedExtensions.includes(ext) ? ext : '.jpg';
+}
+
 // Multipart 파싱 함수
 function parseMultipart(buffer, boundary) {
     const parts = [];
@@ -763,9 +793,27 @@ const server = http.createServer((req, res) => {
                 );
             }
             
+            // 각 위치에 추가 정보 제공
+            const locationsWithDetails = filteredLocations.map(location => {
+                const path = getLocationPath(location.id);
+                const pathString = path.join(' => ');
+                const itemCount = items.filter(item => item.locationId === location.id).length;
+                const subLocations = locations.filter(loc => loc.parentId === location.id);
+                
+                return {
+                    ...location,
+                    path: path,
+                    pathString: pathString,
+                    itemCount: itemCount,
+                    subLocationCount: subLocations.length,
+                    hasItems: itemCount > 0,
+                    hasSubLocations: subLocations.length > 0
+                };
+            });
+            
             sendJsonResponse(res, 200, {
                 success: true,
-                locations: filteredLocations
+                locations: locationsWithDetails
             });
         } catch (error) {
             console.error('Locations 조회 실패:', error);
@@ -795,11 +843,21 @@ const server = http.createServer((req, res) => {
                     return;
                 }
                 
+                // 위치 타입 결정 (level 기반)
+                const locationTypes = ['위치', '공간', '가구', '층'];
+                const locationType = locationTypes[newLevel] || '기타';
+                
                 const newLocation = {
                     id: nextLocationId++,
                     name: data.name.trim(),
                     parentId: data.parentId || null,
-                    level: newLevel
+                    level: newLevel,
+                    type: locationType,
+                    description: data.description || '',
+                    imageUrl: null,
+                    thumbnailUrl: null,
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString()
                 };
                 
                 locations.push(newLocation);
@@ -893,6 +951,145 @@ const server = http.createServer((req, res) => {
         } catch (error) {
             console.error('위치 삭제 실패:', error);
             sendErrorResponse(res, 500, 'Failed to delete location');
+        }
+    }
+    // 위치 수정 (이미지 포함)
+    else if (pathname.match(/^\/api\/locations\/(\d+)$/) && method === 'PUT') {
+        const locationId = parseInt(pathname.split('/')[3]);
+        
+        let body = '';
+        req.on('data', chunk => body += chunk);
+        req.on('end', async () => {
+            try {
+                const data = JSON.parse(body);
+                
+                const locationIndex = locations.findIndex(loc => loc.id === locationId);
+                
+                if (locationIndex === -1) {
+                    sendErrorResponse(res, 404, 'Location not found');
+                    return;
+                }
+                
+                const location = locations[locationIndex];
+                
+                // 업데이트할 필드들
+                if (data.name && typeof data.name === 'string') {
+                    location.name = data.name.trim();
+                }
+                
+                if (data.description !== undefined) {
+                    location.description = data.description;
+                }
+                
+                // 이미지 URL 업데이트
+                if (data.imageUrl !== undefined) {
+                    location.imageUrl = data.imageUrl;
+                }
+                
+                if (data.thumbnailUrl !== undefined) {
+                    location.thumbnailUrl = data.thumbnailUrl;
+                }
+                
+                location.updatedAt = new Date().toISOString();
+                
+                scheduleSave();
+                
+                sendJsonResponse(res, 200, {
+                    success: true,
+                    location: location
+                });
+                
+            } catch (error) {
+                console.error('위치 수정 실패:', error);
+                sendErrorResponse(res, 400, 'Failed to update location');
+            }
+        });
+    }
+    // 위치 이미지 업로드
+    else if (pathname.match(/^\/api\/locations\/(\d+)\/image$/) && method === 'POST') {
+        const locationId = parseInt(pathname.split('/')[3]);
+        
+        try {
+            const locationIndex = locations.findIndex(loc => loc.id === locationId);
+            
+            if (locationIndex === -1) {
+                sendErrorResponse(res, 404, 'Location not found');
+                return;
+            }
+            
+            const contentType = req.headers['content-type'] || '';
+            
+            if (!contentType.includes('multipart/form-data')) {
+                sendErrorResponse(res, 400, 'Content-Type must be multipart/form-data');
+                return;
+            }
+            
+            const boundary = contentType.split('boundary=')[1];
+            let body = Buffer.alloc(0);
+            
+            req.on('data', chunk => {
+                body = Buffer.concat([body, chunk]);
+            });
+            
+            req.on('end', async () => {
+                try {
+                    const parts = parseMultipart(body, boundary);
+                    const imagePart = parts.find(part => part.name === 'image');
+                    
+                    if (!imagePart || !imagePart.data) {
+                        sendErrorResponse(res, 400, 'No image file provided');
+                        return;
+                    }
+                    
+                    // 이미지 파일 저장
+                    const fileExtension = getFileExtension(imagePart.filename || imagePart.contentType);
+                    const filename = `location_${locationId}_${Date.now()}${fileExtension}`;
+                    const filepath = path.join(IMAGES_DIR, filename);
+                    
+                    // 이미지 저장
+                    fs.writeFileSync(filepath, imagePart.data);
+                    
+                    // 썸네일 생성
+                    const thumbnailFilename = `thumb_${filename}`;
+                    const thumbnailPath = path.join(THUMBNAILS_DIR, thumbnailFilename);
+                    
+                    try {
+                        await sharp(imagePart.data)
+                            .resize(200, 200, { fit: 'cover' })
+                            .jpeg({ quality: 80 })
+                            .toFile(thumbnailPath);
+                    } catch (error) {
+                        console.warn('썸네일 생성 실패:', error);
+                    }
+                    
+                    // URL 생성
+                    const imageUrl = `/images/${filename}`;
+                    const thumbnailUrl = `/images/${thumbnailFilename}`;
+                    
+                    // 위치 정보 업데이트
+                    const location = locations[locationIndex];
+                    location.imageUrl = imageUrl;
+                    location.thumbnailUrl = thumbnailUrl;
+                    location.updatedAt = new Date().toISOString();
+                    
+                    scheduleSave();
+                    
+                    sendJsonResponse(res, 200, {
+                        success: true,
+                        imageUrl: imageUrl,
+                        thumbnailUrl: thumbnailUrl,
+                        location: location
+                    });
+                    
+                } catch (error) {
+                    console.error('이미지 처리 실패:', error);
+                    sendErrorResponse(res, 500, 'Failed to process image');
+                }
+            });
+            
+        } catch (error) {
+            console.error('위치 이미지 업로드 실패:', error);
+            sendErrorResponse(res, 500, 'Failed to upload location image');
         }
     }
     // 카테고리 삭제
