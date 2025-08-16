@@ -827,22 +827,23 @@ const server = http.createServer((req, res) => {
                     const locationPath = getLocationPath(newItem.locationId);
                 const category = categories.find(cat => cat.id === newItem.categoryId);
                 
-                sendJsonResponse(res, 201, {
-                    success: true,
-                    item: {
-                        ...newItem,
-                        locationPath: locationPath,
-                        locationName: locationPath.join(' > '),
-                        categoryName: category ? category.name : null,
-                        categoryColor: category ? category.color : null,
-                        categoryIcon: category ? category.icon : null
-                    }
-                });
-            } catch (error) {
-                console.error('Item 추가 실패:', error);
-                sendErrorResponse(res, 400, 'Failed to create item');
-            }
-        });
+                    sendJsonResponse(res, 201, {
+                        success: true,
+                        item: {
+                            ...newItem,
+                            locationPath: locationPath,
+                            locationName: locationPath.join(' > '),
+                            categoryName: category ? category.name : null,
+                            categoryColor: category ? category.color : null,
+                            categoryIcon: category ? category.icon : null
+                        }
+                    });
+                } catch (error) {
+                    console.error('Item 추가 실패 (JSON):', error);
+                    sendErrorResponse(res, 400, 'Failed to create item');
+                }
+            });
+        }
     }
     // 물건 수정
     else if (pathname.match(/^\/api\/items\/(\d+)$/) && method === 'PUT') {

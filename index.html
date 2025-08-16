@@ -578,11 +578,109 @@
             border-left: 3px solid #667eea;
             background: linear-gradient(90deg, rgba(102, 126, 234, 0.05) 0%, transparent 100%);
         }
+        
+        /* 빠른 출고 등록 폼 스타일 */
+        .quick-stockout-form {
+            margin-bottom: 20px;
+        }
+        
+        .form-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border: 1px solid #e9ecef;
+        }
+        
+        .form-card h3 {
+            color: #495057;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .form-card h3::before {
+            content: '📝';
+            font-size: 20px;
+        }
+        
+        .form-textarea {
+            resize: vertical;
+            min-height: 60px;
+            font-family: inherit;
+        }
+        
+        .submit-btn {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+        }
+        
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+        
+        /* 오늘 사용 내역 리스트 */
+        .today-usage-list {
+            margin-top: 30px;
+        }
+        
+        .usage-item {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            border-left: 4px solid #28a745;
+        }
+        
+        .usage-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+        
+        .usage-title {
+            font-weight: 600;
+            color: #333;
+            font-size: 16px;
+        }
+        
+        .usage-time {
+            font-size: 12px;
+            color: #6c757d;
+            background: #f8f9fa;
+            padding: 3px 8px;
+            border-radius: 12px;
+        }
+        
+        .usage-details {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            font-size: 14px;
+            color: #6c757d;
+        }
+        
+        .usage-details span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
     </style>
 </head>
 <body>
     <div class="mobile-header">
-        <h1>스마트 재물관리</h1>
+        <h1>오늘 사용 등록</h1>
     </div>
     
     <div class="pull-to-refresh" id="pullToRefresh">
@@ -590,47 +688,77 @@
     </div>
     
     <div class="mobile-content">
+        <!-- 오늘 사용 요약 -->
         <div class="stats-grid">
             <div class="stat-card">
-                <div class="stat-number" id="totalItems">0</div>
-                <div class="stat-label">전체 물건</div>
+                <div class="stat-number" id="todayStockOut">0</div>
+                <div class="stat-label">오늘 출고</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number" id="totalQuantity">0</div>
-                <div class="stat-label">총 수량</div>
+                <div class="stat-number" id="todayItems">0</div>
+                <div class="stat-label">사용한 품목</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number" id="totalLocations">0</div>
-                <div class="stat-label">위치</div>
+                <div class="stat-number" id="frequentItem">-</div>
+                <div class="stat-label">자주 사용</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number" id="totalCategories">0</div>
-                <div class="stat-label">카테고리</div>
+                <div class="stat-number" id="recentTime">-</div>
+                <div class="stat-label">최근 시간</div>
             </div>
         </div>
         
-        <div class="tab-menu">
-            <div class="tab-item active" onclick="switchTab('items')">물건 목록</div>
-            <div class="tab-item" onclick="switchTab('receipt')">영수증</div>
-            <div class="tab-item" onclick="switchTab('search')">AI 검색</div>
+        <!-- 빠른 출고 등록 폼 -->
+        <div class="quick-stockout-form">
+            <div class="form-card">
+                <h3 style="margin-bottom: 20px; color: #333;">빠른 사용 등록</h3>
+                
+                <div class="form-group">
+                    <label class="form-label">사용할 물건</label>
+                    <select id="quickItemSelect" class="form-select">
+                        <option value="">물건을 선택하세요</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">사용 수량</label>
+                    <input type="number" id="quickQuantity" class="form-input" min="1" value="1" placeholder="사용할 수량">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">사용 목적 (선택사항)</label>
+                    <input type="text" id="quickPurpose" class="form-input" placeholder="예: 요리, 청소, 업무 등">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">메모 (선택사항)</label>
+                    <textarea id="quickMemo" class="form-textarea" rows="2" placeholder="추가 메모사항"></textarea>
+                </div>
+                
+                <button class="submit-btn" onclick="processQuickStockOut()">
+                    📤 사용 등록하기
+                </button>
+            </div>
         </div>
         
-        <div class="search-bar">
-            <input type="text" class="search-input" id="searchInput" placeholder="물건 검색...">
-            <button class="search-btn" onclick="searchItems()">🔍</button>
+        <!-- 오늘 사용 내역 -->
+        <div class="today-usage-list">
+            <h3 style="margin-bottom: 15px; color: #333; display: flex; align-items: center; gap: 10px;">
+                📋 오늘 사용 내역
+                <span id="todayUsageCount" style="background: #e9ecef; padding: 2px 8px; border-radius: 12px; font-size: 12px;">0건</span>
+            </h3>
+            <div id="todayUsageList"></div>
         </div>
-        
-        <div id="itemsList"></div>
     </div>
     
-    <button class="voice-search-btn" id="voiceBtn" onclick="startVoiceSearch()">🎤</button>
+    <button class="voice-search-btn" id="voiceBtn" onclick="goToInventoryManagement()" title="재고관리로 이동">📦</button>
     
     <button class="fab" onclick="toggleFabMenu()">➕</button>
     
     <div class="fab-menu" id="fabMenu">
-        <button class="fab-option" onclick="openAddModal()">📝</button>
-        <button class="fab-option" onclick="openReceiptModal()">📄</button>
-        <button class="fab-option" onclick="openCameraModal()">📷</button>
+        <button class="fab-option" onclick="goToItemRegistration()" title="새 물건 등록">📝</button>
+        <button class="fab-option" onclick="goToLocationManagement()" title="위치 관리">📍</button>
+        <button class="fab-option" onclick="goToInventoryManagement()" title="재고 관리">📊</button>
     </div>
     
     <div class="bottom-nav">
@@ -805,6 +933,7 @@
             items: [],
             categories: [],
             locations: [],
+            todayUsage: JSON.parse(localStorage.getItem('todayUsage') || '[]'),
             currentTab: 'items',
             isListening: false,
             pullDistance: 0,
@@ -849,8 +978,9 @@
                 if (itemResponse.ok) {
                     const itemData = await itemResponse.json();
                     appState.items = itemData.items || [];
-                    renderItems();
-                    updateStats();
+                    updateQuickItemOptions();
+                    renderTodayUsage();
+                    updateTodayStats();
                 }
                 
             } catch (error) {
@@ -861,8 +991,9 @@
                 appState.items = [];
                 appState.categories = [];
                 appState.locations = [];
-                renderItems();
-                updateStats();
+                updateQuickItemOptions();
+                renderTodayUsage();
+                updateTodayStats();
             } finally {
                 hideLoading();
             }
@@ -947,54 +1078,77 @@
             }
         }
         
-        // 물건 렌더링
-        function renderItems() {
-            const container = document.getElementById('itemsList');
+        // 오늘 사용 내역 렌더링
+        function renderTodayUsage() {
+            const container = document.getElementById('todayUsageList');
+            const todayUsage = getTodayUsage();
             
-            if (!appState.items || appState.items.length === 0) {
+            if (!todayUsage || todayUsage.length === 0) {
                 container.innerHTML = `
                     <div style="text-align: center; padding: 40px; color: #999;">
-                        <div style="font-size: 48px;">📦</div>
-                        <p>등록된 물건이 없습니다</p>
-                        <p style="font-size: 14px;">+ 버튼을 눌러 추가하세요</p>
+                        <div style="font-size: 48px;">📋</div>
+                        <p>오늘 사용한 물건이 없습니다</p>
+                        <p style="font-size: 14px;">위에서 사용 등록을 해보세요</p>
                     </div>
                 `;
                 return;
             }
             
-            container.innerHTML = appState.items.map(item => `
-                <div class="item-card swipeable">
-                    <div class="item-header">
-                        <div class="item-title">${item.name || '이름 없음'}</div>
-                        <div class="item-quantity">${item.quantity || 1} ${item.unit || '개'}</div>
+            container.innerHTML = todayUsage.map(usage => `
+                <div class="usage-item">
+                    <div class="usage-header">
+                        <div class="usage-title">${usage.itemName}</div>
+                        <div class="usage-time">${formatTime(usage.timestamp)}</div>
                     </div>
-                    <div class="item-info">
-                        ${item.categoryName ? `<span class="info-badge">🏷️ ${item.categoryName}</span>` : ''}
-                        ${item.locationName ? `<span class="info-badge">📍 ${item.locationName}</span>` : ''}
+                    <div class="usage-details">
+                        <span>📦 ${usage.quantity} ${usage.unit} 사용</span>
+                        ${usage.purpose ? `<span>🎯 ${usage.purpose}</span>` : ''}
+                        ${usage.locationName ? `<span>📍 ${usage.locationName}</span>` : ''}
                     </div>
-                    ${item.description ? `<div style="color: #666; font-size: 14px;">${item.description}</div>` : ''}
-                    <div class="item-actions">
-                        <button class="action-btn edit-btn" onclick="editItem(${item.id})">수정</button>
-                        <button class="action-btn delete-btn" onclick="deleteItem(${item.id})">삭제</button>
-                    </div>
-                    <div class="swipe-actions" onclick="deleteItem(${item.id})">
-                        🗑️
-                    </div>
+                    ${usage.memo ? `<div style="color: #666; font-size: 13px; margin-top: 8px;">${usage.memo}</div>` : ''}
                 </div>
             `).join('');
         }
         
-        // 통계 업데이트
-        function updateStats() {
-            const totalItems = appState.items ? appState.items.length : 0;
-            const totalQuantity = appState.items ? appState.items.reduce((sum, item) => sum + (item.quantity || 0), 0) : 0;
-            const totalLocations = appState.locations ? appState.locations.length : 0;
-            const totalCategories = appState.categories ? appState.categories.length : 0;
+        // 오늘 사용 내역 가져오기
+        function getTodayUsage() {
+            const today = new Date().toDateString();
+            return appState.todayUsage ? appState.todayUsage.filter(usage => 
+                new Date(usage.timestamp).toDateString() === today
+            ) : [];
+        }
+        
+        // 시간 포맷팅
+        function formatTime(timestamp) {
+            const date = new Date(timestamp);
+            return date.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+        }
+        
+        // 오늘 사용 통계 업데이트
+        function updateTodayStats() {
+            const todayUsage = getTodayUsage();
+            const totalStockOut = todayUsage.reduce((sum, usage) => sum + (usage.quantity || 0), 0);
+            const uniqueItems = new Set(todayUsage.map(usage => usage.itemName)).size;
             
-            document.getElementById('totalItems').textContent = totalItems;
-            document.getElementById('totalQuantity').textContent = totalQuantity;
-            document.getElementById('totalLocations').textContent = totalLocations;
-            document.getElementById('totalCategories').textContent = totalCategories;
+            // 가장 자주 사용한 물건
+            const itemCounts = {};
+            todayUsage.forEach(usage => {
+                itemCounts[usage.itemName] = (itemCounts[usage.itemName] || 0) + usage.quantity;
+            });
+            const mostUsedItem = Object.keys(itemCounts).reduce((a, b) => 
+                itemCounts[a] > itemCounts[b] ? a : b, '-'
+            );
+            
+            // 최근 사용 시간
+            const recentTime = todayUsage.length > 0 ? 
+                formatTime(Math.max(...todayUsage.map(usage => new Date(usage.timestamp)))) : '-';
+            
+            document.getElementById('todayStockOut').textContent = totalStockOut;
+            document.getElementById('todayItems').textContent = uniqueItems;
+            document.getElementById('frequentItem').textContent = mostUsedItem.length > 8 ? 
+                mostUsedItem.substring(0, 8) + '...' : mostUsedItem;
+            document.getElementById('recentTime').textContent = recentTime;
+            document.getElementById('todayUsageCount').textContent = `${todayUsage.length}건`;
         }
         
         // 카테고리 옵션 업데이트
@@ -1007,6 +1161,107 @@
                 appState.categories.forEach(cat => {
                     select.innerHTML += `<option value="${cat.id}">${cat.icon || '📁'} ${cat.name}</option>`;
                 });
+            }
+        }
+        
+        // 빠른 출고용 물건 선택 옵션 업데이트
+        function updateQuickItemOptions() {
+            const select = document.getElementById('quickItemSelect');
+            if (!select) return;
+            
+            select.innerHTML = '<option value="">물건을 선택하세요</option>';
+            if (appState.items && appState.items.length > 0) {
+                // 재고가 있는 물건만 표시
+                const availableItems = appState.items.filter(item => (item.quantity || 0) > 0);
+                availableItems.forEach(item => {
+                    const category = appState.categories.find(cat => cat.id === item.categoryId);
+                    const categoryIcon = category ? category.icon || '📦' : '📦';
+                    select.innerHTML += `<option value="${item.id}" data-quantity="${item.quantity}" data-unit="${item.unit}">${categoryIcon} ${item.name} (재고: ${item.quantity}${item.unit || '개'})</option>`;
+                });
+            }
+        }
+        
+        // 빠른 출고 등록 처리
+        async function processQuickStockOut() {
+            const itemSelect = document.getElementById('quickItemSelect');
+            const quantityInput = document.getElementById('quickQuantity');
+            const purposeInput = document.getElementById('quickPurpose');
+            const memoInput = document.getElementById('quickMemo');
+            
+            if (!itemSelect.value) {
+                showToast('물건을 선택해주세요');
+                return;
+            }
+            
+            const selectedOption = itemSelect.options[itemSelect.selectedIndex];
+            const maxQuantity = parseInt(selectedOption.dataset.quantity);
+            const requestQuantity = parseInt(quantityInput.value) || 1;
+            
+            if (requestQuantity > maxQuantity) {
+                showToast(`재고가 부족합니다. 최대 ${maxQuantity}개까지 사용 가능합니다`);
+                return;
+            }
+            
+            try {
+                showLoading();
+                
+                // 출고 처리 API 호출
+                const response = await fetch(`${API_URL}/inventory/stock-out`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        itemId: parseInt(itemSelect.value),
+                        quantity: requestQuantity,
+                        purpose: purposeInput.value.trim() || '일반 사용',
+                        memo: memoInput.value.trim(),
+                        timestamp: new Date().toISOString()
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // 로컬 사용 내역에 추가
+                    const item = appState.items.find(i => i.id === parseInt(itemSelect.value));
+                    const usageRecord = {
+                        id: Date.now(),
+                        itemId: item.id,
+                        itemName: item.name,
+                        quantity: requestQuantity,
+                        unit: item.unit || '개',
+                        purpose: purposeInput.value.trim() || '일반 사용',
+                        memo: memoInput.value.trim(),
+                        locationName: item.locationName,
+                        timestamp: new Date().toISOString()
+                    };
+                    
+                    appState.todayUsage.push(usageRecord);
+                    localStorage.setItem('todayUsage', JSON.stringify(appState.todayUsage));
+                    
+                    // UI 업데이트
+                    await loadData(); // 최신 재고 정보 로드
+                    updateQuickItemOptions();
+                    renderTodayUsage();
+                    updateTodayStats();
+                    
+                    // 폼 초기화
+                    itemSelect.selectedIndex = 0;
+                    quantityInput.value = 1;
+                    purposeInput.value = '';
+                    memoInput.value = '';
+                    
+                    showToast(`${item.name} ${requestQuantity}${item.unit || '개'} 사용 등록 완료!`);
+                } else {
+                    throw new Error(data.message || '출고 처리 실패');
+                }
+                
+            } catch (error) {
+                console.error('빠른 출고 실패:', error);
+                showToast('출고 등록에 실패했습니다');
+            } finally {
+                hideLoading();
             }
         }
         
@@ -1671,6 +1926,20 @@
             });
         }
 
+        // 네비게이션 함수들
+        function goToItemRegistration() {
+            // 원래 아이템 등록 페이지로 이동하거나 모달 열기
+            openAddModal();
+        }
+        
+        function goToLocationManagement() {
+            window.location.href = './locations.html';
+        }
+        
+        function goToInventoryManagement() {
+            window.location.href = './inventory.html';
+        }
+        
         // ⭐ PWA 설치 프롬프트
         let deferredPrompt;
         window.addEventListener('beforeinstallprompt', (e) => {
