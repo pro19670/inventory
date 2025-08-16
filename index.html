@@ -2359,35 +2359,93 @@
             input.click();
         }
         
-        // 이미지 기반 물품 등록 처리
-        function handleImageCaptureForRegistration(file) {
-            // 물품 등록 모달 열기
-            openAddModal();
-            
-            // 이미지 미리보기 설정
-            const previewImg = document.getElementById('previewImg');
-            const imagePreview = document.getElementById('imagePreview');
-            const imageInfo = document.getElementById('imageInfo');
-            
-            if (previewImg && imagePreview && imageInfo) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    previewImg.src = e.target.result;
-                    imagePreview.style.display = 'block';
-                    imageInfo.textContent = `${file.name} (${(file.size / 1024).toFixed(1)}KB)`;
-                };
-                reader.readAsDataURL(file);
+        // 이미지 압축 함수
+        function compressImage(file, maxWidth = 800, maxHeight = 600, quality = 0.8) {
+            return new Promise((resolve) => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                const img = new Image();
                 
-                // 파일을 폼에 설정
-                const itemImageInput = document.getElementById('itemImage');
-                if (itemImageInput) {
-                    const dataTransfer = new DataTransfer();
-                    dataTransfer.items.add(file);
-                    itemImageInput.files = dataTransfer.files;
+                img.onload = function() {
+                    // 비율 계산
+                    let { width, height } = img;
+                    
+                    if (width > height) {
+                        if (width > maxWidth) {
+                            height = (height * maxWidth) / width;
+                            width = maxWidth;
+                        }
+                    } else {
+                        if (height > maxHeight) {
+                            width = (width * maxHeight) / height;
+                            height = maxHeight;
+                        }
+                    }
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+                    
+                    // 이미지 그리기
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    // 압축된 이미지를 Blob으로 변환
+                    canvas.toBlob(resolve, 'image/jpeg', quality);
+                };
+                
+                img.src = URL.createObjectURL(file);
+            });
+        }
+        
+        // 이미지 기반 물품 등록 처리
+        async function handleImageCaptureForRegistration(file) {
+            try {
+                // 이미지 압축 (200KB 이상이면 압축)
+                let finalFile = file;
+                if (file.size > 200 * 1024) {
+                    console.log(`이미지 압축 시작: ${file.size} bytes`);
+                    const compressedBlob = await compressImage(file, 800, 600, 0.7);
+                    finalFile = new File([compressedBlob], file.name, { type: 'image/jpeg' });
+                    console.log(`압축 완료: ${finalFile.size} bytes`);
                 }
+                
+                // 물품 등록 모달 열기
+                openAddModal();
+                
+                // 이미지 미리보기 설정
+                const previewImg = document.getElementById('previewImg');
+                const imagePreview = document.getElementById('imagePreview');
+                const imageInfo = document.getElementById('imageInfo');
+                
+                if (previewImg && imagePreview && imageInfo) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        previewImg.src = e.target.result;
+                        imagePreview.style.display = 'block';
+                        const sizeText = finalFile.size !== file.size ? 
+                            `${finalFile.name} (압축됨: ${(finalFile.size / 1024).toFixed(1)}KB)` :
+                            `${finalFile.name} (${(finalFile.size / 1024).toFixed(1)}KB)`;
+                        imageInfo.textContent = sizeText;
+                    };
+                    reader.readAsDataURL(finalFile);
+                    
+                    // 파일을 폼에 설정
+                    const itemImageInput = document.getElementById('itemImage');
+                    if (itemImageInput) {
+                        const dataTransfer = new DataTransfer();
+                        dataTransfer.items.add(finalFile);
+                        itemImageInput.files = dataTransfer.files;
+                    }
+                }
+                
+                const message = finalFile.size !== file.size ? 
+                    '📷 사진이 압축되어 추가되었습니다. 물품 정보를 입력해주세요!' :
+                    '📷 사진이 추가되었습니다. 물품 정보를 입력해주세요!';
+                showToast(message);
+                
+            } catch (error) {
+                console.error('이미지 처리 실패:', error);
+                showToast('이미지 처리에 실패했습니다.');
             }
-            
-            showToast('📷 사진이 추가되었습니다. 물품 정보를 입력해주세요!');
         }
         
         // ⭐ PWA 설치 프롬프트
