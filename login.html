@@ -283,7 +283,29 @@
     </div>
 
     <script>
-        const API_BASE = window.location.origin;
+        // API URL 설정 - 백엔드 서버로 연결
+        const API_BASE = (function() {
+            var hostname = window.location.hostname;
+            var protocol = window.location.protocol;
+            
+            // GitHub Pages에서 호출 시 -> Render API 사용
+            if (hostname.endsWith('github.io')) {
+                return 'https://inventory.onrender.com';
+            }
+            
+            // 로컬 개발 환경
+            if (hostname === 'localhost' || hostname === '127.0.0.1') {
+                return protocol + '//' + hostname + ':3001';
+            }
+            
+            // E2B Sandbox 환경
+            if (hostname.includes('e2b.dev')) {
+                return 'https://3001-i72krmbsmpnff1c7v14w6-6532622b.e2b.dev';
+            }
+            
+            // 기본값
+            return 'https://inventory.onrender.com';
+        })();
         
         // 데모 계정 정보 자동 입력
         function fillLogin(username, password) {
