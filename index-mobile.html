@@ -27,16 +27,20 @@
         .mobile-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 15px;
+            padding: 20px 15px;
             position: sticky;
             top: 0;
             z-index: 100;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            backdrop-filter: blur(10px);
         }
         
         .mobile-header h1 {
-            font-size: 20px;
+            font-size: 22px;
             text-align: center;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            margin: 0;
         }
         
         .bottom-nav {
@@ -44,33 +48,61 @@
             bottom: 0;
             left: 0;
             right: 0;
-            background: white;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
             display: flex;
             justify-content: space-around;
-            padding: 10px 0;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            padding: 12px 0 8px;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
             z-index: 100;
+            border-top: 1px solid rgba(0,0,0,0.05);
         }
         
         .nav-item {
             flex: 1;
             text-align: center;
-            padding: 5px;
+            padding: 8px 5px;
             color: #666;
             text-decoration: none;
-            font-size: 12px;
+            font-size: 11px;
+            font-weight: 500;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 3px;
+            gap: 4px;
+            border-radius: 12px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+        
+        .nav-item:hover {
+            background: rgba(102, 126, 234, 0.08);
         }
         
         .nav-item.active {
             color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+        }
+        
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 3px;
+            background: #667eea;
+            border-radius: 2px;
         }
         
         .nav-item span {
-            font-size: 24px;
+            font-size: 22px;
+            transition: transform 0.2s ease;
+        }
+        
+        .nav-item.active span {
+            transform: scale(1.1);
         }
         
         .fab {
@@ -674,6 +706,11 @@
             // 로컬 개발 환경
             if (hostname === 'localhost' || hostname === '127.0.0.1') {
                 return protocol + '//' + hostname + ':3001/api';
+            }
+            
+            // E2B Sandbox 환경
+            if (hostname.includes('e2b.dev')) {
+                return 'https://3001-i72krmbsmpnff1c7v14w6-6532622b.e2b.dev/api';
             }
             
             // 기본값

@@ -860,6 +860,65 @@ const server = http.createServer((req, res) => {
             }
         });
     }
+    // AI 자연어 검색
+    else if (pathname === '/api/ai-search' && method === 'POST') {
+        let body = '';
+        req.on('data', chunk => body += chunk);
+        req.on('end', () => {
+            try {
+                const data = JSON.parse(body);
+                const query = data.query?.toLowerCase() || '';
+                
+                if (!query) {
+                    sendErrorResponse(res, 400, 'Search query is required');
+                    return;
+                }
+                
+                // 간단한 키워드 매칭 검색 (실제 AI는 아니지만 유사한 기능)
+                const results = items.filter(item => {
+                    const itemText = `${item.name} ${item.description}`.toLowerCase();
+                    const categoryName = categories.find(c => c.id === item.categoryId)?.name?.toLowerCase() || '';
+                    const locationName = locations.find(l => l.id === item.locationId)?.name?.toLowerCase() || '';
+                    
+                    // 키워드 매칭
+                    const keywords = query.split(' ').filter(k => k.length > 0);
+                    return keywords.some(keyword => 
+                        itemText.includes(keyword) || 
+                        categoryName.includes(keyword) || 
+                        locationName.includes(keyword)
+                    );
+                });
+                
+                // 카테고리 정보와 위치 정보 추가
+                const enrichedResults = results.map(item => {
+                    const category = categories.find(c => c.id === item.categoryId);
+                    const location = locations.find(l => l.id === item.locationId);
+                    
+                    return {
+                        ...item,
+                        categoryName: category?.name || null,
+                        categoryColor: category?.color || null,
+                        categoryIcon: category?.icon || null,
+                        locationName: location?.name || null,
+                        locationPath: location ? [location.name] : []
+                    };
+                });
+                
+                sendJsonResponse(res, 200, {
+                    success: true,
+                    query: data.query,
+                    results: enrichedResults,
+                    count: enrichedResults.length,
+                    message: enrichedResults.length > 0 
+                        ? `"${data.query}"에 대한 ${enrichedResults.length}개의 결과를 찾았습니다.`
+                        : `"${data.query}"에 대한 검색 결과가 없습니다.`
+                });
+            } catch (error) {
+                console.error('AI 검색 실패:', error);
+                sendErrorResponse(res, 400, 'Search failed');
+            }
+        });
+    }
     // 정적 파일 제공 - index-mobile.html (API URL 동적 교체 포함)
     else if (pathname === '/index-mobile.html' && method === 'GET') {
         const possiblePaths = [

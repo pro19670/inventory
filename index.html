@@ -14,151 +14,524 @@
         }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             color: white;
+            overflow-x: hidden;
         }
         
         .container {
+            max-width: 420px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+        }
+        
+        .hero-section {
             text-align: center;
-            max-width: 600px;
-            padding: 40px 20px;
+            padding: 40px 0 60px;
+            position: relative;
         }
         
         .logo {
             font-size: 4rem;
             margin-bottom: 20px;
+            animation: float 3s ease-in-out infinite;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
         }
         
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 20px;
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .app-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .app-subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-bottom: 50px;
             font-weight: 300;
         }
         
-        .subtitle {
-            font-size: 1.2rem;
-            margin-bottom: 40px;
-            opacity: 0.9;
-        }
-        
-        .buttons {
+        .version-buttons {
             display: flex;
+            flex-direction: column;
             gap: 20px;
-            justify-content: center;
-            flex-wrap: wrap;
+            margin-bottom: 50px;
         }
         
-        .btn {
-            padding: 15px 30px;
-            background: rgba(255, 255, 255, 0.2);
+        .version-btn {
+            background: rgba(255, 255, 255, 0.15);
             border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50px;
+            border-radius: 20px;
+            padding: 20px 30px;
             color: white;
             text-decoration: none;
             font-size: 1.1rem;
             font-weight: 600;
-            transition: all 0.3s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            position: relative;
+            overflow: hidden;
         }
         
-        .btn:hover {
-            background: rgba(255, 255, 255, 0.3);
-            border-color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        .version-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
         }
         
-        .btn-primary {
+        .version-btn:hover::before {
+            left: 100%;
+        }
+        
+        .version-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        .version-btn:active {
+            transform: translateY(-1px);
+        }
+        
+        .primary-btn {
             background: rgba(255, 255, 255, 0.9);
             color: #667eea;
+            border-color: rgba(255, 255, 255, 0.9);
         }
         
-        .btn-primary:hover {
+        .primary-btn:hover {
             background: white;
             color: #667eea;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
         }
         
-        .features {
-            margin-top: 60px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 30px;
-        }
-        
-        .feature {
+        .ai-section {
             background: rgba(255, 255, 255, 0.1);
-            padding: 30px 20px;
-            border-radius: 20px;
+            border-radius: 25px;
+            padding: 30px;
+            text-align: center;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .ai-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+            pointer-events: none;
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .ai-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .ai-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .ai-description {
+            font-size: 1rem;
+            opacity: 0.9;
+            line-height: 1.5;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 40px;
+        }
+        
+        .feature-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
             backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-5px);
         }
         
         .feature-icon {
-            font-size: 3rem;
-            margin-bottom: 15px;
-        }
-        
-        .feature h3 {
-            font-size: 1.3rem;
+            font-size: 2.5rem;
             margin-bottom: 10px;
+            display: block;
         }
         
-        .feature p {
-            opacity: 0.9;
-            line-height: 1.5;
+        .feature-title {
+            font-size: 0.9rem;
+            font-weight: 600;
         }
         
-        @media (max-width: 768px) {
-            .logo { font-size: 3rem; }
-            h1 { font-size: 2rem; }
-            .buttons { flex-direction: column; align-items: center; }
-            .btn { width: 250px; }
+        .status-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(76, 175, 80, 0.9);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            display: none;
+        }
+        
+        .status-indicator.online {
+            display: block;
+            animation: slideIn 0.5s ease;
+        }
+        
+        .status-indicator.offline {
+            background: rgba(244, 67, 54, 0.9);
+            display: block;
+            animation: slideIn 0.5s ease;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(102, 126, 234, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .loading-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .logo {
+                font-size: 3rem;
+            }
+            
+            .app-title {
+                font-size: 1.8rem;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* 접근성 개선 */
+        .version-btn:focus {
+            outline: 3px solid rgba(255, 255, 255, 0.5);
+            outline-offset: 2px;
+        }
+        
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation: none !important;
+                transition: none !important;
+            }
         }
     </style>
 </head>
 <body>
+    <div class="status-indicator" id="statusIndicator">
+        🟢 온라인
+    </div>
+    
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+    </div>
+    
     <div class="container">
-        <div class="logo">🏠</div>
-        <h1>스마트 재물관리</h1>
-        <p class="subtitle">AI 기반 물건 관리 시스템</p>
-        
-        <div class="buttons">
-            <a href="index-mobile.html" class="btn btn-primary">📱 모바일 버전</a>
-            <a href="index-v5.html" class="btn">💻 데스크톱 버전</a>
+        <div class="hero-section">
+            <div class="logo">🏠</div>
+            <h1 class="app-title">스마트 재물관리</h1>
+            <p class="app-subtitle">AI 기반 물건 관리 시스템</p>
+            
+            <div class="version-buttons">
+                <a href="index-mobile.html" class="version-btn primary-btn" id="mobileBtn">
+                    📱 모바일 버전
+                </a>
+                <a href="index-v4.html" class="version-btn" id="desktopBtn">
+                    💻 데스크톱 버전
+                </a>
+            </div>
         </div>
         
-        <div class="features">
-            <div class="feature">
-                <div class="feature-icon">🤖</div>
-                <h3>AI 검색</h3>
-                <p>자연어로 물건을 쉽게 찾아보세요</p>
+        <div class="ai-section">
+            <div class="ai-icon">🤖</div>
+            <h2 class="ai-title">AI 검색</h2>
+            <p class="ai-description">자연어로 물건을 쉽게 찾아보세요</p>
+        </div>
+        
+        <div class="features-grid">
+            <div class="feature-card">
+                <span class="feature-icon">📦</span>
+                <div class="feature-title">물건 관리</div>
             </div>
-            <div class="feature">
-                <div class="feature-icon">📄</div>
-                <h3>영수증 분석</h3>
-                <p>영수증을 찍으면 자동으로 물건을 등록해요</p>
+            <div class="feature-card">
+                <span class="feature-icon">📍</span>
+                <div class="feature-title">위치 추적</div>
             </div>
-            <div class="feature">
-                <div class="feature-icon">📍</div>
-                <h3>위치 관리</h3>
-                <p>물건이 어디에 있는지 정확히 기억해요</p>
+            <div class="feature-card">
+                <span class="feature-icon">📷</span>
+                <div class="feature-title">이미지 인식</div>
+            </div>
+            <div class="feature-card">
+                <span class="feature-icon">🔍</span>
+                <div class="feature-title">스마트 검색</div>
             </div>
         </div>
     </div>
     
     <script>
+        // API URL 자동 감지 및 설정
+        const API_URL = (function() {
+            const hostname = window.location.hostname;
+            const protocol = window.location.protocol;
+            
+            // E2B Sandbox 환경
+            if (hostname.includes('e2b.dev')) {
+                return 'https://3001-i72krmbsmpnff1c7v14w6-6532622b.e2b.dev/api';
+            }
+            
+            // GitHub Pages
+            if (hostname.endsWith('github.io')) {
+                return 'https://3001-i72krmbsmpnff1c7v14w6-6532622b.e2b.dev/api';
+            }
+            
+            // 로컬 개발 환경
+            if (hostname === 'localhost' || hostname === '127.0.0.1') {
+                return protocol + '//' + hostname + ':3001/api';
+            }
+            
+            // 기본값 - 현재 작동하는 백엔드
+            return 'https://3001-i72krmbsmpnff1c7v14w6-6532622b.e2b.dev/api';
+        })();
+        
+        // 앱 상태 관리
+        class AppManager {
+            constructor() {
+                this.isOnline = false;
+                this.init();
+            }
+            
+            async init() {
+                await this.checkServerStatus();
+                this.setupEventListeners();
+                this.hideLoading();
+            }
+            
+            async checkServerStatus() {
+                try {
+                    const response = await fetch(`${API_URL}/health`, {
+                        method: 'GET',
+                        timeout: 5000
+                    });
+                    
+                    if (response.ok) {
+                        this.setOnlineStatus(true);
+                        console.log('✅ 서버 연결 성공');
+                    } else {
+                        throw new Error('Server response not ok');
+                    }
+                } catch (error) {
+                    console.warn('⚠️ 서버 연결 실패:', error);
+                    this.setOnlineStatus(false);
+                }
+            }
+            
+            setOnlineStatus(online) {
+                this.isOnline = online;
+                const indicator = document.getElementById('statusIndicator');
+                
+                if (online) {
+                    indicator.textContent = '🟢 온라인';
+                    indicator.className = 'status-indicator online';
+                } else {
+                    indicator.textContent = '🔴 오프라인';
+                    indicator.className = 'status-indicator offline';
+                }
+                
+                // 3초 후 자동 숨김
+                setTimeout(() => {
+                    indicator.style.opacity = '0';
+                    setTimeout(() => {
+                        indicator.style.display = 'none';
+                    }, 300);
+                }, 3000);
+            }
+            
+            setupEventListeners() {
+                // 모바일 버전 버튼
+                document.getElementById('mobileBtn').addEventListener('click', (e) => {
+                    if (!this.isOnline) {
+                        e.preventDefault();
+                        this.showOfflineMessage();
+                        return;
+                    }
+                    this.showLoading();
+                });
+                
+                // 데스크톱 버전 버튼
+                document.getElementById('desktopBtn').addEventListener('click', (e) => {
+                    if (!this.isOnline) {
+                        e.preventDefault();
+                        this.showOfflineMessage();
+                        return;
+                    }
+                    this.showLoading();
+                });
+                
+                // AI 검색 섹션 클릭
+                document.querySelector('.ai-section').addEventListener('click', () => {
+                    if (this.isOnline) {
+                        this.showLoading();
+                        setTimeout(() => {
+                            window.location.href = 'index-mobile.html#search';
+                        }, 500);
+                    } else {
+                        this.showOfflineMessage();
+                    }
+                });
+                
+                // 피쳐 카드 클릭 이벤트
+                document.querySelectorAll('.feature-card').forEach((card, index) => {
+                    card.addEventListener('click', () => {
+                        if (this.isOnline) {
+                            const features = ['items', 'locations', 'camera', 'search'];
+                            this.showLoading();
+                            setTimeout(() => {
+                                window.location.href = `index-mobile.html#${features[index]}`;
+                            }, 500);
+                        } else {
+                            this.showOfflineMessage();
+                        }
+                    });
+                });
+            }
+            
+            showLoading() {
+                document.getElementById('loadingOverlay').classList.add('show');
+            }
+            
+            hideLoading() {
+                document.getElementById('loadingOverlay').classList.remove('show');
+            }
+            
+            showOfflineMessage() {
+                alert('🔴 서버에 연결할 수 없습니다.\n잠시 후 다시 시도해주세요.');
+            }
+        }
+        
+        // 앱 초기화
+        document.addEventListener('DOMContentLoaded', () => {
+            new AppManager();
+        });
+        
         // Service Worker 등록
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js')
-                    .then(registration => console.log('SW 등록 성공:', registration))
-                    .catch(error => console.log('SW 등록 실패:', error));
+            window.addEventListener('load', async () => {
+                try {
+                    const registration = await navigator.serviceWorker.register('sw.js');
+                    console.log('✅ SW 등록 성공:', registration.scope);
+                } catch (error) {
+                    console.warn('⚠️ SW 등록 실패:', error);
+                }
             });
         }
+        
+        // 오프라인/온라인 이벤트 처리
+        window.addEventListener('online', () => {
+            console.log('🟢 네트워크 연결됨');
+            location.reload();
+        });
+        
+        window.addEventListener('offline', () => {
+            console.log('🔴 네트워크 연결 끊김');
+            document.getElementById('statusIndicator').textContent = '🔴 오프라인';
+            document.getElementById('statusIndicator').className = 'status-indicator offline';
+            document.getElementById('statusIndicator').style.display = 'block';
+        });
     </script>
 </body>
 </html>
