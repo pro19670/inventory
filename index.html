@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#667eea">
-    <title>오늘 사용 등록 - 스마트 재물관리</title>
+    <title>물품관리 - 스마트 재물관리</title>
     <style>
         * {
             box-sizing: border-box;
@@ -579,108 +579,241 @@
             background: linear-gradient(90deg, rgba(102, 126, 234, 0.05) 0%, transparent 100%);
         }
         
-        /* 빠른 출고 등록 폼 스타일 */
-        .quick-stockout-form {
-            margin-bottom: 20px;
-        }
-        
-        .form-card {
+        /* 챗봇 스타일 */
+        .chatbot-header {
             background: white;
             border-radius: 16px;
             padding: 20px;
+            margin-bottom: 20px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-            border: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         
-        .form-card h3 {
-            color: #495057;
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 20px;
+        .chatbot-info {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 15px;
         }
         
-        .form-card h3::before {
-            content: '📝';
+        .chatbot-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-size: 20px;
         }
         
-        .form-textarea {
-            resize: vertical;
-            min-height: 60px;
-            font-family: inherit;
-        }
-        
-        .submit-btn {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        .submit-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
-        }
-        
-        .submit-btn:active {
-            transform: translateY(0);
-        }
-        
-        /* 오늘 사용 내역 리스트 */
-        .today-usage-list {
-            margin-top: 30px;
-        }
-        
-        .usage-item {
-            background: white;
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-            border-left: 4px solid #28a745;
-        }
-        
-        .usage-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 8px;
-        }
-        
-        .usage-title {
-            font-weight: 600;
+        .chatbot-title h3 {
+            margin: 0;
+            font-size: 18px;
             color: #333;
+            font-weight: 600;
+        }
+        
+        .chatbot-status {
+            margin: 0;
+            font-size: 14px;
+            color: #28a745;
+            font-weight: 500;
+        }
+        
+        .chatbot-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .chat-action-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: none;
+            background: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .chat-action-btn:hover {
+            background: #e9ecef;
+            transform: scale(1.1);
+        }
+        
+        /* 챗봇 메시지 영역 */
+        .chat-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            overflow: hidden;
+            height: 400px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .message {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+        }
+        
+        .message.user-message {
+            flex-direction: row-reverse;
+        }
+        
+        .message-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+        
+        .user-message .message-avatar {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+        
+        .message-content {
+            max-width: 70%;
+        }
+        
+        .message-bubble {
+            background: #f8f9fa;
+            padding: 12px 16px;
+            border-radius: 18px;
+            font-size: 14px;
+            line-height: 1.4;
+            word-wrap: break-word;
+        }
+        
+        .user-message .message-bubble {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .message-time {
+            font-size: 11px;
+            color: #6c757d;
+            margin-top: 4px;
+            text-align: center;
+        }
+        
+        /* 메시지 입력 영역 */
+        .chat-input-area {
+            border-top: 1px solid #e9ecef;
+            padding: 15px 20px;
+        }
+        
+        .chat-input-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .chat-input {
+            flex: 1;
+            border: 1px solid #e9ecef;
+            border-radius: 25px;
+            padding: 12px 16px;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.2s;
+        }
+        
+        .chat-input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .chat-send-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .chat-send-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        
+        .send-icon {
             font-size: 16px;
         }
         
-        .usage-time {
-            font-size: 12px;
-            color: #6c757d;
-            background: #f8f9fa;
-            padding: 3px 8px;
-            border-radius: 12px;
-        }
-        
-        .usage-details {
+        /* 빠른 응답 버튼들 */
+        .quick-replies {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             flex-wrap: wrap;
-            font-size: 14px;
-            color: #6c757d;
         }
         
-        .usage-details span {
-            display: flex;
-            align-items: center;
-            gap: 4px;
+        .quick-reply-btn {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 20px;
+            padding: 8px 12px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        
+        .quick-reply-btn:hover {
+            background: #e9ecef;
+            border-color: #667eea;
+            color: #667eea;
+        }
+        
+        /* 스크롤바 스타일 */
+        .chat-messages::-webkit-scrollbar {
+            width: 4px;
+        }
+        
+        .chat-messages::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 2px;
+        }
+        
+        .chat-messages::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
         }
     </style>
 </head>
 <body>
     <div class="mobile-header">
-        <h1>오늘 사용 등록</h1>
+        <h1>물품관리</h1>
     </div>
     
     <div class="pull-to-refresh" id="pullToRefresh">
@@ -688,70 +821,64 @@
     </div>
     
     <div class="mobile-content">
-        <!-- 오늘 사용 요약 -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-number" id="todayStockOut">0</div>
-                <div class="stat-label">오늘 출고</div>
+        <!-- 챗봇 헤더 -->
+        <div class="chatbot-header">
+            <div class="chatbot-info">
+                <div class="chatbot-avatar">🤖</div>
+                <div class="chatbot-title">
+                    <h3>물품관리 도우미</h3>
+                    <p class="chatbot-status">온라인 • 언제든 질문하세요</p>
+                </div>
             </div>
-            <div class="stat-card">
-                <div class="stat-number" id="todayItems">0</div>
-                <div class="stat-label">사용한 품목</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="frequentItem">-</div>
-                <div class="stat-label">자주 사용</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="recentTime">-</div>
-                <div class="stat-label">최근 시간</div>
+            <div class="chatbot-actions">
+                <button class="chat-action-btn" onclick="clearChat()" title="대화 초기화">🗑️</button>
+                <button class="chat-action-btn" onclick="toggleChatSettings()" title="설정">⚙️</button>
             </div>
         </div>
         
-        <!-- 빠른 출고 등록 폼 -->
-        <div class="quick-stockout-form">
-            <div class="form-card">
-                <h3 style="margin-bottom: 20px; color: #333;">빠른 사용 등록</h3>
-                
-                <div class="form-group">
-                    <label class="form-label">사용할 물건</label>
-                    <select id="quickItemSelect" class="form-select">
-                        <option value="">물건을 선택하세요</option>
-                    </select>
+        <!-- 챗봇 메시지 영역 -->
+        <div class="chat-container">
+            <div class="chat-messages" id="chatMessages">
+                <!-- 초기 환영 메시지 -->
+                <div class="message bot-message">
+                    <div class="message-avatar">🤖</div>
+                    <div class="message-content">
+                        <div class="message-bubble">
+                            안녕하세요! 물품관리 도우미입니다. 😊<br>
+                            무엇을 도와드릴까요?<br><br>
+                            예시 질문:<br>
+                            • "휴지 재고 확인해줘"<br>
+                            • "물건 추가하는 방법 알려줘"<br>
+                            • "오늘 사용한 물품 목록 보여줘"
+                        </div>
+                        <div class="message-time">방금 전</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 메시지 입력 영역 -->
+            <div class="chat-input-area">
+                <div class="chat-input-container">
+                    <input type="text" id="chatInput" class="chat-input" placeholder="메시지를 입력하세요..." onkeypress="handleChatKeyPress(event)">
+                    <button class="chat-send-btn" onclick="sendMessage()">
+                        <span class="send-icon">📤</span>
+                    </button>
                 </div>
                 
-                <div class="form-group">
-                    <label class="form-label">사용 수량</label>
-                    <input type="number" id="quickQuantity" class="form-input" min="1" value="1" placeholder="사용할 수량">
+                <!-- 빠른 응답 버튼들 -->
+                <div class="quick-replies">
+                    <button class="quick-reply-btn" onclick="sendQuickMessage('재고 현황')">📊 재고 현황</button>
+                    <button class="quick-reply-btn" onclick="sendQuickMessage('물건 추가')">➕ 물건 추가</button>
+                    <button class="quick-reply-btn" onclick="sendQuickMessage('사용 등록')">📝 사용 등록</button>
+                    <button class="quick-reply-btn" onclick="sendQuickMessage('도움말')">❓ 도움말</button>
                 </div>
-                
-                <div class="form-group">
-                    <label class="form-label">사용 목적 (선택사항)</label>
-                    <input type="text" id="quickPurpose" class="form-input" placeholder="예: 요리, 청소, 업무 등">
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">메모 (선택사항)</label>
-                    <textarea id="quickMemo" class="form-textarea" rows="2" placeholder="추가 메모사항"></textarea>
-                </div>
-                
-                <button class="submit-btn" onclick="processQuickStockOut()">
-                    📤 사용 등록하기
-                </button>
             </div>
         </div>
         
-        <!-- 오늘 사용 내역 -->
-        <div class="today-usage-list">
-            <h3 style="margin-bottom: 15px; color: #333; display: flex; align-items: center; gap: 10px;">
-                📋 오늘 사용 내역
-                <span id="todayUsageCount" style="background: #e9ecef; padding: 2px 8px; border-radius: 12px; font-size: 12px;">0건</span>
-            </h3>
-            <div id="todayUsageList"></div>
-        </div>
+
     </div>
     
-    <button class="voice-search-btn" id="voiceBtn" onclick="goToInventoryManagement()" title="재고관리로 이동">📦</button>
+
     
     <button class="fab" onclick="toggleFabMenu()">➕</button>
     
@@ -978,9 +1105,7 @@
                 if (itemResponse.ok) {
                     const itemData = await itemResponse.json();
                     appState.items = itemData.items || [];
-                    updateQuickItemOptions();
-                    renderTodayUsage();
-                    updateTodayStats();
+                    initializeChatbot();
                 }
                 
             } catch (error) {
@@ -991,9 +1116,7 @@
                 appState.items = [];
                 appState.categories = [];
                 appState.locations = [];
-                updateQuickItemOptions();
-                renderTodayUsage();
-                updateTodayStats();
+                initializeChatbot();
             } finally {
                 hideLoading();
             }
@@ -1078,77 +1201,193 @@
             }
         }
         
-        // 오늘 사용 내역 렌더링
-        function renderTodayUsage() {
-            const container = document.getElementById('todayUsageList');
-            const todayUsage = getTodayUsage();
+        // 챗봇 메시지 관련 함수들
+        let chatHistory = JSON.parse(localStorage.getItem('chatHistory') || '[]');
+        
+        // 메시지 전송
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
             
-            if (!todayUsage || todayUsage.length === 0) {
-                container.innerHTML = `
-                    <div style="text-align: center; padding: 40px; color: #999;">
-                        <div style="font-size: 48px;">📋</div>
-                        <p>오늘 사용한 물건이 없습니다</p>
-                        <p style="font-size: 14px;">위에서 사용 등록을 해보세요</p>
-                    </div>
-                `;
-                return;
+            if (!message) return;
+            
+            // 사용자 메시지 추가
+            addMessage(message, 'user');
+            input.value = '';
+            
+            // 봇 응답 처리
+            setTimeout(() => {
+                const botResponse = generateBotResponse(message);
+                addMessage(botResponse, 'bot');
+            }, 500);
+        }
+        
+        // 빠른 메시지 전송
+        function sendQuickMessage(message) {
+            document.getElementById('chatInput').value = message;
+            sendMessage();
+        }
+        
+        // 메시지 추가
+        function addMessage(content, type) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageElement = document.createElement('div');
+            messageElement.className = `message ${type}-message`;
+            
+            const currentTime = new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+            const avatar = type === 'user' ? '👤' : '🤖';
+            
+            messageElement.innerHTML = `
+                <div class="message-avatar">${avatar}</div>
+                <div class="message-content">
+                    <div class="message-bubble">${content}</div>
+                    <div class="message-time">${currentTime}</div>
+                </div>
+            `;
+            
+            messagesContainer.appendChild(messageElement);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            
+            // 채팅 히스토리에 저장
+            chatHistory.push({
+                content: content,
+                type: type,
+                timestamp: new Date().toISOString()
+            });
+            
+            // 최근 50개 메시지만 보관
+            if (chatHistory.length > 50) {
+                chatHistory = chatHistory.slice(-50);
             }
             
-            container.innerHTML = todayUsage.map(usage => `
-                <div class="usage-item">
-                    <div class="usage-header">
-                        <div class="usage-title">${usage.itemName}</div>
-                        <div class="usage-time">${formatTime(usage.timestamp)}</div>
-                    </div>
-                    <div class="usage-details">
-                        <span>📦 ${usage.quantity} ${usage.unit} 사용</span>
-                        ${usage.purpose ? `<span>🎯 ${usage.purpose}</span>` : ''}
-                        ${usage.locationName ? `<span>📍 ${usage.locationName}</span>` : ''}
-                    </div>
-                    ${usage.memo ? `<div style="color: #666; font-size: 13px; margin-top: 8px;">${usage.memo}</div>` : ''}
-                </div>
-            `).join('');
+            localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
         }
         
-        // 오늘 사용 내역 가져오기
-        function getTodayUsage() {
-            const today = new Date().toDateString();
-            return appState.todayUsage ? appState.todayUsage.filter(usage => 
-                new Date(usage.timestamp).toDateString() === today
-            ) : [];
-        }
-        
-        // 시간 포맷팅
-        function formatTime(timestamp) {
-            const date = new Date(timestamp);
-            return date.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
-        }
-        
-        // 오늘 사용 통계 업데이트
-        function updateTodayStats() {
-            const todayUsage = getTodayUsage();
-            const totalStockOut = todayUsage.reduce((sum, usage) => sum + (usage.quantity || 0), 0);
-            const uniqueItems = new Set(todayUsage.map(usage => usage.itemName)).size;
+        // 봇 응답 생성
+        function generateBotResponse(userMessage) {
+            const message = userMessage.toLowerCase();
             
-            // 가장 자주 사용한 물건
-            const itemCounts = {};
-            todayUsage.forEach(usage => {
-                itemCounts[usage.itemName] = (itemCounts[usage.itemName] || 0) + usage.quantity;
+            // 재고 관련 질문
+            if (message.includes('재고') || message.includes('현황')) {
+                const totalItems = appState.items ? appState.items.length : 0;
+                const totalQuantity = appState.items ? appState.items.reduce((sum, item) => sum + (item.quantity || 0), 0) : 0;
+                return `📊 현재 재고 현황입니다:<br><br>• 전체 물품: ${totalItems}개<br>• 총 수량: ${totalQuantity}개<br><br>자세한 재고 관리는 하단의 '재고관리' 메뉴를 이용해주세요!`;
+            }
+            
+            // 물건 추가 관련
+            if (message.includes('물건') && (message.includes('추가') || message.includes('등록'))) {
+                return `➕ 새 물건을 등록하시려면:<br><br>1. 우측 하단의 ➕ 버튼을 클릭<br>2. '📝 새 물건 등록' 선택<br>3. 물건 정보를 입력해주세요<br><br>물건명, 카테고리, 위치, 수량 등을 설정할 수 있어요!`;
+            }
+            
+            // 사용 등록 관련
+            if (message.includes('사용') && message.includes('등록')) {
+                return `📝 물건 사용을 등록하시려면:<br><br>1. '재고관리' 메뉴로 이동<br>2. '출고' 기능을 이용<br>3. 사용할 물건과 수량을 선택<br><br>또는 우측 하단 ➕ 버튼에서 빠른 등록도 가능해요!`;
+            }
+            
+            // 위치 관리 관련
+            if (message.includes('위치') || message.includes('장소')) {
+                return `📍 위치 관리 기능:<br><br>• 계층형 위치 설정 가능<br>• 예: 집 > 거실 > TV장<br>• 하단 '위치' 메뉴에서 관리<br><br>정확한 위치 설정으로 물건을 쉽게 찾을 수 있어요!`;
+            }
+            
+            // 도움말
+            if (message.includes('도움') || message.includes('help') || message.includes('사용법')) {
+                return `❓ 물품관리 시스템 사용법:<br><br>🏠 <strong>홈</strong>: 메인 화면 (현재)<br>📍 <strong>위치</strong>: 위치 관리<br>🏷️ <strong>카테고리</strong>: 분류 관리<br>📦 <strong>재고관리</strong>: 입고/출고 처리<br>⚙️ <strong>설정</strong>: 앱 설정<br><br>궁금한 것이 있으면 언제든 물어보세요!`;
+            }
+            
+            // 인사
+            if (message.includes('안녕') || message.includes('hi') || message.includes('hello')) {
+                return `안녕하세요! 😊<br>물품관리 도우미입니다.<br><br>무엇을 도와드릴까요?<br>재고 현황, 물건 등록, 사용법 등에 대해 질문해보세요!`;
+            }
+            
+            // 기본 응답
+            const responses = [
+                `죄송해요, 정확히 이해하지 못했어요. 😅<br><br>다음과 같이 질문해보세요:<br>• "재고 현황 알려줘"<br>• "물건 추가하는 방법"<br>• "도움말"`,
+                `좋은 질문이네요! 🤔<br><br>더 구체적으로 물어보시면 정확한 답변을 드릴 수 있어요.<br>예를 들어 "휴지 재고 확인" 같이요!`,
+                `흠, 그 부분은 잘 모르겠어요. 😊<br><br>물품관리와 관련된 질문을 해주시면<br>더 정확한 도움을 드릴 수 있어요!`
+            ];
+            
+            return responses[Math.floor(Math.random() * responses.length)];
+        }
+        
+        // 채팅 초기화
+        function clearChat() {
+            if (confirm('대화 기록을 모두 삭제하시겠습니까?')) {
+                chatHistory = [];
+                localStorage.removeItem('chatHistory');
+                
+                const messagesContainer = document.getElementById('chatMessages');
+                messagesContainer.innerHTML = `
+                    <div class="message bot-message">
+                        <div class="message-avatar">🤖</div>
+                        <div class="message-content">
+                            <div class="message-bubble">
+                                안녕하세요! 물품관리 도우미입니다. 😊<br>
+                                무엇을 도와드릴까요?<br><br>
+                                예시 질문:<br>
+                                • "휴지 재고 확인해줘"<br>
+                                • "물건 추가하는 방법 알려줘"<br>
+                                • "오늘 사용한 물품 목록 보여줘"
+                            </div>
+                            <div class="message-time">방금 전</div>
+                        </div>
+                    </div>
+                `;
+                
+                showToast('대화 기록이 삭제되었습니다');
+            }
+        }
+        
+        // 채팅 설정 토글
+        function toggleChatSettings() {
+            showToast('설정 기능은 준비 중입니다');
+        }
+        
+        // 엔터키로 메시지 전송
+        function handleChatKeyPress(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+        
+        // 채팅 히스토리 로드
+        function loadChatHistory() {
+            const messagesContainer = document.getElementById('chatMessages');
+            
+            // 기존 환영 메시지 유지하고 히스토리 추가
+            chatHistory.forEach(chat => {
+                if (new Date(chat.timestamp).toDateString() === new Date().toDateString()) {
+                    const messageElement = document.createElement('div');
+                    messageElement.className = `message ${chat.type}-message`;
+                    
+                    const time = new Date(chat.timestamp).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+                    const avatar = chat.type === 'user' ? '👤' : '🤖';
+                    
+                    messageElement.innerHTML = `
+                        <div class="message-avatar">${avatar}</div>
+                        <div class="message-content">
+                            <div class="message-bubble">${chat.content}</div>
+                            <div class="message-time">${time}</div>
+                        </div>
+                    `;
+                    
+                    messagesContainer.appendChild(messageElement);
+                }
             });
-            const mostUsedItem = Object.keys(itemCounts).reduce((a, b) => 
-                itemCounts[a] > itemCounts[b] ? a : b, '-'
-            );
             
-            // 최근 사용 시간
-            const recentTime = todayUsage.length > 0 ? 
-                formatTime(Math.max(...todayUsage.map(usage => new Date(usage.timestamp)))) : '-';
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        // 챗봇 초기화
+        function initializeChatbot() {
+            // 채팅 히스토리 로드
+            loadChatHistory();
             
-            document.getElementById('todayStockOut').textContent = totalStockOut;
-            document.getElementById('todayItems').textContent = uniqueItems;
-            document.getElementById('frequentItem').textContent = mostUsedItem.length > 8 ? 
-                mostUsedItem.substring(0, 8) + '...' : mostUsedItem;
-            document.getElementById('recentTime').textContent = recentTime;
-            document.getElementById('todayUsageCount').textContent = `${todayUsage.length}건`;
+            // 입력 포커스 설정
+            const chatInput = document.getElementById('chatInput');
+            if (chatInput) {
+                chatInput.focus();
+            }
         }
         
         // 카테고리 옵션 업데이트
@@ -1164,106 +1403,7 @@
             }
         }
         
-        // 빠른 출고용 물건 선택 옵션 업데이트
-        function updateQuickItemOptions() {
-            const select = document.getElementById('quickItemSelect');
-            if (!select) return;
-            
-            select.innerHTML = '<option value="">물건을 선택하세요</option>';
-            if (appState.items && appState.items.length > 0) {
-                // 재고가 있는 물건만 표시
-                const availableItems = appState.items.filter(item => (item.quantity || 0) > 0);
-                availableItems.forEach(item => {
-                    const category = appState.categories.find(cat => cat.id === item.categoryId);
-                    const categoryIcon = category ? category.icon || '📦' : '📦';
-                    select.innerHTML += `<option value="${item.id}" data-quantity="${item.quantity}" data-unit="${item.unit}">${categoryIcon} ${item.name} (재고: ${item.quantity}${item.unit || '개'})</option>`;
-                });
-            }
-        }
-        
-        // 빠른 출고 등록 처리
-        async function processQuickStockOut() {
-            const itemSelect = document.getElementById('quickItemSelect');
-            const quantityInput = document.getElementById('quickQuantity');
-            const purposeInput = document.getElementById('quickPurpose');
-            const memoInput = document.getElementById('quickMemo');
-            
-            if (!itemSelect.value) {
-                showToast('물건을 선택해주세요');
-                return;
-            }
-            
-            const selectedOption = itemSelect.options[itemSelect.selectedIndex];
-            const maxQuantity = parseInt(selectedOption.dataset.quantity);
-            const requestQuantity = parseInt(quantityInput.value) || 1;
-            
-            if (requestQuantity > maxQuantity) {
-                showToast(`재고가 부족합니다. 최대 ${maxQuantity}개까지 사용 가능합니다`);
-                return;
-            }
-            
-            try {
-                showLoading();
-                
-                // 출고 처리 API 호출
-                const response = await fetch(`${API_URL}/inventory/stock-out`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        itemId: parseInt(itemSelect.value),
-                        quantity: requestQuantity,
-                        purpose: purposeInput.value.trim() || '일반 사용',
-                        memo: memoInput.value.trim(),
-                        timestamp: new Date().toISOString()
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    // 로컬 사용 내역에 추가
-                    const item = appState.items.find(i => i.id === parseInt(itemSelect.value));
-                    const usageRecord = {
-                        id: Date.now(),
-                        itemId: item.id,
-                        itemName: item.name,
-                        quantity: requestQuantity,
-                        unit: item.unit || '개',
-                        purpose: purposeInput.value.trim() || '일반 사용',
-                        memo: memoInput.value.trim(),
-                        locationName: item.locationName,
-                        timestamp: new Date().toISOString()
-                    };
-                    
-                    appState.todayUsage.push(usageRecord);
-                    localStorage.setItem('todayUsage', JSON.stringify(appState.todayUsage));
-                    
-                    // UI 업데이트
-                    await loadData(); // 최신 재고 정보 로드
-                    updateQuickItemOptions();
-                    renderTodayUsage();
-                    updateTodayStats();
-                    
-                    // 폼 초기화
-                    itemSelect.selectedIndex = 0;
-                    quantityInput.value = 1;
-                    purposeInput.value = '';
-                    memoInput.value = '';
-                    
-                    showToast(`${item.name} ${requestQuantity}${item.unit || '개'} 사용 등록 완료!`);
-                } else {
-                    throw new Error(data.message || '출고 처리 실패');
-                }
-                
-            } catch (error) {
-                console.error('빠른 출고 실패:', error);
-                showToast('출고 등록에 실패했습니다');
-            } finally {
-                hideLoading();
-            }
-        }
+
         
         // 위치 옵션 업데이트
         // 계층형 위치 선택 업데이트 (물건 추가용)
