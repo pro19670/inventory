@@ -108,7 +108,8 @@
         .fab {
             position: fixed;
             bottom: 80px;
-            right: 20px;
+            left: 50%;
+            transform: translateX(-50%);
             width: 56px;
             height: 56px;
             border-radius: 50%;
@@ -928,9 +929,9 @@
     <button class="fab" onclick="toggleFabMenu()">➕</button>
     
     <div class="fab-menu" id="fabMenu">
-        <button class="fab-option" onclick="goToItemRegistration()" title="새 물건 등록">📝</button>
-        <button class="fab-option" onclick="goToLocationManagement()" title="위치 관리">📍</button>
-        <button class="fab-option" onclick="goToInventoryManagement()" title="재고 관리">📊</button>
+        <button class="fab-option" onclick="openPhotoCapture()" title="사진으로 등록">📷</button>
+        <button class="fab-option" onclick="openAlbumSelect()" title="앨범에서 선택">📱</button>
+        <button class="fab-option" onclick="goToItemRegistration()" title="직접 입력">📝</button>
     </div>
     
     <div class="bottom-nav">
@@ -2262,12 +2263,65 @@
             openAddModal();
         }
         
-        function goToLocationManagement() {
-            window.location.href = './locations.html';
+        // 사진으로 물품 등록
+        function openPhotoCapture() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.capture = 'environment';
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    handleImageCaptureForRegistration(file);
+                }
+            };
+            input.click();
         }
         
-        function goToInventoryManagement() {
-            window.location.href = './inventory.html';
+        // 앨범에서 선택하여 물품 등록
+        function openAlbumSelect() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.multiple = false;
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    handleImageCaptureForRegistration(file);
+                }
+            };
+            input.click();
+        }
+        
+        // 이미지 기반 물품 등록 처리
+        function handleImageCaptureForRegistration(file) {
+            // 물품 등록 모달 열기
+            openAddModal();
+            
+            // 이미지 미리보기 설정
+            const previewImg = document.getElementById('previewImg');
+            const imagePreview = document.getElementById('imagePreview');
+            const imageInfo = document.getElementById('imageInfo');
+            
+            if (previewImg && imagePreview && imageInfo) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImg.src = e.target.result;
+                    imagePreview.style.display = 'block';
+                    imageInfo.textContent = `${file.name} (${(file.size / 1024).toFixed(1)}KB)`;
+                };
+                reader.readAsDataURL(file);
+                
+                // 파일을 폼에 설정
+                const itemImageInput = document.getElementById('itemImage');
+                if (itemImageInput) {
+                    const dataTransfer = new DataTransfer();
+                    dataTransfer.items.add(file);
+                    itemImageInput.files = dataTransfer.files;
+                }
+            }
+            
+            showToast('📷 사진이 추가되었습니다. 물품 정보를 입력해주세요!');
         }
         
         // ⭐ PWA 설치 프롬프트
