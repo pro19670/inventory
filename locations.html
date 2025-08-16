@@ -540,6 +540,40 @@
                 padding: 12px;
             }
         }
+        
+        /* 계층형 선택기 스타일 */
+        .hierarchy-selector {
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            background: #f8f9fa;
+        }
+        
+        .level-selector {
+            margin-bottom: 12px;
+        }
+        
+        .level-selector:last-child {
+            margin-bottom: 0;
+        }
+        
+        .level-selector label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #495057;
+            font-size: 0.9rem;
+        }
+        
+        .level-selector select {
+            width: 100%;
+            margin-bottom: 0;
+        }
+        
+        #selectedPath {
+            border-left: 3px solid #667eea;
+            background: linear-gradient(90deg, rgba(102, 126, 234, 0.05) 0%, transparent 100%);
+        }
     </style>
 </head>
 <body>
@@ -579,11 +613,47 @@
                                placeholder="예: 우리집 거실, 회사 회의실">
                     </div>
                     
+                    <!-- 동적 계층형 위치 선택 -->
                     <div class="form-group">
-                        <label for="parentLocation">상위 위치 (선택사항)</label>
-                        <select id="parentLocation" class="form-select">
-                            <option value="">-- 상위 위치 없음 --</option>
-                        </select>
+                        <label>상위 위치 선택 (선택사항)</label>
+                        <div class="hierarchy-selector">
+                            <!-- 레벨 0 선택 -->
+                            <div class="level-selector" id="level0Selector">
+                                <label for="level0">🏠 레벨 0 (최상위)</label>
+                                <select id="level0" class="form-select" onchange="updateLevelSelectors(0)">
+                                    <option value="">-- 상위 위치 없음 --</option>
+                                </select>
+                            </div>
+                            
+                            <!-- 레벨 1 선택 -->
+                            <div class="level-selector" id="level1Selector" style="display: none;">
+                                <label for="level1">🏢 레벨 1</label>
+                                <select id="level1" class="form-select" onchange="updateLevelSelectors(1)">
+                                    <option value="">-- 선택하세요 --</option>
+                                </select>
+                            </div>
+                            
+                            <!-- 레벨 2 선택 -->
+                            <div class="level-selector" id="level2Selector" style="display: none;">
+                                <label for="level2">🏠 레벨 2</label>
+                                <select id="level2" class="form-select" onchange="updateLevelSelectors(2)">
+                                    <option value="">-- 선택하세요 --</option>
+                                </select>
+                            </div>
+                            
+                            <!-- 레벨 3 선택 -->
+                            <div class="level-selector" id="level3Selector" style="display: none;">
+                                <label for="level3">📍 레벨 3</label>
+                                <select id="level3" class="form-select" onchange="updateLevelSelectors(3)">
+                                    <option value="">-- 선택하세요 --</option>
+                                </select>
+                            </div>
+                            
+                            <!-- 선택된 경로 표시 -->
+                            <div id="selectedPath" style="margin-top: 10px; padding: 8px; background: #f8f9fa; border-radius: 6px; font-size: 0.9rem; color: #666; display: none;">
+                                <strong>선택된 경로:</strong> <span id="pathText"></span>
+                            </div>
+                        </div>
                     </div>
                     
                     <div class="form-group">
@@ -860,15 +930,127 @@
         
 
         
-        // 상위 위치 선택 업데이트
+        // 계층형 위치 선택 업데이트
         function updateParentSelect() {
-            const select = document.getElementById('parentLocation');
-            const topLevelLocations = appData.locations.filter(loc => loc.level === 0);
+            // 레벨 0 (최상위) 선택기 초기화
+            const level0Select = document.getElementById('level0');
+            if (level0Select) {
+                const level0Locations = appData.locations.filter(loc => loc.level === 0);
+                
+                level0Select.innerHTML = '<option value="">-- 상위 위치 없음 --</option>' + 
+                    level0Locations.map(location => 
+                        `<option value="${location.id}">${location.name}</option>`
+                    ).join('');
+            }
             
-            select.innerHTML = '<option value="">-- 상위 위치 없음 --</option>' + 
-                topLevelLocations.map(location => 
-                    `<option value="${location.id}">${location.name}</option>`
-                ).join('');
+            // 다른 레벨 선택기들 초기화
+            resetLevelSelectors();
+        }
+        
+        // 레벨 선택기 업데이트 함수
+        function updateLevelSelectors(currentLevel) {
+            const currentSelect = document.getElementById(`level${currentLevel}`);
+            const selectedValue = currentSelect.value;
+            
+            // 하위 레벨들 초기화
+            for (let i = currentLevel + 1; i <= 3; i++) {
+                const selector = document.getElementById(`level${i}Selector`);
+                const select = document.getElementById(`level${i}`);
+                
+                selector.style.display = 'none';
+                select.innerHTML = '<option value="">-- 선택하세요 --</option>';
+            }
+            
+            // 경로 표시 업데이트
+            updateSelectedPath();
+            
+            if (selectedValue) {
+                // 다음 레벨 선택기 표시 및 옵션 로드
+                const nextLevel = currentLevel + 1;
+                if (nextLevel <= 3) {
+                    loadNextLevelOptions(selectedValue, nextLevel);
+                }
+            }
+        }
+        
+        // 다음 레벨 옵션 로드
+        function loadNextLevelOptions(parentId, targetLevel) {
+            const targetSelect = document.getElementById(`level${targetLevel}`);
+            const targetSelector = document.getElementById(`level${targetLevel}Selector`);
+            
+            // 해당 부모 위치의 하위 위치들 찾기
+            const childLocations = appData.locations.filter(loc => 
+                loc.parentId === parentId && loc.level === targetLevel
+            );
+            
+            if (childLocations.length > 0) {
+                targetSelect.innerHTML = '<option value="">-- 선택하세요 --</option>' + 
+                    childLocations.map(location => 
+                        `<option value="${location.id}">${location.name}</option>`
+                    ).join('');
+                
+                targetSelector.style.display = 'block';
+            }
+        }
+        
+        // 선택된 경로 표시 업데이트
+        function updateSelectedPath() {
+            const pathDisplay = document.getElementById('selectedPath');
+            const pathText = document.getElementById('pathText');
+            const path = [];
+            
+            // 각 레벨에서 선택된 값들 수집
+            for (let i = 0; i <= 3; i++) {
+                const select = document.getElementById(`level${i}`);
+                if (select && select.value) {
+                    const selectedOption = select.options[select.selectedIndex];
+                    if (selectedOption && selectedOption.text !== '-- 선택하세요 --') {
+                        path.push(selectedOption.text);
+                    }
+                }
+            }
+            
+            if (path.length > 0) {
+                pathText.textContent = path.join(' > ');
+                pathDisplay.style.display = 'block';
+            } else {
+                pathDisplay.style.display = 'none';
+            }
+        }
+        
+        // 레벨 선택기들 초기화
+        function resetLevelSelectors() {
+            for (let i = 1; i <= 3; i++) {
+                const selector = document.getElementById(`level${i}Selector`);
+                const select = document.getElementById(`level${i}`);
+                
+                if (selector && select) {
+                    selector.style.display = 'none';
+                    select.innerHTML = '<option value="">-- 선택하세요 --</option>';
+                }
+            }
+            
+            // 경로 표시 숨기기
+            const pathDisplay = document.getElementById('selectedPath');
+            if (pathDisplay) {
+                pathDisplay.style.display = 'none';
+            }
+        }
+        
+        // 선택된 상위 위치 ID 반환 (폼 제출 시 사용)
+        function getSelectedParentId() {
+            let selectedParentId = null;
+            
+            // 뒤에서부터 체크하여 가장 깊은 레벨의 선택값 반환
+            for (let i = 3; i >= 0; i--) {
+                const select = document.getElementById(`level${i}`);
+                if (select && select.value) {
+                    selectedParentId = select.value;
+                    break;
+                }
+            }
+            
+            return selectedParentId;
         }
         
         // 빠른 위치 추가
@@ -888,6 +1070,7 @@
         function hideDetailedForm() {
             document.getElementById('detailedForm').style.display = 'none';
             document.getElementById('locationForm').reset();
+            resetLevelSelectors();
         }
         
         // 위치 추가
@@ -1022,7 +1205,7 @@
                 e.preventDefault();
                 
                 const name = document.getElementById('locationName').value.trim();
-                const parentId = document.getElementById('parentLocation').value || null;
+                const parentId = getSelectedParentId();
                 const description = document.getElementById('locationDescription').value.trim();
                 const imageFile = document.getElementById('locationImage').files[0] || null;
                 
@@ -1035,6 +1218,7 @@
                 if (success) {
                     // 폼 초기화
                     document.getElementById('locationForm').reset();
+                    resetLevelSelectors();
                     hideDetailedForm();
                 }
             });
