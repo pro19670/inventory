@@ -1098,14 +1098,35 @@
         
         // 중복 위치 검사 함수
         function checkDuplicateLocation(name, parentId) {
-            if (!appData.locations || !name) return false;
+            console.log('=== 중복 검사 시작 ===');
+            console.log('검사할 이름:', name);
+            console.log('검사할 부모ID:', parentId);
+            console.log('appData.locations 존재여부:', !!appData.locations);
+            console.log('전체 locations 데이터:', appData.locations);
+            
+            if (!appData.locations || !name) {
+                console.log('데이터가 없거나 이름이 비어있음 - false 반환');
+                return false;
+            }
             
             // 같은 이름과 같은 부모ID를 가진 위치가 있는지 확인
-            return appData.locations.some(location => {
+            const duplicates = appData.locations.filter(location => {
                 const nameMatch = location.name.toLowerCase().trim() === name.toLowerCase().trim();
                 const parentMatch = String(location.parentId || '') === String(parentId || '');
+                
+                console.log(`위치 "${location.name}" 검사:`);
+                console.log('  - 이름 매치:', nameMatch, `(${location.name.toLowerCase().trim()} === ${name.toLowerCase().trim()})`);
+                console.log('  - 부모 매치:', parentMatch, `(${String(location.parentId || '')} === ${String(parentId || '')})`);
+                console.log('  - 전체 매치:', nameMatch && parentMatch);
+                
                 return nameMatch && parentMatch;
             });
+            
+            console.log('중복된 위치들:', duplicates);
+            console.log('중복 존재 여부:', duplicates.length > 0);
+            console.log('=== 중복 검사 끝 ===');
+            
+            return duplicates.length > 0;
         }
         
         // 위치의 전체 경로 생성 함수
@@ -1309,12 +1330,21 @@
                 }
                 
                 // 중복 위치 검사
+                console.log('=== 폼 제출 시 중복 검사 ===');
+                console.log('입력된 이름:', name);
+                console.log('선택된 부모ID:', parentId);
+                
                 const isDuplicate = checkDuplicateLocation(name, parentId);
+                console.log('중복 검사 결과:', isDuplicate);
+                
                 if (isDuplicate) {
                     const parentPath = getLocationPath(parentId);
                     const fullPath = parentPath ? `${parentPath} > ${name}` : name;
+                    console.log('중복 감지됨 - 에러 메시지 표시');
                     showMessage(`같은 공간에 "${name}"이(가) 이미 존재합니다.\n경로: ${fullPath}`, 'error');
                     return;
+                } else {
+                    console.log('중복 없음 - 계속 진행');
                 }
                 
                 const success = await addLocation(name, parentId, description, imageFile);
