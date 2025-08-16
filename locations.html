@@ -374,37 +374,124 @@
             }
         }
         
-        .quick-locations {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        .quick-add-container {
+            display: flex;
             gap: 10px;
+            align-items: center;
             margin-bottom: 20px;
+            flex-wrap: wrap;
         }
         
-        .quick-location-btn {
+        .quick-location-btn.main {
             background: #f8f9fa;
             border: 2px dashed #dee2e6;
             color: #666;
-            padding: 15px 10px;
+            padding: 12px 16px;
             border-radius: 12px;
             font-size: 0.9rem;
             cursor: pointer;
             transition: all 0.3s ease;
-            text-align: center;
             display: flex;
-            flex-direction: column;
             align-items: center;
-            gap: 5px;
+            gap: 8px;
+            min-width: 100px;
+            justify-content: center;
         }
         
-        .quick-location-btn:hover {
+        .quick-location-btn.main:hover {
             background: #e9ecef;
             border-color: #667eea;
             color: #667eea;
         }
         
         .quick-location-icon {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
+        }
+        
+        .quick-dropdown {
+            position: relative;
+        }
+        
+        .dropdown-toggle {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+        
+        .dropdown-toggle:hover {
+            background: #5a6fd8;
+            transform: translateY(-1px);
+        }
+        
+        .dropdown-arrow {
+            font-size: 0.8rem;
+            transition: transform 0.3s ease;
+        }
+        
+        .dropdown-toggle.active .dropdown-arrow {
+            transform: rotate(180deg);
+        }
+        
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: white;
+            border: 1px solid #e1e8ed;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            z-index: 1000;
+            min-width: 180px;
+            max-height: 300px;
+            overflow-y: auto;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-top: 5px;
+        }
+        
+        .dropdown-menu.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .dropdown-item {
+            width: 100%;
+            background: none;
+            border: none;
+            padding: 12px 16px;
+            text-align: left;
+            font-size: 0.9rem;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .dropdown-item:hover {
+            background: #f8f9fa;
+            color: #667eea;
+        }
+        
+        .dropdown-item:first-child {
+            border-radius: 12px 12px 0 0;
+        }
+        
+        .dropdown-item:last-child {
+            border-radius: 0 0 12px 12px;
         }
         
         @media (max-width: 768px) {
@@ -427,6 +514,24 @@
             
             .locations-grid {
                 grid-template-columns: 1fr;
+            }
+            
+            .quick-add-container {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 15px;
+            }
+            
+            .quick-location-btn.main {
+                min-width: auto;
+                justify-content: flex-start;
+            }
+            
+            .dropdown-menu {
+                left: 0;
+                right: 0;
+                min-width: auto;
+                width: 100%;
             }
         }
     </style>
@@ -456,31 +561,41 @@
                 
                 <div class="form-group">
                     <label>빠른 추가</label>
-                    <div class="quick-locations">
-                        <button class="quick-location-btn" onclick="quickAddLocation('집', '🏠')">
+                    <div class="quick-add-container">
+                        <button class="quick-location-btn main" onclick="quickAddLocation('집', '🏠')">
                             <span class="quick-location-icon">🏠</span>
                             집
                         </button>
-                        <button class="quick-location-btn" onclick="quickAddLocation('사무실', '🏢')">
+                        <button class="quick-location-btn main" onclick="quickAddLocation('사무실', '🏢')">
                             <span class="quick-location-icon">🏢</span>
                             사무실
                         </button>
-                        <button class="quick-location-btn" onclick="quickAddLocation('차고', '🚗')">
-                            <span class="quick-location-icon">🚗</span>
-                            차고
-                        </button>
-                        <button class="quick-location-btn" onclick="quickAddLocation('창고', '📦')">
-                            <span class="quick-location-icon">📦</span>
-                            창고
-                        </button>
-                        <button class="quick-location-btn" onclick="quickAddLocation('지하실', '🏠')">
-                            <span class="quick-location-icon">🏠</span>
-                            지하실
-                        </button>
-                        <button class="quick-location-btn" onclick="quickAddLocation('다락방', '🏠')">
-                            <span class="quick-location-icon">🏠</span>
-                            다락방
-                        </button>
+                        <div class="quick-dropdown">
+                            <button class="dropdown-toggle" onclick="toggleQuickDropdown()">
+                                <span>더 보기</span>
+                                <span class="dropdown-arrow">▼</span>
+                            </button>
+                            <div class="dropdown-menu" id="quickDropdownMenu">
+                                <button class="dropdown-item" onclick="quickAddLocation('차고', '🚗')">
+                                    🚗 차고
+                                </button>
+                                <button class="dropdown-item" onclick="quickAddLocation('창고', '📦')">
+                                    📦 창고
+                                </button>
+                                <button class="dropdown-item" onclick="quickAddLocation('지하실', '🏠')">
+                                    🏠 지하실
+                                </button>
+                                <button class="dropdown-item" onclick="quickAddLocation('다락방', '🏠')">
+                                    🏠 다락방
+                                </button>
+                                <button class="dropdown-item" onclick="quickAddLocation('베란다', '🌿')">
+                                    🌿 베란다
+                                </button>
+                                <button class="dropdown-item" onclick="quickAddLocation('서재', '📚')">
+                                    📚 서재
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 
@@ -678,6 +793,40 @@
         function quickAddLocation(name, icon) {
             document.getElementById('locationName').value = name;
             document.getElementById('locationName').focus();
+            
+            // 드롭다운이 열려있다면 닫기
+            const dropdownMenu = document.getElementById('quickDropdownMenu');
+            const dropdownToggle = document.querySelector('.dropdown-toggle');
+            if (dropdownMenu.classList.contains('show')) {
+                dropdownMenu.classList.remove('show');
+                dropdownToggle.classList.remove('active');
+            }
+        }
+        
+        // 퀵 드롭다운 토글
+        function toggleQuickDropdown() {
+            const dropdownMenu = document.getElementById('quickDropdownMenu');
+            const dropdownToggle = document.querySelector('.dropdown-toggle');
+            
+            if (dropdownMenu.classList.contains('show')) {
+                dropdownMenu.classList.remove('show');
+                dropdownToggle.classList.remove('active');
+            } else {
+                dropdownMenu.classList.add('show');
+                dropdownToggle.classList.add('active');
+            }
+        }
+        
+        // 드롭다운 외부 클릭 시 닫기
+        function closeDropdownOnClickOutside(event) {
+            const dropdown = document.querySelector('.quick-dropdown');
+            const dropdownMenu = document.getElementById('quickDropdownMenu');
+            const dropdownToggle = document.querySelector('.dropdown-toggle');
+            
+            if (!dropdown.contains(event.target) && dropdownMenu.classList.contains('show')) {
+                dropdownMenu.classList.remove('show');
+                dropdownToggle.classList.remove('active');
+            }
         }
         
         // 위치 추가
@@ -766,6 +915,21 @@
                 if (success) {
                     // 폼 초기화
                     document.getElementById('locationForm').reset();
+                }
+            });
+            
+            // 드롭다운 외부 클릭 이벤트 리스너
+            document.addEventListener('click', closeDropdownOnClickOutside);
+            
+            // ESC 키로 드롭다운 닫기
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    const dropdownMenu = document.getElementById('quickDropdownMenu');
+                    const dropdownToggle = document.querySelector('.dropdown-toggle');
+                    if (dropdownMenu.classList.contains('show')) {
+                        dropdownMenu.classList.remove('show');
+                        dropdownToggle.classList.remove('active');
+                    }
                 }
             });
         }
