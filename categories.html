@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>移댄뀒怨좊━ 愿由?/title>
+    <title>📂 카테고리 관리 - 스마트 물건관리</title>
     <style>
         * {
             box-sizing: border-box;
@@ -12,467 +12,560 @@
         }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background-color: #f5f5f5;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             color: #333;
+            min-height: 100vh;
         }
         
         .container {
-            max-width: 1000px;
+            max-width: 800px;
             margin: 0 auto;
             padding: 20px;
         }
         
         .header {
-            background: white;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
             padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
+            border-radius: 20px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
+            text-align: center;
         }
         
         .header h1 {
-            color: #2c3e50;
-            margin-bottom: 10px;
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
         
-        .nav-links a {
-            margin-right: 15px;
-            color: #3498db;
+        .header p {
+            font-size: 1rem;
+            opacity: 0.9;
+            margin-bottom: 15px;
+        }
+        
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .nav-tab {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
             text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.3);
         }
         
-        .nav-links a:hover {
-            text-decoration: underline;
+        .nav-tab:hover {
+            background: rgba(255, 255, 255, 0.3);
         }
         
-        .category-manager {
-            display: grid;
-            grid-template-columns: 1fr 2fr;
-            gap: 20px;
+        .nav-tab.active {
+            background: rgba(255, 255, 255, 0.9);
+            color: #667eea;
         }
         
         .section {
             background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+            border: 1px solid rgba(0,0,0,0.05);
         }
         
         .section h2 {
             color: #2c3e50;
-            margin-bottom: 15px;
-            font-size: 20px;
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         
         .form-group {
             margin-bottom: 15px;
         }
         
-        label {
+        .form-group label {
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 6px;
             font-weight: 600;
             color: #555;
+            font-size: 0.95rem;
         }
         
-        input, select {
+        .form-input, .form-select {
             width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-        
-        .color-input-group {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-        
-        .color-input {
-            width: 60px;
-            height: 40px;
-            padding: 5px;
-            cursor: pointer;
-        }
-        
-        .icon-selector {
-            display: grid;
-            grid-template-columns: repeat(10, 1fr);
-            gap: 5px;
-            margin-top: 10px;
-            padding: 10px;
-            background: #f8f9fa;
-            border-radius: 4px;
-        }
-        
-        .icon-option {
-            padding: 10px;
-            text-align: center;
-            cursor: pointer;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            background: white;
-            font-size: 20px;
-        }
-        
-        .icon-option:hover {
-            background: #e3f2fd;
-        }
-        
-        .icon-option.selected {
-            background: #2196f3;
-            border-color: #1976d2;
-        }
-        
-        button {
-            background-color: #3498db;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-            transition: background-color 0.3s;
-        }
-        
-        button:hover {
-            background-color: #2980b9;
-        }
-        
-        .delete-btn {
-            background-color: #e74c3c;
-            padding: 5px 10px;
-            font-size: 12px;
-        }
-        
-        .delete-btn:hover {
-            background-color: #c0392b;
-        }
-        
-        .category-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 15px;
-        }
-        
-        .category-card {
-            padding: 20px;
+            padding: 12px 16px;
+            border: 2px solid #e1e8ed;
             border-radius: 8px;
-            text-align: center;
-            position: relative;
-            color: white;
-            min-height: 120px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            transition: transform 0.2s;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: #fff;
         }
         
-        .category-card:hover {
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .btn-add {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        
+        .btn-add:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .categories-list {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .category-item {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+        
+        .category-item:hover {
+            background: #e9ecef;
+            border-color: #667eea;
+        }
+        
+        .category-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
         }
         
         .category-icon {
-            font-size: 36px;
-            margin-bottom: 10px;
+            font-size: 1.5rem;
         }
         
         .category-name {
             font-weight: 600;
-            font-size: 16px;
+            color: #2c3e50;
+            font-size: 1.1rem;
         }
         
         .category-count {
-            font-size: 12px;
-            opacity: 0.9;
-            margin-top: 5px;
+            font-size: 0.9rem;
+            color: #666;
         }
         
-        .delete-category-btn {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            background: rgba(255,255,255,0.3);
-            border: none;
-            color: white;
-            padding: 5px 8px;
-            border-radius: 4px;
+        .btn-delete {
+            background: none;
+            border: 1px solid #dc3545;
+            color: #dc3545;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
             cursor: pointer;
-            font-size: 12px;
+            transition: all 0.3s ease;
         }
         
-        .delete-category-btn:hover {
-            background: rgba(255,255,255,0.5);
+        .btn-delete:hover {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn-delete:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            border-color: #ccc;
+            color: #ccc;
+        }
+        
+        .btn-delete:disabled:hover {
+            background: none;
+            color: #ccc;
         }
         
         .message {
-            padding: 12px;
-            margin: 10px 0;
-            border-radius: 4px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: 500;
             display: none;
         }
         
-        .success {
-            background-color: #d4edda;
+        .message.success {
+            background: #d4edda;
             color: #155724;
             border: 1px solid #c3e6cb;
         }
         
-        .error {
-            background-color: #f8d7da;
+        .message.error {
+            background: #f8d7da;
             color: #721c24;
             border: 1px solid #f5c6cb;
         }
         
+        .message.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+        
+        .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 30px;
+            color: #666;
+        }
+        
+        .loading-spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
         @media (max-width: 768px) {
-            .category-manager {
-                grid-template-columns: 1fr;
+            .container {
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .nav-tabs {
+                flex-wrap: wrap;
+                gap: 8px;
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>?뤇截?移댄뀒怨좊━ 愿由?/h1>
-            <div class="nav-links">
-                <a href="index-v5.html">臾쇨굔 愿由?/a>
-                <a href="locations.html">?꾩튂 愿由?/a>
-                <a href="categories.html">移댄뀒怨좊━ 愿由?/a>
-                <a href="upload.html">?대?吏 ?낅줈??/a>
-            </div>
-        </div>
+        <header class="header">
+            <h1>📂 카테고리 관리</h1>
+            <p>물건을 분류하는 카테고리를 관리하세요</p>
+            <nav class="nav-tabs">
+                <a href="index.html" class="nav-tab">📱 업로드</a>
+                <a href="locations.html" class="nav-tab">📍 위치</a>
+                <a href="categories.html" class="nav-tab active">📂 카테고리</a>
+            </nav>
+        </header>
         
         <div id="message" class="message"></div>
         
-        <div class="category-manager">
-            <div class="section">
-                <h2>??移댄뀒怨좊━ 異붽?</h2>
-                
-                <form id="categoryForm">
-                    <div class="form-group">
-                        <label for="categoryName">移댄뀒怨좊━ ?대쫫 *</label>
-                        <input type="text" id="categoryName" required placeholder="?? ?꾩옄?쒗뭹">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="categoryColor">?됱긽</label>
-                        <div class="color-input-group">
-                            <input type="color" id="categoryColor" class="color-input" value="#3498db">
-                            <input type="text" id="colorHex" value="#3498db" placeholder="#000000">
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>?꾩씠肄??좏깮</label>
-                        <div class="icon-selector" id="iconSelector">
-                            <div class="icon-option" data-icon="?벀">?벀</div>
-                            <div class="icon-option" data-icon="?뮲">?뮲</div>
-                            <div class="icon-option" data-icon="?첄">?첄</div>
-                            <div class="icon-option" data-icon="?몧">?몧</div>
-                            <div class="icon-option" data-icon="?뜋">?뜋</div>
-                            <div class="icon-option" data-icon="?뱴">?뱴</div>
-                            <div class="icon-option" data-icon="?륅툘">?륅툘</div>
-                            <div class="icon-option" data-icon="?뜵">?뜵</div>
-                            <div class="icon-option" data-icon="?㏈">?㏈</div>
-                            <div class="icon-option" data-icon="??>??/div>
-                            <div class="icon-option" data-icon="?렜">?렜</div>
-                            <div class="icon-option" data-icon="?㎏">?㎏</div>
-                            <div class="icon-option" data-icon="?뭻">?뭻</div>
-                            <div class="icon-option" data-icon="?뵩">?뵩</div>
-                            <div class="icon-option" data-icon="?렓">?렓</div>
-                            <div class="icon-option" data-icon="?벑">?벑</div>
-                            <div class="icon-option" data-icon="?몷">?몷</div>
-                            <div class="icon-option" data-icon="?뭵">?뭵</div>
-                            <div class="icon-option" data-icon="?㎡">?㎡</div>
-                            <div class="icon-option" data-icon="?룧">?룧</div>
-                        </div>
-                    </div>
-                    
-                    <button type="submit">移댄뀒怨좊━ 異붽?</button>
-                </form>
-            </div>
+        <div class="section">
+            <h2>➕ 새 카테고리 추가</h2>
             
-            <div class="section">
-                <h2>移댄뀒怨좊━ 紐⑸줉</h2>
-                <div id="categoryList" class="category-grid"></div>
+            <form id="categoryForm">
+                <div class="form-group">
+                    <label for="categoryName">카테고리 이름 *</label>
+                    <input type="text" id="categoryName" class="form-input" required 
+                           placeholder="예: 전자제품, 의류, 도서">
+                </div>
+                
+                <div class="form-group">
+                    <label for="categoryIcon">아이콘 (선택사항)</label>
+                    <input type="text" id="categoryIcon" class="form-input"
+                           placeholder="예: 📱, 👔, 📚 (이모지 하나)">
+                </div>
+                
+                <button type="submit" class="btn-add">
+                    ➕ 카테고리 추가하기
+                </button>
+            </form>
+        </div>
+        
+        <div class="section">
+            <h2>📋 카테고리 목록</h2>
+            <div id="categoriesList" class="categories-list">
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <p>카테고리 목록을 불러오는 중...</p>
+                </div>
             </div>
         </div>
     </div>
-
+    
     <script>
-        const API_URL = 'https://3001-i72krmbsmpnff1c7v14w6-6532622b.e2b.dev/api';
-        let categories = [];
-        let selectedIcon = '?벀';
-        let itemCounts = {};
+        // API URL 자동 감지
+        const API_URL = (function() {
+            const hostname = window.location.hostname;
+            const protocol = window.location.protocol;
+            
+            // E2B Sandbox 환경
+            if (hostname.includes('e2b.dev')) {
+                return 'https://3001-i72krmbsmpnff1c7v14w6-6532622b.e2b.dev/api';
+            }
+            
+            // GitHub Pages
+            if (hostname.endsWith('github.io')) {
+                return 'https://3001-i72krmbsmpnff1c7v14w6-6532622b.e2b.dev/api';
+            }
+            
+            // 로컬 개발 환경
+            if (hostname === 'localhost' || hostname === '127.0.0.1') {
+                return protocol + '//' + hostname + ':3001/api';
+            }
+            
+            // 기본값
+            return 'https://3001-i72krmbsmpnff1c7v14w6-6532622b.e2b.dev/api';
+        })();
         
-        // ?섏씠吏 濡쒕뱶??珥덇린??
+        // 앱 상태
+        let appData = {
+            categories: [],
+            items: [],
+            isOnline: false
+        };
+        
+        // 초기화
         async function init() {
-            await loadCategories();
-            await loadItemCounts();
-            setupEventListeners();
-        }
-        
-        // 移댄뀒怨좊━ ?곗씠??濡쒕뱶
-        async function loadCategories() {
             try {
-                const response = await fetch(API_URL + '/categories');
-                const data = await response.json();
-                categories = data.categories;
-                renderCategories();
+                await loadAllData();
+                updateUI();
+                setupEventListeners();
             } catch (error) {
-                showMessage('移댄뀒怨좊━ 紐⑸줉??遺덈윭?ㅻ뒗???ㅽ뙣?덉뒿?덈떎.', 'error');
+                console.error('초기화 실패:', error);
+                showMessage('앱 초기화에 실패했습니다.', 'error');
             }
         }
         
-        // 媛?移댄뀒怨좊━蹂?臾쇨굔 ??濡쒕뱶
-        async function loadItemCounts() {
+        // 모든 데이터 로드
+        async function loadAllData() {
             try {
-                const response = await fetch(API_URL + '/items');
-                const data = await response.json();
-                itemCounts = {};
-                data.items.forEach(item => {
-                    if (item.categoryId) {
-                        itemCounts[item.categoryId] = (itemCounts[item.categoryId] || 0) + 1;
-                    }
-                });
-                renderCategories();
-            } catch (error) {
-                console.error('Failed to load item counts:', error);
-            }
-        }
-        
-        // ?대깽??由ъ뒪???ㅼ젙
-        function setupEventListeners() {
-            // ?됱긽 ?좏깮湲??숆린??
-            document.getElementById('categoryColor').addEventListener('input', (e) => {
-                document.getElementById('colorHex').value = e.target.value;
-            });
-            
-            document.getElementById('colorHex').addEventListener('input', (e) => {
-                if (/^#[0-9A-F]{6}$/i.test(e.target.value)) {
-                    document.getElementById('categoryColor').value = e.target.value;
+                const [categoriesRes, itemsRes] = await Promise.all([
+                    fetch(`${API_URL}/categories`),
+                    fetch(`${API_URL}/items`)
+                ]);
+                
+                if (categoriesRes.ok) {
+                    const categoriesData = await categoriesRes.json();
+                    appData.categories = categoriesData.categories || [];
+                    appData.isOnline = true;
                 }
-            });
-            
-            // ?꾩씠肄??좏깮
-            document.querySelectorAll('.icon-option').forEach(option => {
-                option.addEventListener('click', () => {
-                    document.querySelectorAll('.icon-option').forEach(o => o.classList.remove('selected'));
-                    option.classList.add('selected');
-                    selectedIcon = option.dataset.icon;
-                });
-            });
-            
-            // 湲곕낯 ?꾩씠肄??좏깮
-            document.querySelector('.icon-option[data-icon="?벀"]').classList.add('selected');
+                
+                if (itemsRes.ok) {
+                    const itemsData = await itemsRes.json();
+                    appData.items = itemsData.items || [];
+                }
+                
+            } catch (error) {
+                console.error('데이터 로드 실패:', error);
+                appData.isOnline = false;
+                showMessage('서버에 연결할 수 없습니다.', 'error');
+            }
         }
         
-        // 移댄뀒怨좊━ 紐⑸줉 ?뚮뜑留?
-        function renderCategories() {
-            const listEl = document.getElementById('categoryList');
+        // UI 업데이트
+        function updateUI() {
+            updateCategoriesList();
+        }
+        
+        // 카테고리 목록 업데이트
+        function updateCategoriesList() {
+            const container = document.getElementById('categoriesList');
             
-            if (categories.length === 0) {
-                listEl.innerHTML = '<p style="text-align: center; color: #7f8c8d;">?깅줉??移댄뀒怨좊━媛 ?놁뒿?덈떎.</p>';
+            if (!appData.isOnline) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-icon">🔌</div><h3>오프라인 상태</h3><p>서버에 연결할 수 없습니다.</p></div>';
                 return;
             }
             
-            listEl.innerHTML = categories.map(category => {
-                const count = itemCounts[category.id] || 0;
+            if (appData.categories.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📂</div>
+                        <h3>등록된 카테고리가 없습니다</h3>
+                        <p>위에서 새 카테고리를 추가해보세요!</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const categoriesHtml = appData.categories.map(category => {
+                // 해당 카테고리의 물건 수 계산
+                const itemCount = appData.items.filter(item => item.categoryId === category.id).length;
+                
                 return `
-                    <div class="category-card" style="background-color: ${category.color};">
-                        <button class="delete-category-btn" onclick="deleteCategory(${category.id})" 
-                            ${count > 0 ? 'disabled title="臾쇨굔???덈뒗 移댄뀒怨좊━????젣?????놁뒿?덈떎"' : ''}>
-                            ??
+                    <div class="category-item">
+                        <div class="category-info">
+                            <span class="category-icon">${category.icon || '📂'}</span>
+                            <div>
+                                <div class="category-name">${category.name}</div>
+                                <div class="category-count">물건 ${itemCount}개</div>
+                            </div>
+                        </div>
+                        <button class="btn-delete" 
+                                onclick="deleteCategory(${category.id}, '${category.name}')"
+                                ${itemCount > 0 ? 'disabled' : ''}>
+                            🗑️ 삭제
                         </button>
-                        <div class="category-icon">${category.icon}</div>
-                        <div class="category-name">${category.name}</div>
-                        <div class="category-count">${count}媛?臾쇨굔</div>
                     </div>
                 `;
             }).join('');
+            
+            container.innerHTML = categoriesHtml;
         }
         
-        // 硫붿떆吏 ?쒖떆
-        function showMessage(text, type) {
-            const messageEl = document.getElementById('message');
-            messageEl.textContent = text;
-            messageEl.className = 'message ' + type;
-            messageEl.style.display = 'block';
-            setTimeout(() => {
-                messageEl.style.display = 'none';
-            }, 3000);
-        }
-        
-        // 移댄뀒怨좊━ ??젣
-        async function deleteCategory(id) {
-            if (!confirm('??移댄뀒怨좊━瑜???젣?섏떆寃좎뒿?덇퉴?')) return;
-            
-            try {
-                const response = await fetch(`${API_URL}/categories/${id}`, {
-                    method: 'DELETE'
-                });
-                
-                if (response.ok) {
-                    showMessage('移댄뀒怨좊━媛 ??젣?섏뿀?듬땲??', 'success');
-                    loadCategories();
-                } else {
-                    const error = await response.json();
-                    showMessage(error.error || '??젣???ㅽ뙣?덉뒿?덈떎.', 'error');
-                }
-            } catch (error) {
-                showMessage('?쒕쾭 ?곌껐???ㅽ뙣?덉뒿?덈떎.', 'error');
-            }
-        }
-        
-        // ???쒖텧 泥섎━
-        document.getElementById('categoryForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const formData = {
-                name: document.getElementById('categoryName').value.trim(),
-                color: document.getElementById('categoryColor').value,
-                icon: selectedIcon
-            };
-            
-            if (!formData.name) {
-                showMessage('移댄뀒怨좊━ ?대쫫???낅젰?섏꽭??', 'error');
-                return;
+        // 카테고리 추가
+        async function addCategory(name, icon = null) {
+            if (!appData.isOnline) {
+                showMessage('오프라인 상태에서는 카테고리를 추가할 수 없습니다.', 'error');
+                return false;
             }
             
             try {
-                const response = await fetch(API_URL + '/categories', {
+                const response = await fetch(`${API_URL}/categories`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify(formData)
+                    body: JSON.stringify({
+                        name: name.trim(),
+                        icon: icon ? icon.trim() : null
+                    })
                 });
                 
                 const data = await response.json();
                 
-                if (response.ok) {
-                    showMessage('移댄뀒怨좊━媛 異붽??섏뿀?듬땲??', 'success');
-                    document.getElementById('categoryForm').reset();
-                    document.getElementById('categoryColor').value = '#3498db';
-                    document.getElementById('colorHex').value = '#3498db';
-                    loadCategories();
+                if (data.success) {
+                    showMessage(`"${name}" 카테고리가 추가되었습니다!`, 'success');
+                    await loadAllData();
+                    updateUI();
+                    return true;
                 } else {
-                    showMessage(data.error || '移댄뀒怨좊━ 異붽????ㅽ뙣?덉뒿?덈떎.', 'error');
+                    showMessage(data.error || '카테고리 추가에 실패했습니다.', 'error');
+                    return false;
                 }
             } catch (error) {
-                showMessage('?쒕쾭 ?곌껐???ㅽ뙣?덉뒿?덈떎.', 'error');
+                console.error('카테고리 추가 실패:', error);
+                showMessage('카테고리 추가 중 오류가 발생했습니다.', 'error');
+                return false;
             }
-        });
+        }
         
-        // 珥덇린??
-        init();
+        // 카테고리 삭제
+        async function deleteCategory(categoryId, categoryName) {
+            if (!confirm(`"${categoryName}" 카테고리를 정말 삭제하시겠습니까?`)) {
+                return;
+            }
+            
+            if (!appData.isOnline) {
+                showMessage('오프라인 상태에서는 카테고리를 삭제할 수 없습니다.', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/categories/${categoryId}`, {
+                    method: 'DELETE'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage(`"${categoryName}" 카테고리가 삭제되었습니다.`, 'success');
+                    await loadAllData();
+                    updateUI();
+                } else {
+                    showMessage(data.error || '카테고리 삭제에 실패했습니다.', 'error');
+                }
+            } catch (error) {
+                console.error('카테고리 삭제 실패:', error);
+                showMessage('카테고리 삭제 중 오류가 발생했습니다.', 'error');
+            }
+        }
+        
+        // 이벤트 리스너 설정
+        function setupEventListeners() {
+            // 카테고리 추가 폼 제출
+            document.getElementById('categoryForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const name = document.getElementById('categoryName').value.trim();
+                const icon = document.getElementById('categoryIcon').value.trim();
+                
+                if (!name) {
+                    showMessage('카테고리 이름을 입력해주세요.', 'error');
+                    return;
+                }
+                
+                const success = await addCategory(name, icon || null);
+                if (success) {
+                    // 폼 초기화
+                    document.getElementById('categoryForm').reset();
+                }
+            });
+        }
+        
+        // 메시지 표시
+        function showMessage(text, type) {
+            const messageEl = document.getElementById('message');
+            messageEl.textContent = text;
+            messageEl.className = `message ${type} show`;
+            
+            setTimeout(() => {
+                messageEl.classList.remove('show');
+            }, 4000);
+        }
+        
+        // 페이지 로드 시 초기화
+        document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>
