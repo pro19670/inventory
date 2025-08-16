@@ -105,33 +105,51 @@
             transform: scale(1.1);
         }
         
-        .fab {
-            position: fixed;
-            bottom: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 56px;
-            height: 56px;
+        /* FAB는 이제 네비게이션 바 내부에 통합됨 */
+        .fab-nav-item {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: #666;
+            padding: 8px 4px;
+            transition: all 0.2s;
+            min-width: 60px;
+        }
+        
+        .fab-nav-item .fab-icon {
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            border: none;
-            font-size: 24px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            z-index: 99;
             display: flex;
             align-items: center;
             justify-content: center;
+            font-size: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            margin-bottom: 4px;
+        }
+        
+        .fab-nav-item div {
+            font-size: 10px;
+            margin-top: 2px;
         }
         
         .fab-menu {
             position: fixed;
             bottom: 150px;
-            right: 20px;
+            left: 50%;
+            transform: translateX(-50%);
             display: none;
-            flex-direction: column;
+            flex-direction: row;
             gap: 15px;
             z-index: 98;
+            background: rgba(255,255,255,0.95);
+            padding: 15px;
+            border-radius: 25px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
         }
         
         .fab-menu.show {
@@ -926,8 +944,7 @@
     
 
     
-    <button class="fab" onclick="toggleFabMenu()">➕</button>
-    
+    <!-- FAB 메뉴는 이제 네비게이션 바에서 호출됨 -->
     <div class="fab-menu" id="fabMenu">
         <button class="fab-option" onclick="openPhotoCapture()" title="사진으로 등록">📷</button>
         <button class="fab-option" onclick="openAlbumSelect()" title="앨범에서 선택">📱</button>
@@ -950,6 +967,10 @@
         <a href="inventory.html" class="nav-item">
             <span>📦</span>
             <div>재고관리</div>
+        </a>
+        <a href="#" class="fab-nav-item" onclick="toggleFabMenu()">
+            <span class="fab-icon">➕</span>
+            <div>물품추가</div>
         </a>
         <a href="user-profile.html" class="nav-item">
             <span>⚙️</span>
