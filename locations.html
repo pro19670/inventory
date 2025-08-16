@@ -843,132 +843,6 @@
                 });
             }
         }
-            
-            // 최상위 위치들만 표시하되 중복 제거
-            const allTopLevelLocations = appData.locations.filter(loc => loc.level === 0);
-            
-            // 이름이 같은 위치들을 그룹화하고 통합
-            const locationGroups = {};
-            allTopLevelLocations.forEach(loc => {
-                const key = loc.name.toLowerCase().trim();
-                if (!locationGroups[key]) {
-                    locationGroups[key] = [];
-                }
-                locationGroups[key].push(loc);
-            });
-            
-            // 각 그룹에서 대표 위치 선택 (가장 최근에 생성된 것 또는 가장 많은 정보를 가진 것)
-            const topLevelLocations = Object.values(locationGroups).map(group => {
-                if (group.length === 1) {
-                    return group[0];
-                }
-                
-                // 여러 개가 있으면 가장 완전한 정보를 가진 것을 선택
-                return group.reduce((best, current) => {
-                    const bestScore = (best.description ? 1 : 0) + (best.imageUrl ? 1 : 0) + (best.type ? 1 : 0);
-                    const currentScore = (current.description ? 1 : 0) + (current.imageUrl ? 1 : 0) + (current.type ? 1 : 0);
-                    
-                    if (currentScore > bestScore) {
-                        return current;
-                    } else if (currentScore === bestScore) {
-                        // 점수가 같으면 최신 것 선택
-                        return new Date(current.createdAt || 0) > new Date(best.createdAt || 0) ? current : best;
-                    }
-                    return best;
-                });
-            });
-            
-            const locationsHtml = topLevelLocations.map(location => {
-                // 하위 위치들 (같은 이름의 모든 위치의 하위 위치들 포함)
-                const sameNameLocations = locationGroups[location.name.toLowerCase().trim()] || [location];
-                const allSubLocations = [];
-                
-                sameNameLocations.forEach(parentLoc => {
-                    const subs = appData.locations.filter(loc => loc.parentId === parentLoc.id);
-                    allSubLocations.push(...subs);
-                });
-                
-                // 하위 위치들도 중복 제거
-                const subLocationGroups = {};
-                allSubLocations.forEach(loc => {
-                    const key = `${loc.name}_${loc.level}`;
-                    if (!subLocationGroups[key]) {
-                        subLocationGroups[key] = loc;
-                    }
-                });
-                
-                const subLocations = Object.values(subLocationGroups);
-                
-                // 해당 위치에 있는 물건 수 계산 (같은 이름의 모든 위치 포함)
-                const sameNameLocationIds = sameNameLocations.map(loc => loc.id);
-                const itemCount = appData.items.filter(item => sameNameLocationIds.includes(item.locationId)).length;
-                
-                // 위치 이미지 처리
-                const locationImage = location.imageUrl ? 
-                    `<img src="${location.imageUrl}" class="location-image" alt="${location.name}">` :
-                    `<div class="location-image-placeholder">${getLocationIcon(location.name)}</div>`;
-                
-                // 위치 경로 표시
-                const pathString = location.pathString || location.name;
-                
-                return `
-                    <div class="location-item" data-id="${location.id}">
-                        <div class="location-main" onclick="toggleLocation(${location.id})">
-                            <div class="location-info">
-                                ${locationImage}
-                                <div style="flex: 1;">
-                                    <div class="location-name">${location.name}</div>
-                                    ${location.type ? `<div class="location-path">${location.type}</div>` : ''}
-                                    ${location.description ? `<div class="location-path">${location.description}</div>` : ''}
-                                    <div class="location-stats">
-                                        <span>물건 ${itemCount}개</span>
-                                        ${subLocations.length > 0 ? `<span>하위 ${subLocations.length}개</span>` : ''}
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="location-actions">
-                                <button class="btn-delete" 
-                                        onclick="event.stopPropagation(); deleteLocation(${location.id}, '${location.name}')"
-                                        ${itemCount > 0 || subLocations.length > 0 ? 'disabled' : ''}>
-                                    🗑️
-                                </button>
-                                ${subLocations.length > 0 ? '<span class="toggle-icon">▶</span>' : ''}
-                            </div>
-                        </div>
-                        ${subLocations.length > 0 ? `
-                            <div class="sub-locations">
-                                ${subLocations.map(subLoc => {
-                                    const subItemCount = subLoc.itemCount || appData.items.filter(item => item.locationId === subLoc.id).length;
-                                    const subImage = subLoc.imageUrl ? 
-                                        `<img src="${subLoc.imageUrl}" class="location-image" alt="${subLoc.name}" style="width: 30px; height: 30px;">` :
-                                        `<span style="margin-right: 8px;">${getLocationIcon(subLoc.name)}</span>`;
-                                    
-                                    return `
-                                        <div class="sub-location">
-                                            <div class="sub-location-info">
-                                                ${subImage}
-                                                <div>
-                                                    <span class="sub-location-name">${subLoc.name}</span>
-                                                    ${subLoc.type ? `<div class="location-path">${subLoc.type}</div>` : ''}
-                                                    <span class="sub-location-count">물건 ${subItemCount}개</span>
-                                                </div>
-                                            </div>
-                                            <button class="btn-delete" 
-                                                    onclick="deleteLocation(${subLoc.id}, '${subLoc.name}')"
-                                                    ${subItemCount > 0 ? 'disabled' : ''}>
-                                                🗑️
-                                            </button>
-                                        </div>
-                                    `;
-                                }).join('')}
-                            </div>
-                        ` : ''}
-                    </div>
-                `;
-            }).join('');
-            
-            container.innerHTML = locationsHtml;
-        }
         
         // 위치 아이콘 결정
         function getLocationIcon(name) {
@@ -984,11 +858,7 @@
             return '📍';
         }
         
-        // 위치 토글
-        function toggleLocation(locationId) {
-            const locationItem = document.querySelector(`.location-item[data-id="${locationId}"]`);
-            locationItem.classList.toggle('expanded');
-        }
+
         
         // 상위 위치 선택 업데이트
         function updateParentSelect() {
