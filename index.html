@@ -2045,6 +2045,9 @@
                 // 이미지가 있으면 FormData 사용, 없으면 JSON 사용
                 let requestOptions;
                 
+                // 인증 토큰 가져오기
+                const token = localStorage.getItem('familyAuthToken');
+                
                 if (imageFile) {
                     // 이미지가 있는 경우: FormData 사용
                     const formData = new FormData();
@@ -2058,6 +2061,7 @@
                     
                     requestOptions = {
                         method: 'POST',
+                        headers: token ? { 'Authorization': `Bearer ${token}` } : {},
                         body: formData
                         // FormData일 때는 Content-Type 헤더를 설정하지 않음
                     };
@@ -2072,36 +2076,56 @@
                         description: descriptionInput ? descriptionInput.value.trim() : ''
                     };
                     
+                    const headers = { 'Content-Type': 'application/json' };
+                    if (token) {
+                        headers['Authorization'] = `Bearer ${token}`;
+                    }
+                    
                     requestOptions = {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: headers,
                         body: JSON.stringify(jsonData)
                     };
                 }
                 
                 try {
+                    console.log('물품 등록 요청 시작:', nameInput.value.trim());
                     const response = await fetch(`${API_URL}/items`, requestOptions);
                     
+                    console.log('서버 응답 상태:', response.status);
+                    
                     if (response.ok) {
+                        const result = await response.json();
+                        console.log('등록 성공:', result);
+                        
                         await loadData();
                         closeModal('addModal');
                         itemForm.reset();
                         resetItemLevelSelectors();
+                        
+                        // 이미지 미리보기 숨기기
+                        const imagePreview = document.getElementById('imagePreview');
+                        if (imagePreview) {
+                            imagePreview.style.display = 'none';
+                        }
+                        
                         showToast('저장되었습니다');
                         
                         // 알림
                         if ('Notification' in window && Notification.permission === 'granted') {
                             new Notification('물건 추가됨', {
-                                body: formData.name,
+                                body: nameInput.value.trim(),
                                 icon: '📦'
                             });
                         }
                     } else {
-                        throw new Error('저장 실패');
+                        const errorText = await response.text();
+                        console.error('서버 오류:', response.status, errorText);
+                        throw new Error(`서버 오류: ${response.status}`);
                     }
                 } catch (error) {
                     console.error('저장 실패:', error);
-                    showToast('저장에 실패했습니다');
+                    showToast(`저장에 실패했습니다: ${error.message}`);
                 } finally {
                     hideLoading();
                 }
@@ -2111,6 +2135,7 @@
         // 영수증 아이템 저장
         async function saveReceiptItems(itemCount) {
             const items = [];
+            const token = localStorage.getItem('familyAuthToken');
             
             for (let i = 0; i < itemCount; i++) {
                 const nameInput = document.getElementById(`receipt-name-${i}`);
@@ -2135,9 +2160,14 @@
             
             try {
                 for (const item of items) {
+                    const headers = { 'Content-Type': 'application/json' };
+                    if (token) {
+                        headers['Authorization'] = `Bearer ${token}`;
+                    }
+                    
                     const response = await fetch(`${API_URL}/items`, {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: headers,
                         body: JSON.stringify(item)
                     });
                     
