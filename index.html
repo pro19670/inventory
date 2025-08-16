@@ -107,34 +107,48 @@
         
         /* FAB는 이제 네비게이션 바 내부에 통합됨 */
         .fab-nav-item {
-            position: relative;
+            flex: 1;
+            text-align: center;
+            padding: 8px 5px;
+            color: #666;
+            text-decoration: none;
+            font-size: 11px;
+            font-weight: 500;
             display: flex;
             flex-direction: column;
             align-items: center;
-            text-decoration: none;
-            color: #666;
-            padding: 8px 4px;
-            transition: all 0.2s;
-            min-width: 60px;
+            gap: 4px;
+            border-radius: 12px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
         }
         
         .fab-nav-item .fab-icon {
-            width: 40px;
-            height: 40px;
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 20px;
+            font-size: 16px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.3);
             margin-bottom: 4px;
         }
         
         .fab-nav-item div {
-            font-size: 10px;
+            font-size: 11px;
+            font-weight: 500;
             margin-top: 2px;
+        }
+        
+        .fab-nav-item:hover {
+            background: rgba(102, 126, 234, 0.08);
+        }
+        
+        .fab-nav-item:hover .fab-icon {
+            transform: scale(1.1);
         }
         
         .fab-menu {
