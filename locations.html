@@ -517,6 +517,112 @@
                 max-height: 500px;
             }
         }
+        
+        /* Edit Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            transform: scale(0.8) translateY(20px);
+            transition: all 0.3s ease;
+        }
+        
+        .modal-overlay.show .modal-content {
+            transform: scale(1) translateY(0);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f1f3f4;
+        }
+        
+        .modal-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin: 0;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+            padding: 5px;
+            line-height: 1;
+            transition: color 0.2s ease;
+        }
+        
+        .modal-close:hover {
+            color: #dc3545;
+        }
+        
+        .btn-edit {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        
+        .btn-edit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(40, 167, 69, 0.3);
+        }
+        
+        .btn-cancel {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        
+        .btn-cancel:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
 
         @media (max-width: 768px) {
             .container {
@@ -704,6 +810,45 @@
         </div>
     </div>
     
+    <!-- Edit Location Modal -->
+    <div id="editModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">✏️ 위치 수정</h3>
+                <button class="modal-close" onclick="closeEditModal()">&times;</button>
+            </div>
+            <form id="editLocationForm">
+                <div class="form-group">
+                    <label for="editLocationName">위치 이름 *</label>
+                    <input type="text" id="editLocationName" class="form-input" required 
+                           placeholder="예: 우리집 거실, 회사 회의실">
+                </div>
+                
+                <div class="form-group">
+                    <label for="editLocationDescription">설명 (선택사항)</label>
+                    <input type="text" id="editLocationDescription" class="form-input" 
+                           placeholder="예: 큰 서랍이 있는 책상">
+                </div>
+                
+                <div class="form-group">
+                    <label>현재 위치</label>
+                    <div id="editCurrentPath" style="padding: 8px; background: #f8f9fa; border-radius: 6px; color: #666; font-size: 0.9rem;">
+                        현재 경로가 여기에 표시됩니다
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button type="submit" class="btn-edit" style="flex: 1;">
+                        ✅ 수정 완료
+                    </button>
+                    <button type="button" class="btn-cancel" onclick="closeEditModal()" style="flex: 0 0 auto; padding: 12px 20px;">
+                        취소
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
     <script>
         // API URL 자동 감지
         const API_URL = (function() {
@@ -864,9 +1009,15 @@
                     </div>
                     <div style="display: flex; align-items: center; gap: 8px;">
                         <span class="hierarchy-level">${levelName}</span>
+                        <button onclick="event.stopPropagation(); editLocation(${location.id})" 
+                                style="background: none; border: 1px solid #28a745; color: #28a745; padding: 4px 8px; border-radius: 4px; font-size: 12px; cursor: pointer; margin-right: 4px;"
+                                title="수정">
+                            ✏️
+                        </button>
                         <button onclick="event.stopPropagation(); deleteLocation(${location.id}, '${location.name}')" 
                                 style="background: none; border: 1px solid #dc3545; color: #dc3545; padding: 4px 8px; border-radius: 4px; font-size: 12px; cursor: pointer;"
-                                ${itemCount > 0 || hasChildren ? 'disabled' : ''}>
+                                ${itemCount > 0 || hasChildren ? 'disabled' : ''}
+                                title="삭제">
                             🗑️
                         </button>
                     </div>
@@ -1286,6 +1437,83 @@
             }
         }
         
+        // 위치 수정 모달 열기
+        function editLocation(locationId) {
+            const location = appData.locations.find(loc => loc.id === locationId);
+            if (!location) {
+                showMessage('수정할 위치를 찾을 수 없습니다.', 'error');
+                return;
+            }
+            
+            // 폼에 현재 데이터 채우기
+            document.getElementById('editLocationName').value = location.name;
+            document.getElementById('editLocationDescription').value = location.description || '';
+            
+            // 현재 경로 표시
+            const currentPath = getLocationPath(locationId);
+            document.getElementById('editCurrentPath').textContent = currentPath || '최상위 위치';
+            
+            // 수정할 위치 ID 저장
+            document.getElementById('editLocationForm').dataset.locationId = locationId;
+            
+            // 모달 열기
+            const modal = document.getElementById('editModal');
+            modal.classList.add('show');
+            
+            // 이름 입력란에 포커스
+            setTimeout(() => {
+                document.getElementById('editLocationName').focus();
+                document.getElementById('editLocationName').select();
+            }, 300);
+        }
+        
+        // 위치 수정 모달 닫기
+        function closeEditModal() {
+            const modal = document.getElementById('editModal');
+            modal.classList.remove('show');
+            
+            // 폼 초기화
+            document.getElementById('editLocationForm').reset();
+            delete document.getElementById('editLocationForm').dataset.locationId;
+        }
+        
+        // 위치 수정 처리
+        async function updateLocation(locationId, name, description) {
+            if (!appData.isOnline) {
+                showMessage('오프라인 상태에서는 위치를 수정할 수 없습니다.', 'error');
+                return false;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/locations/${locationId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name: name.trim(),
+                        description: description.trim()
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage(`"${name}" 위치가 수정되었습니다!`, 'success');
+                    await loadAllData();
+                    updateUI();
+                    return true;
+                } else {
+                    showMessage(data.error || '위치 수정에 실패했습니다.', 'error');
+                    return false;
+                }
+            } catch (error) {
+                console.error('위치 수정 실패:', error);
+                showMessage('위치 수정 중 오류가 발생했습니다.', 'error');
+                return false;
+            }
+        }
+        
         // 위치 삭제
         async function deleteLocation(locationId, locationName) {
             if (!confirm(`"${locationName}" 위치를 정말 삭제하시겠습니까?`)) {
@@ -1319,6 +1547,68 @@
         
         // 이벤트 리스너 설정
         function setupEventListeners() {
+            // 위치 수정 폼 제출
+            document.getElementById('editLocationForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const locationId = e.target.dataset.locationId;
+                const name = document.getElementById('editLocationName').value.trim();
+                const description = document.getElementById('editLocationDescription').value.trim();
+                
+                if (!name) {
+                    showMessage('위치 이름을 입력해주세요.', 'error');
+                    return;
+                }
+                
+                if (!locationId) {
+                    showMessage('수정할 위치 정보가 없습니다.', 'error');
+                    return;
+                }
+                
+                // 현재 위치 정보 가져오기
+                const currentLocation = appData.locations.find(loc => loc.id == locationId);
+                if (!currentLocation) {
+                    showMessage('수정할 위치를 찾을 수 없습니다.', 'error');
+                    return;
+                }
+                
+                // 중복 검사 (같은 이름이지만 다른 위치인 경우에만)
+                if (name.toLowerCase().trim() !== currentLocation.name.toLowerCase().trim()) {
+                    const isDuplicate = checkDuplicateLocation(name, currentLocation.parentId);
+                    if (isDuplicate) {
+                        const parentPath = getLocationPath(currentLocation.parentId);
+                        const fullPath = parentPath ? `${parentPath} > ${name}` : name;
+                        const errorMessage = `같은 공간에 "${name}"이(가) 이미 존재합니다.\n경로: ${fullPath}`;
+                        
+                        showMessage(errorMessage, 'error');
+                        alert(`⚠️ 중복 위치 감지\n\n${errorMessage}`);
+                        return;
+                    }
+                }
+                
+                const success = await updateLocation(locationId, name, description);
+                if (success) {
+                    closeEditModal();
+                }
+            });
+            
+            // 모달 외부 클릭 시 닫기
+            document.getElementById('editModal').addEventListener('click', (e) => {
+                if (e.target.classList.contains('modal-overlay')) {
+                    closeEditModal();
+                }
+            });
+            
+            // ESC 키로 모달 닫기
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    const modal = document.getElementById('editModal');
+                    if (modal.classList.contains('show')) {
+                        closeEditModal();
+                    }
+                }
+            });
+            
             // 위치 추가 폼 제출
             document.getElementById('locationForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
