@@ -2,163 +2,2275 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>스마트 재물관리 시스템</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#667eea">
+    <title>물품관리 - 스마트 재물관리</title>
     <style>
         * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            padding-bottom: 70px;
+            overflow-x: hidden;
+        }
+        
+        .mobile-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
+            color: white;
+            padding: 20px 15px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            backdrop-filter: blur(10px);
+        }
+        
+        .mobile-header h1 {
+            font-size: 22px;
+            text-align: center;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            margin: 0;
+        }
+        
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0 8px;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+            z-index: 100;
+            border-top: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .nav-item {
+            flex: 1;
+            text-align: center;
+            padding: 8px 5px;
+            color: #666;
+            text-decoration: none;
+            font-size: 11px;
+            font-weight: 500;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            border-radius: 12px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+        
+        .nav-item:hover {
+            background: rgba(102, 126, 234, 0.08);
+        }
+        
+        .nav-item.active {
+            color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+        }
+        
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 3px;
+            background: #667eea;
+            border-radius: 2px;
+        }
+        
+        .nav-item span {
+            font-size: 22px;
+            transition: transform 0.2s ease;
+        }
+        
+        .nav-item.active span {
+            transform: scale(1.1);
+        }
+        
+        .fab {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            font-size: 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 99;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .fab-menu {
+            position: fixed;
+            bottom: 150px;
+            right: 20px;
+            display: none;
+            flex-direction: column;
+            gap: 15px;
+            z-index: 98;
+        }
+        
+        .fab-menu.show {
+            display: flex;
+        }
+        
+        .fab-option {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            font-size: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .mobile-content {
+            padding: 15px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        
+        .stat-number {
+            font-size: 28px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #999;
+            margin-top: 5px;
+        }
+        
+        .search-bar {
+            background: white;
+            padding: 10px;
+            border-radius: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .search-input {
+            flex: 1;
+            border: none;
+            outline: none;
+            font-size: 16px;
+            padding: 5px;
+        }
+        
+        .search-btn {
+            background: none;
+            border: none;
+            color: #667eea;
+            font-size: 20px;
+            padding: 5px;
+        }
+        
+        .item-card {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 10px;
+        }
+        
+        .item-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .item-quantity {
+            background: #667eea;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 14px;
+        }
+        
+        .item-info {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .info-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 8px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .item-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .action-btn {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .edit-btn {
+            background: #f39c12;
+        }
+        
+        .delete-btn {
+            background: #e74c3c;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 200;
+        }
+        
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: white;
+            width: 90%;
+            max-height: 80vh;
+            border-radius: 20px;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #999;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+            font-size: 14px;
+        }
+        
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            background: #f8f8f8;
+        }
+        
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+        }
+        
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 20px;
+        }
+        
+        .receipt-upload {
+            border: 2px dashed #667eea;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            background: #f8f9ff;
+            margin-bottom: 20px;
+        }
+        
+        .receipt-upload-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        
+        .receipt-upload-btn {
+            background: #667eea;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            border: none;
+            font-size: 14px;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+        
+        .voice-search-btn {
+            position: fixed;
+            bottom: 150px;
+            left: 20px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: white;
+            border: 2px solid #667eea;
+            color: #667eea;
+            font-size: 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            z-index: 99;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .voice-search-btn.listening {
+            animation: pulse 1.5s infinite;
+            background: #ff4444;
+            color: white;
+            border-color: #ff4444;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 90px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-size: 14px;
+            z-index: 300;
+            display: none;
+        }
+        
+        .toast.show {
+            display: block;
+            animation: slideUp 0.3s ease;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+        
+        .swipeable {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .swipe-actions {
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 80px;
+            background: #e74c3c;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
+            transform: translateX(100%);
+            transition: transform 0.3s;
         }
         
-        .container {
-            text-align: center;
-            max-width: 600px;
-            padding: 40px 20px;
+        .swipeable.swiped .swipe-actions {
+            transform: translateX(0);
         }
         
-        .logo {
-            font-size: 4rem;
-            margin-bottom: 20px;
+        .loading {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 400;
         }
         
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 20px;
-            font-weight: 300;
+        .loading.show {
+            display: block;
         }
         
-        .subtitle {
-            font-size: 1.2rem;
-            margin-bottom: 40px;
-            opacity: 0.9;
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
         }
         
-        .buttons {
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .tab-menu {
             display: flex;
-            gap: 20px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-        
-        .btn {
-            padding: 15px 30px;
-            background: rgba(255, 255, 255, 0.2);
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50px;
-            color: white;
-            text-decoration: none;
-            font-size: 1.1rem;
-            font-weight: 600;
-            transition: all 0.3s;
-            backdrop-filter: blur(10px);
-        }
-        
-        .btn:hover {
-            background: rgba(255, 255, 255, 0.3);
-            border-color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-        }
-        
-        .btn-primary {
-            background: rgba(255, 255, 255, 0.9);
-            color: #667eea;
-        }
-        
-        .btn-primary:hover {
             background: white;
-            color: #667eea;
+            border-radius: 12px;
+            padding: 5px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         }
         
-        .features {
-            margin-top: 60px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 30px;
+        .tab-item {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #999;
+            transition: all 0.3s;
         }
         
-        .feature {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 30px 20px;
-            border-radius: 20px;
-            backdrop-filter: blur(10px);
+        .tab-item.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
         }
         
-        .feature-icon {
-            font-size: 3rem;
-            margin-bottom: 15px;
+        .pull-to-refresh {
+            position: fixed;
+            top: -60px;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: top 0.3s;
+            z-index: 90;
         }
         
-        .feature h3 {
-            font-size: 1.3rem;
+        .pull-to-refresh.show {
+            top: 0;
+        }
+        
+        /* 계층형 선택기 스타일 */
+        .hierarchy-selector {
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            background: #f8f9fa;
+        }
+        
+        .level-selector {
+            margin-bottom: 12px;
+        }
+        
+        .level-selector:last-child {
+            margin-bottom: 0;
+        }
+        
+        .level-selector label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #495057;
+            font-size: 0.9rem;
+        }
+        
+        .level-selector select {
+            width: 100%;
+            margin-bottom: 0;
+        }
+        
+        #selectedItemPath {
+            border-left: 3px solid #667eea;
+            background: linear-gradient(90deg, rgba(102, 126, 234, 0.05) 0%, transparent 100%);
+        }
+        
+        /* 챗봇 스타일 */
+        .chatbot-header {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .chatbot-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .chatbot-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+        
+        .chatbot-title h3 {
+            margin: 0;
+            font-size: 18px;
+            color: #333;
+            font-weight: 600;
+        }
+        
+        .chatbot-status {
+            margin: 0;
+            font-size: 14px;
+            color: #28a745;
+            font-weight: 500;
+        }
+        
+        .chatbot-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .chat-action-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: none;
+            background: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .chat-action-btn:hover {
+            background: #e9ecef;
+            transform: scale(1.1);
+        }
+        
+        /* 챗봇 메시지 영역 */
+        .chat-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            overflow: hidden;
+            height: 400px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .message {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+        }
+        
+        .message.user-message {
+            flex-direction: row-reverse;
+        }
+        
+        .message-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+        
+        .user-message .message-avatar {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+        
+        .message-content {
+            max-width: 70%;
+        }
+        
+        .message-bubble {
+            background: #f8f9fa;
+            padding: 12px 16px;
+            border-radius: 18px;
+            font-size: 14px;
+            line-height: 1.4;
+            word-wrap: break-word;
+        }
+        
+        .user-message .message-bubble {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .message-time {
+            font-size: 11px;
+            color: #6c757d;
+            margin-top: 4px;
+            text-align: center;
+        }
+        
+        /* 메시지 입력 영역 */
+        .chat-input-area {
+            border-top: 1px solid #e9ecef;
+            padding: 15px 20px;
+        }
+        
+        .chat-input-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
             margin-bottom: 10px;
         }
         
-        .feature p {
-            opacity: 0.9;
-            line-height: 1.5;
+        .chat-input {
+            flex: 1;
+            border: 1px solid #e9ecef;
+            border-radius: 25px;
+            padding: 12px 16px;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.2s;
         }
         
-        @media (max-width: 768px) {
-            .logo { font-size: 3rem; }
-            h1 { font-size: 2rem; }
-            .buttons { flex-direction: column; align-items: center; }
-            .btn { width: 250px; }
+        .chat-input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .chat-send-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .chat-send-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        
+        .send-icon {
+            font-size: 16px;
+        }
+        
+        /* 빠른 응답 버튼들 */
+        .quick-replies {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .quick-reply-btn {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 20px;
+            padding: 8px 12px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        
+        .quick-reply-btn:hover {
+            background: #e9ecef;
+            border-color: #667eea;
+            color: #667eea;
+        }
+        
+        /* 스크롤바 스타일 */
+        .chat-messages::-webkit-scrollbar {
+            width: 4px;
+        }
+        
+        .chat-messages::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 2px;
+        }
+        
+        .chat-messages::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+        
+        /* 타이핑 표시 애니메이션 */
+        .typing-indicator {
+            opacity: 0.8;
+        }
+        
+        .typing-dots {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 12px 16px !important;
+        }
+        
+        .typing-dots span {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #999;
+            animation: typing 1.4s infinite;
+        }
+        
+        .typing-dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .typing-dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+                opacity: 0.4;
+            }
+            30% {
+                transform: translateY(-10px);
+                opacity: 1;
+            }
+        }
+        
+        /* 비활성화된 입력 필드 */
+        .chat-input:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="logo">🏠</div>
-        <h1>스마트 재물관리</h1>
-        <p class="subtitle">AI 기반 물건 관리 시스템</p>
-        
-        <div class="buttons">
-            <a href="index-mobile.html" class="btn btn-primary">📱 모바일 버전</a>
-            <a href="index-v5.html" class="btn">💻 데스크톱 버전</a>
+    <div class="mobile-header">
+        <h1>물품관리</h1>
+    </div>
+    
+    <div class="pull-to-refresh" id="pullToRefresh">
+        <span>새로고침 중...</span>
+    </div>
+    
+    <div class="mobile-content">
+        <!-- 챗봇 헤더 -->
+        <div class="chatbot-header">
+            <div class="chatbot-info">
+                <div class="chatbot-avatar">🤖</div>
+                <div class="chatbot-title">
+                    <h3>물품관리 도우미</h3>
+                    <p class="chatbot-status">온라인 • 언제든 질문하세요</p>
+                </div>
+            </div>
+            <div class="chatbot-actions">
+                <button class="chat-action-btn" onclick="clearChat()" title="대화 초기화">🗑️</button>
+                <button class="chat-action-btn" onclick="toggleChatSettings()" title="설정">⚙️</button>
+            </div>
         </div>
         
-        <div class="features">
-            <div class="feature">
-                <div class="feature-icon">🤖</div>
-                <h3>AI 검색</h3>
-                <p>자연어로 물건을 쉽게 찾아보세요</p>
+        <!-- 챗봇 메시지 영역 -->
+        <div class="chat-container">
+            <div class="chat-messages" id="chatMessages">
+                <!-- 초기 환영 메시지 -->
+                <div class="message bot-message">
+                    <div class="message-avatar">🤖</div>
+                    <div class="message-content">
+                        <div class="message-bubble">
+                            안녕하세요! 물품관리 도우미입니다. 😊<br>
+                            무엇을 도와드릴까요?<br><br>
+                            예시 질문:<br>
+                            • "휴지 재고 확인해줘"<br>
+                            • "물건 추가하는 방법 알려줘"<br>
+                            • "오늘 사용한 물품 목록 보여줘"
+                        </div>
+                        <div class="message-time">방금 전</div>
+                    </div>
+                </div>
             </div>
-            <div class="feature">
-                <div class="feature-icon">📄</div>
-                <h3>영수증 분석</h3>
-                <p>영수증을 찍으면 자동으로 물건을 등록해요</p>
+            
+            <!-- 메시지 입력 영역 -->
+            <div class="chat-input-area">
+                <div class="chat-input-container">
+                    <input type="text" id="chatInput" class="chat-input" placeholder="메시지를 입력하세요..." onkeypress="handleChatKeyPress(event)">
+                    <button class="chat-send-btn" onclick="sendMessage()">
+                        <span class="send-icon">📤</span>
+                    </button>
+                </div>
+                
+                <!-- 빠른 응답 버튼들 -->
+                <div class="quick-replies">
+                    <button class="quick-reply-btn" onclick="sendQuickMessage('재고 현황')">📊 재고 현황</button>
+                    <button class="quick-reply-btn" onclick="sendQuickMessage('물건 추가')">➕ 물건 추가</button>
+                    <button class="quick-reply-btn" onclick="sendQuickMessage('사용 등록')">📝 사용 등록</button>
+                    <button class="quick-reply-btn" onclick="sendQuickMessage('도움말')">❓ 도움말</button>
+                </div>
             </div>
-            <div class="feature">
-                <div class="feature-icon">📍</div>
-                <h3>위치 관리</h3>
-                <p>물건이 어디에 있는지 정확히 기억해요</p>
+        </div>
+        
+
+    </div>
+    
+
+    
+    <button class="fab" onclick="toggleFabMenu()">➕</button>
+    
+    <div class="fab-menu" id="fabMenu">
+        <button class="fab-option" onclick="goToItemRegistration()" title="새 물건 등록">📝</button>
+        <button class="fab-option" onclick="goToLocationManagement()" title="위치 관리">📍</button>
+        <button class="fab-option" onclick="goToInventoryManagement()" title="재고 관리">📊</button>
+    </div>
+    
+    <div class="bottom-nav">
+        <a href="#" class="nav-item active">
+            <span>🏠</span>
+            <div>홈</div>
+        </a>
+        <a href="locations.html" class="nav-item">
+            <span>📍</span>
+            <div>위치</div>
+        </a>
+        <a href="categories.html" class="nav-item">
+            <span>🏷️</span>
+            <div>카테고리</div>
+        </a>
+        <a href="inventory.html" class="nav-item">
+            <span>📦</span>
+            <div>재고관리</div>
+        </a>
+        <a href="user-profile.html" class="nav-item">
+            <span>⚙️</span>
+            <div>설정</div>
+        </a>
+    </div>
+    
+    <div class="modal" id="addModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">물건 추가</h2>
+                <button class="modal-close" onclick="closeModal('addModal')">✕</button>
             </div>
+            <form id="itemForm">
+                <div class="form-group">
+                    <label class="form-label">물건 이름 *</label>
+                    <input type="text" class="form-input" id="itemName" required placeholder="예: 검은 코트">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">카테고리</label>
+                    <select class="form-select" id="itemCategory">
+                        <option value="">선택하세요</option>
+                    </select>
+                </div>
+                
+                <!-- 동적 계층형 위치 선택 -->
+                <div class="form-group">
+                    <label class="form-label">위치</label>
+                    <div class="hierarchy-selector">
+                        <!-- 레벨 0 선택 -->
+                        <div class="level-selector" id="level0Selector">
+                            <label for="level0">🏠 레벨 0 (최상위)</label>
+                            <select id="level0" class="form-select" onchange="updateItemLevelSelectors(0)">
+                                <option value="">-- 상위 위치 없음 --</option>
+                            </select>
+                        </div>
+                        
+                        <!-- 레벨 1 선택 -->
+                        <div class="level-selector" id="level1Selector" style="display: none;">
+                            <label for="level1">🏢 레벨 1</label>
+                            <select id="level1" class="form-select" onchange="updateItemLevelSelectors(1)">
+                                <option value="">-- 선택하세요 --</option>
+                            </select>
+                        </div>
+                        
+                        <!-- 레벨 2 선택 -->
+                        <div class="level-selector" id="level2Selector" style="display: none;">
+                            <label for="level2">🏠 레벨 2</label>
+                            <select id="level2" class="form-select" onchange="updateItemLevelSelectors(2)">
+                                <option value="">-- 선택하세요 --</option>
+                            </select>
+                        </div>
+                        
+                        <!-- 레벨 3 선택 -->
+                        <div class="level-selector" id="level3Selector" style="display: none;">
+                            <label for="level3">📍 레벨 3</label>
+                            <select id="level3" class="form-select" onchange="updateItemLevelSelectors(3)">
+                                <option value="">-- 선택하세요 --</option>
+                            </select>
+                        </div>
+                        
+                        <!-- 선택된 경로 표시 -->
+                        <div id="selectedItemPath" style="margin-top: 10px; padding: 8px; background: #f8f9fa; border-radius: 6px; font-size: 0.9rem; color: #666; display: none;">
+                            <strong>선택된 경로:</strong> <span id="itemPathText"></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">수량</label>
+                    <input type="number" class="form-input" id="itemQuantity" value="1" min="1">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">설명</label>
+                    <textarea class="form-textarea" id="itemDescription" rows="3" placeholder="물건에 대한 설명..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">사진 추가</label>
+                    <input type="file" id="itemImage" accept="image/*" capture="environment" style="display: none;" onchange="handleImageSelection()">
+                    <button type="button" class="receipt-upload-btn" onclick="document.getElementById('itemImage').click()">
+                        📷 사진 선택
+                    </button>
+                    <div id="imagePreview" style="display: none; margin-top: 10px;">
+                        <img id="previewImg" style="max-width: 100%; max-height: 200px; border-radius: 8px; border: 1px solid #ddd;">
+                        <div style="margin-top: 5px; font-size: 0.9rem; color: #666;">
+                            <span id="imageInfo"></span>
+                            <button type="button" onclick="removeImage()" style="margin-left: 10px; background: none; border: none; color: #dc3545; cursor: pointer;">
+                                ❌ 삭제
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <button type="submit" class="submit-btn">저장하기</button>
+            </form>
         </div>
     </div>
     
+    <div class="modal" id="receiptModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">영수증 분석</h2>
+                <button class="modal-close" onclick="closeModal('receiptModal')">✕</button>
+            </div>
+            
+            <div class="receipt-upload">
+                <div class="receipt-upload-icon">📄</div>
+                <p>영수증을 촬영하거나 선택하세요</p>
+                <input type="file" id="receiptImage" accept="image/*" capture="camera" style="display: none;" onchange="processReceipt()">
+                <button class="receipt-upload-btn" onclick="document.getElementById('receiptImage').click()">
+                    카메라 시작하기
+                </button>
+            </div>
+            
+            <div id="receiptResults"></div>
+        </div>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+    </div>
+    
     <script>
-        // Service Worker 등록
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js')
-                    .then(registration => console.log('SW 등록 성공:', registration))
-                    .catch(error => console.log('SW 등록 실패:', error));
+        // ⭐ API URL 설정 - GitHub Pages 배포 대응
+        var API_URL = (function() {
+            var hostname = window.location.hostname;
+            var protocol = window.location.protocol;
+            
+            // GitHub Pages에서 호출 시 -> Render API 사용
+            if (hostname.endsWith('github.io')) {
+                return 'https://inventory.onrender.com/api';
+            }
+            
+            // 로컬 개발 환경
+            if (hostname === 'localhost' || hostname === '127.0.0.1') {
+                return protocol + '//' + hostname + ':3001/api';
+            }
+            
+            // E2B Sandbox 환경
+            if (hostname.includes('e2b.dev')) {
+                return 'https://3001-i72krmbsmpnff1c7v14w6-6532622b.e2b.dev/api';
+            }
+            
+            // 기본값
+            return 'https://inventory.onrender.com/api';
+        })();
+        
+        // 앱 상태 관리
+        const appState = {
+            items: [],
+            categories: [],
+            locations: [],
+            todayUsage: JSON.parse(localStorage.getItem('todayUsage') || '[]'),
+            currentTab: 'items',
+            isListening: false,
+            pullDistance: 0,
+            isPulling: false
+        };
+        
+        // 초기화 함수
+        async function init() {
+            try {
+                await loadData();
+                setupPullToRefresh();
+                setupSwipeGestures();
+                checkNotificationPermission();
+            } catch (error) {
+                console.error('초기화 실패:', error);
+                showToast('앱 초기화에 실패했습니다');
+            }
+        }
+        
+        // 데이터 로드
+        async function loadData() {
+            showLoading();
+            try {
+                // 카테고리 로드
+                const catResponse = await fetch(`${API_URL}/categories`);
+                if (catResponse.ok) {
+                    const catData = await catResponse.json();
+                    appState.categories = catData.categories || [];
+                    updateCategoryOptions();
+                }
+                
+                // 위치 로드
+                const locResponse = await fetch(`${API_URL}/locations`);
+                if (locResponse.ok) {
+                    const locData = await locResponse.json();
+                    appState.locations = locData.locations || [];
+                    updateLocationOptions();
+                }
+                
+                // 물건 로드
+                const itemResponse = await fetch(`${API_URL}/items`);
+                if (itemResponse.ok) {
+                    const itemData = await itemResponse.json();
+                    appState.items = itemData.items || [];
+                    initializeChatbot();
+                }
+                
+            } catch (error) {
+                console.error('데이터 로드 실패:', error);
+                showToast('데이터 로드에 실패했습니다');
+                
+                // 오프라인 모드 - 기본 데이터 표시
+                appState.items = [];
+                appState.categories = [];
+                appState.locations = [];
+                initializeChatbot();
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        // Pull to Refresh 설정
+        function setupPullToRefresh() {
+            let startY = 0;
+            let currentY = 0;
+            
+            document.addEventListener('touchstart', (e) => {
+                if (window.scrollY === 0) {
+                    startY = e.touches[0].clientY;
+                    appState.isPulling = true;
+                }
+            });
+            
+            document.addEventListener('touchmove', (e) => {
+                if (!appState.isPulling) return;
+                
+                currentY = e.touches[0].clientY;
+                appState.pullDistance = currentY - startY;
+                
+                if (appState.pullDistance > 0 && appState.pullDistance < 150) {
+                    e.preventDefault();
+                    if (appState.pullDistance > 60) {
+                        document.getElementById('pullToRefresh').classList.add('show');
+                    }
+                }
+            });
+            
+            document.addEventListener('touchend', async () => {
+                if (appState.pullDistance > 60) {
+                    await loadData();
+                    showToast('새로고침 완료');
+                }
+                
+                document.getElementById('pullToRefresh').classList.remove('show');
+                appState.pullDistance = 0;
+                appState.isPulling = false;
             });
         }
+        
+        // 스와이프 제스처 설정
+        function setupSwipeGestures() {
+            let startX = 0;
+            let currentX = 0;
+            let currentElement = null;
+            
+            document.addEventListener('touchstart', (e) => {
+                const itemCard = e.target.closest('.item-card');
+                if (itemCard) {
+                    startX = e.touches[0].clientX;
+                    currentElement = itemCard;
+                }
+            });
+            
+            document.addEventListener('touchmove', (e) => {
+                if (!currentElement) return;
+                
+                currentX = e.touches[0].clientX;
+                const diffX = startX - currentX;
+                
+                if (diffX > 50) {
+                    currentElement.classList.add('swiped');
+                } else if (diffX < -50) {
+                    currentElement.classList.remove('swiped');
+                }
+            });
+            
+            document.addEventListener('touchend', () => {
+                startX = 0;
+                currentX = 0;
+                currentElement = null;
+            });
+        }
+        
+        // 알림 권한 확인
+        function checkNotificationPermission() {
+            if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission();
+            }
+        }
+        
+        // 챗봇 메시지 관련 함수들
+        let chatHistory = JSON.parse(localStorage.getItem('chatHistory') || '[]');
+        
+        // 메시지 전송
+        async function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // 사용자 메시지 추가
+            addMessage(message, 'user');
+            input.value = '';
+            
+            // 입력 비활성화 및 로딩 표시
+            input.disabled = true;
+            
+            // 타이핑 표시 추가
+            const typingId = addTypingIndicator();
+            
+            try {
+                // 봇 응답 처리
+                const botResponse = await generateBotResponse(message);
+                
+                // 타이핑 표시 제거
+                removeTypingIndicator(typingId);
+                
+                // 봇 응답 추가
+                addMessage(botResponse, 'bot');
+                
+            } catch (error) {
+                console.error('메시지 전송 오류:', error);
+                removeTypingIndicator(typingId);
+                addMessage('죄송해요, 응답 중 오류가 발생했습니다. 다시 시도해주세요. 😅', 'bot');
+            } finally {
+                // 입력 다시 활성화
+                input.disabled = false;
+                input.focus();
+            }
+        }
+        
+        // 타이핑 표시 추가
+        function addTypingIndicator() {
+            const messagesContainer = document.getElementById('chatMessages');
+            const typingElement = document.createElement('div');
+            const typingId = 'typing-' + Date.now();
+            typingElement.id = typingId;
+            typingElement.className = 'message bot-message typing-indicator';
+            
+            typingElement.innerHTML = `
+                <div class="message-avatar">🤖</div>
+                <div class="message-content">
+                    <div class="message-bubble typing-dots">
+                        <span></span><span></span><span></span>
+                    </div>
+                </div>
+            `;
+            
+            messagesContainer.appendChild(typingElement);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            
+            return typingId;
+        }
+        
+        // 타이핑 표시 제거
+        function removeTypingIndicator(typingId) {
+            const typingElement = document.getElementById(typingId);
+            if (typingElement) {
+                typingElement.remove();
+            }
+        }
+        
+        // 빠른 메시지 전송
+        function sendQuickMessage(message) {
+            document.getElementById('chatInput').value = message;
+            sendMessage();
+        }
+        
+        // 메시지 추가
+        function addMessage(content, type) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageElement = document.createElement('div');
+            messageElement.className = `message ${type}-message`;
+            
+            const currentTime = new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+            const avatar = type === 'user' ? '👤' : '🤖';
+            
+            messageElement.innerHTML = `
+                <div class="message-avatar">${avatar}</div>
+                <div class="message-content">
+                    <div class="message-bubble">${content}</div>
+                    <div class="message-time">${currentTime}</div>
+                </div>
+            `;
+            
+            messagesContainer.appendChild(messageElement);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            
+            // 채팅 히스토리에 저장
+            chatHistory.push({
+                content: content,
+                type: type,
+                timestamp: new Date().toISOString()
+            });
+            
+            // 최근 50개 메시지만 보관
+            if (chatHistory.length > 50) {
+                chatHistory = chatHistory.slice(-50);
+            }
+            
+            localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
+        }
+        
+        // 봇 응답 생성 (API 호출)
+        async function generateBotResponse(userMessage) {
+            try {
+                // 백엔드 챗봇 API 호출
+                const response = await fetch(`${API_URL}/chatbot`, {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({
+                        message: userMessage
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        return data.response;
+                    }
+                }
+                
+                // API 실패 시 대체 응답
+                throw new Error('API 응답 실패');
+                
+            } catch (error) {
+                console.error('챗봇 API 오류:', error);
+                
+                // 오프라인 또는 API 실패 시 기본 응답
+                return generateFallbackResponse(userMessage);
+            }
+        }
+        
+        // API 실패 시 대체 응답
+        function generateFallbackResponse(userMessage) {
+            const message = userMessage.toLowerCase();
+            
+            // 기본적인 키워드 기반 응답
+            if (message.includes('재고') || message.includes('현황')) {
+                const totalItems = appState.items ? appState.items.length : 0;
+                const totalQuantity = appState.items ? appState.items.reduce((sum, item) => sum + (item.quantity || 0), 0) : 0;
+                return `📊 현재 재고 현황:<br>• 전체 물품: ${totalItems}개<br>• 총 수량: ${totalQuantity}개<br><br>자세한 정보는 '재고관리' 메뉴를 확인해주세요!`;
+            }
+            
+            if (message.includes('안녕') || message.includes('hi')) {
+                return `안녕하세요! 😊 물품관리 도우미입니다.<br>현재 오프라인 모드로 제한적인 응답만 가능합니다.<br><br>기본적인 질문은 언제든 해주세요!`;
+            }
+            
+            if (message.includes('도움') || message.includes('help')) {
+                return `❓ 기본 사용법:<br><br>📦 재고관리: 하단 메뉴<br>➕ 물건 추가: ➕ 버튼<br>📍 위치 관리: 위치 메뉴<br><br>더 자세한 도움이 필요하시면 네트워크 연결을 확인해주세요.`;
+            }
+            
+            return `죄송해요, 현재 네트워크 연결에 문제가 있어 제한적인 응답만 가능합니다. 😅<br><br>다음을 확인해보세요:<br>• 인터넷 연결 상태<br>• 서버 상태<br><br>기본적인 앱 기능은 정상적으로 사용 가능합니다!`;
+        }
+        
+        // 채팅 초기화
+        function clearChat() {
+            if (confirm('대화 기록을 모두 삭제하시겠습니까?')) {
+                chatHistory = [];
+                localStorage.removeItem('chatHistory');
+                
+                const messagesContainer = document.getElementById('chatMessages');
+                messagesContainer.innerHTML = `
+                    <div class="message bot-message">
+                        <div class="message-avatar">🤖</div>
+                        <div class="message-content">
+                            <div class="message-bubble">
+                                안녕하세요! 물품관리 도우미입니다. 😊<br>
+                                무엇을 도와드릴까요?<br><br>
+                                예시 질문:<br>
+                                • "휴지 재고 확인해줘"<br>
+                                • "물건 추가하는 방법 알려줘"<br>
+                                • "오늘 사용한 물품 목록 보여줘"
+                            </div>
+                            <div class="message-time">방금 전</div>
+                        </div>
+                    </div>
+                `;
+                
+                showToast('대화 기록이 삭제되었습니다');
+            }
+        }
+        
+        // 채팅 설정 토글
+        function toggleChatSettings() {
+            showToast('설정 기능은 준비 중입니다');
+        }
+        
+        // 엔터키로 메시지 전송
+        function handleChatKeyPress(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+        
+        // 채팅 히스토리 로드
+        function loadChatHistory() {
+            const messagesContainer = document.getElementById('chatMessages');
+            
+            // 기존 환영 메시지 유지하고 히스토리 추가
+            chatHistory.forEach(chat => {
+                if (new Date(chat.timestamp).toDateString() === new Date().toDateString()) {
+                    const messageElement = document.createElement('div');
+                    messageElement.className = `message ${chat.type}-message`;
+                    
+                    const time = new Date(chat.timestamp).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+                    const avatar = chat.type === 'user' ? '👤' : '🤖';
+                    
+                    messageElement.innerHTML = `
+                        <div class="message-avatar">${avatar}</div>
+                        <div class="message-content">
+                            <div class="message-bubble">${chat.content}</div>
+                            <div class="message-time">${time}</div>
+                        </div>
+                    `;
+                    
+                    messagesContainer.appendChild(messageElement);
+                }
+            });
+            
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        // 챗봇 초기화
+        function initializeChatbot() {
+            // 채팅 히스토리 로드
+            loadChatHistory();
+            
+            // 입력 포커스 설정
+            const chatInput = document.getElementById('chatInput');
+            if (chatInput) {
+                chatInput.focus();
+            }
+        }
+        
+        // 카테고리 옵션 업데이트
+        function updateCategoryOptions() {
+            const select = document.getElementById('itemCategory');
+            if (!select) return;
+            
+            select.innerHTML = '<option value="">선택하세요</option>';
+            if (appState.categories) {
+                appState.categories.forEach(cat => {
+                    select.innerHTML += `<option value="${cat.id}">${cat.icon || '📁'} ${cat.name}</option>`;
+                });
+            }
+        }
+        
+
+        
+        // 위치 옵션 업데이트
+        // 계층형 위치 선택 업데이트 (물건 추가용)
+        function updateLocationOptions() {
+            // 레벨 0 (최상위) 선택기 초기화
+            const level0Select = document.getElementById('level0');
+            if (level0Select && appState.locations) {
+                const level0Locations = appState.locations.filter(loc => loc.level === 0);
+                
+                level0Select.innerHTML = '<option value="">-- 상위 위치 없음 --</option>' + 
+                    level0Locations.map(location => 
+                        `<option value="${location.id}">${location.name}</option>`
+                    ).join('');
+            }
+            
+            // 다른 레벨 선택기들 초기화
+            resetItemLevelSelectors();
+        }
+        
+        // 물건 추가용 레벨 선택기 업데이트 함수
+        function updateItemLevelSelectors(currentLevel) {
+            console.log('updateItemLevelSelectors called with level:', currentLevel);
+            
+            const currentSelect = document.getElementById(`level${currentLevel}`);
+            if (!currentSelect) {
+                console.error('Current select element not found for level', currentLevel);
+                return;
+            }
+            
+            const selectedValue = currentSelect.value;
+            console.log('Selected value:', selectedValue);
+            
+            // 하위 레벨들 초기화
+            for (let i = currentLevel + 1; i <= 3; i++) {
+                const selector = document.getElementById(`level${i}Selector`);
+                const select = document.getElementById(`level${i}`);
+                
+                if (selector && select) {
+                    selector.style.display = 'none';
+                    select.innerHTML = '<option value="">-- 선택하세요 --</option>';
+                }
+            }
+            
+            // 경로 표시 업데이트
+            updateSelectedItemPath();
+            
+            if (selectedValue) {
+                // 다음 레벨 선택기 표시 및 옵션 로드
+                const nextLevel = currentLevel + 1;
+                console.log('Loading next level:', nextLevel);
+                
+                if (nextLevel <= 3) {
+                    loadItemNextLevelOptions(selectedValue, nextLevel);
+                }
+            } else {
+                console.log('No value selected, not loading next level');
+            }
+        }
+        
+        // 물건 추가용 다음 레벨 옵션 로드
+        function loadItemNextLevelOptions(parentId, targetLevel) {
+            console.log('loadItemNextLevelOptions called:', { parentId, targetLevel });
+            
+            const targetSelect = document.getElementById(`level${targetLevel}`);
+            const targetSelector = document.getElementById(`level${targetLevel}Selector`);
+            
+            if (!targetSelect || !targetSelector) {
+                console.error('Target elements not found for level', targetLevel);
+                return;
+            }
+            
+            // 해당 부모 위치의 하위 위치들 찾기
+            const childLocations = appState.locations.filter(loc => {
+                const parentIdMatch = String(loc.parentId) === String(parentId);
+                const levelMatch = loc.level === targetLevel;
+                return parentIdMatch && levelMatch;
+            });
+            
+            console.log('Child locations found:', childLocations.length, childLocations.map(loc => loc.name));
+            
+            // 하위 위치가 있든 없든 다음 레벨 선택기는 항상 표시
+            if (childLocations.length > 0) {
+                // 기존 하위 위치들을 표시
+                targetSelect.innerHTML = '<option value="">-- 선택하세요 --</option>' + 
+                    childLocations.map(location => 
+                        `<option value="${location.id}">${location.name}</option>`
+                    ).join('');
+                console.log('Displayed existing child locations:', childLocations.length);
+            } else {
+                // 기존 하위 위치가 없을 때도 선택기 표시 (위치 페이지로 이동 안내)
+                targetSelect.innerHTML = '<option value="">-- 위치 관리에서 추가하세요 --</option>';
+                console.log('No existing children found, showing guidance message');
+            }
+            
+            targetSelector.style.display = 'block';
+            console.log('Level selector displayed for level', targetLevel);
+        }
+        
+        // 물건 추가용 선택된 경로 표시 업데이트
+        function updateSelectedItemPath() {
+            const pathDisplay = document.getElementById('selectedItemPath');
+            const pathText = document.getElementById('itemPathText');
+            const path = [];
+            
+            // 각 레벨에서 선택된 값들 수집
+            for (let i = 0; i <= 3; i++) {
+                const select = document.getElementById(`level${i}`);
+                if (select && select.value) {
+                    const selectedOption = select.options[select.selectedIndex];
+                    if (selectedOption && selectedOption.text !== '-- 선택하세요 --' && 
+                        selectedOption.text !== '-- 위치 관리에서 추가하세요 --') {
+                        path.push(selectedOption.text);
+                    }
+                }
+            }
+            
+            if (path.length > 0) {
+                pathText.textContent = path.join(' > ');
+                pathDisplay.style.display = 'block';
+            } else {
+                pathDisplay.style.display = 'none';
+            }
+        }
+        
+        // 물건 추가용 레벨 선택기들 초기화
+        function resetItemLevelSelectors() {
+            for (let i = 1; i <= 3; i++) {
+                const selector = document.getElementById(`level${i}Selector`);
+                const select = document.getElementById(`level${i}`);
+                
+                if (selector && select) {
+                    selector.style.display = 'none';
+                    select.innerHTML = '<option value="">-- 선택하세요 --</option>';
+                }
+            }
+            
+            // 경로 표시 숨기기
+            const pathDisplay = document.getElementById('selectedItemPath');
+            if (pathDisplay) {
+                pathDisplay.style.display = 'none';
+            }
+        }
+        
+        // 물건 추가용 선택된 상위 위치 ID 반환
+        function getSelectedItemLocationId() {
+            let selectedLocationId = null;
+            
+            // 뒤에서부터 체크하여 가장 깊은 레벨의 선택값 반환
+            for (let i = 3; i >= 0; i--) {
+                const select = document.getElementById(`level${i}`);
+                if (select && select.value) {
+                    selectedLocationId = select.value;
+                    break;
+                }
+            }
+            
+            return selectedLocationId;
+        }
+        
+        // FAB 메뉴 토글
+        function toggleFabMenu() {
+            const fabMenu = document.getElementById('fabMenu');
+            if (fabMenu) {
+                fabMenu.classList.toggle('show');
+            }
+        }
+        
+        // 모달 관리
+        function openAddModal() {
+            const modal = document.getElementById('addModal');
+            if (modal) {
+                modal.classList.add('show');
+            }
+            toggleFabMenu();
+        }
+        
+        function openReceiptModal() {
+            const modal = document.getElementById('receiptModal');
+            if (modal) {
+                modal.classList.add('show');
+            }
+            toggleFabMenu();
+        }
+        
+        function openCameraModal() {
+            const imageInput = document.getElementById('itemImage');
+            if (imageInput) {
+                imageInput.click();
+            }
+            toggleFabMenu();
+        }
+        
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.remove('show');
+            }
+        }
+        
+        // 이미지 선택 처리
+        function handleImageSelection() {
+            const imageInput = document.getElementById('itemImage');
+            const previewDiv = document.getElementById('imagePreview');
+            const previewImg = document.getElementById('previewImg');
+            const imageInfo = document.getElementById('imageInfo');
+            
+            if (imageInput && imageInput.files && imageInput.files[0]) {
+                const file = imageInput.files[0];
+                
+                // 파일 크기 창졩 (5MB 이하)
+                if (file.size > 5 * 1024 * 1024) {
+                    showToast('이미지 크기는 5MB 이하여야 합니다.');
+                    imageInput.value = '';
+                    return;
+                }
+                
+                // 이미지 타입 창식
+                if (!file.type.startsWith('image/')) {
+                    showToast('이미지 파일만 선택 가능합니다.');
+                    imageInput.value = '';
+                    return;
+                }
+                
+                // 미리보기 표시
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    if (previewImg) {
+                        previewImg.src = e.target.result;
+                    }
+                };
+                reader.readAsDataURL(file);
+                
+                // 파일 정보 표시
+                if (imageInfo) {
+                    const fileSize = (file.size / 1024).toFixed(1);
+                    imageInfo.textContent = `${file.name} (${fileSize}KB)`;
+                }
+                
+                // 미리보기 보이기
+                if (previewDiv) {
+                    previewDiv.style.display = 'block';
+                }
+                
+                showToast('이미지가 선택되었습니다.');
+            }
+        }
+        
+        // 이미지 제거
+        function removeImage() {
+            const imageInput = document.getElementById('itemImage');
+            const previewDiv = document.getElementById('imagePreview');
+            
+            if (imageInput) {
+                imageInput.value = '';
+            }
+            
+            if (previewDiv) {
+                previewDiv.style.display = 'none';
+            }
+            
+            showToast('이미지가 제거되었습니다.');
+        }
+        
+        // UI 피드백
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            if (toast) {
+                toast.textContent = message;
+                toast.classList.add('show');
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 3000);
+            }
+        }
+        
+        function showLoading() {
+            const loading = document.getElementById('loading');
+            if (loading) {
+                loading.classList.add('show');
+            }
+        }
+        
+        function hideLoading() {
+            const loading = document.getElementById('loading');
+            if (loading) {
+                loading.classList.remove('show');
+            }
+        }
+        
+        // 음성 검색
+        function startVoiceSearch() {
+            if (!('webkitSpeechRecognition' in window)) {
+                showToast('음성 검색을 지원하지 않는 브라우저입니다');
+                return;
+            }
+            
+            const recognition = new webkitSpeechRecognition();
+            recognition.lang = 'ko-KR';
+            recognition.interimResults = false;
+            
+            const voiceBtn = document.getElementById('voiceBtn');
+            
+            recognition.onstart = () => {
+                appState.isListening = true;
+                if (voiceBtn) voiceBtn.classList.add('listening');
+                showToast('말씀해주세요...');
+            };
+            
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                const searchInput = document.getElementById('searchInput');
+                if (searchInput) {
+                    searchInput.value = transcript;
+                    searchItems();
+                }
+            };
+            
+            recognition.onerror = () => {
+                showToast('음성 인식 실패');
+            };
+            
+            recognition.onend = () => {
+                appState.isListening = false;
+                if (voiceBtn) voiceBtn.classList.remove('listening');
+            };
+            
+            if (appState.isListening) {
+                recognition.stop();
+            } else {
+                recognition.start();
+            }
+        }
+        
+        // 검색 기능
+        async function searchItems() {
+            const searchInput = document.getElementById('searchInput');
+            const query = searchInput ? searchInput.value.trim() : '';
+            
+            if (!query) {
+                await loadData();
+                return;
+            }
+            
+            showLoading();
+            try {
+                const response = await fetch(`${API_URL}/items?search=${encodeURIComponent(query)}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    appState.items = data.items || [];
+                    renderItems();
+                    showToast(`${data.count || appState.items.length}개 검색결과`);
+                } else {
+                    throw new Error('검색 실패');
+                }
+            } catch (error) {
+                console.error('검색 실패:', error);
+                showToast('검색에 실패했습니다');
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        // 물건 삭제
+        async function deleteItem(id) {
+            if (!confirm('정말 삭제하시겠습니까?')) return;
+            
+            showLoading();
+            try {
+                const response = await fetch(`${API_URL}/items/${id}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    await loadData();
+                    showToast('삭제했습니다');
+                    
+                    // 진동 피드백
+                    if ('vibrate' in navigator) {
+                        navigator.vibrate(50);
+                    }
+                } else {
+                    throw new Error('삭제 실패');
+                }
+            } catch (error) {
+                console.error('삭제 실패:', error);
+                showToast('삭제에 실패했습니다');
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        // 물건 수정
+        function editItem(id) {
+            const item = appState.items.find(i => i.id === id);
+            if (!item) return;
+            
+            const nameInput = document.getElementById('itemName');
+            const categorySelect = document.getElementById('itemCategory');
+            const locationSelect = document.getElementById('itemLocation');
+            const quantityInput = document.getElementById('itemQuantity');
+            const descriptionInput = document.getElementById('itemDescription');
+            
+            if (nameInput) nameInput.value = item.name || '';
+            if (categorySelect) categorySelect.value = item.categoryId || '';
+            if (locationSelect) locationSelect.value = item.locationId || '';
+            if (quantityInput) quantityInput.value = item.quantity || 1;
+            if (descriptionInput) descriptionInput.value = item.description || '';
+            
+            openAddModal();
+        }
+        
+        // 영수증 처리
+        async function processReceipt() {
+            const receiptInput = document.getElementById('receiptImage');
+            const file = receiptInput ? receiptInput.files[0] : null;
+            if (!file) return;
+            
+            showLoading();
+            const formData = new FormData();
+            formData.append('receipt', file);
+            
+            try {
+                const response = await fetch(`${API_URL}/analyze-receipt`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success && data.items) {
+                        showToast(`${data.items.length}개 물건 인식됨`);
+                        displayReceiptResults(data.items);
+                    }
+                } else {
+                    throw new Error('영수증 분석 실패');
+                }
+            } catch (error) {
+                console.error('영수증 처리 실패:', error);
+                showToast('영수증 분석에 실패했습니다');
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        // 영수증 결과 표시
+        function displayReceiptResults(items) {
+            const container = document.getElementById('receiptResults');
+            if (!container || !items) return;
+            
+            container.innerHTML = `
+                <h3>인식된 물건들</h3>
+                ${items.map((item, index) => `
+                    <div class="item-card">
+                        <input type="text" value="${item.name || ''}" id="receipt-name-${index}" class="form-input" style="margin-bottom: 10px;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <input type="number" value="${item.quantity || 1}" id="receipt-qty-${index}" class="form-input" placeholder="수량">
+                            <input type="number" value="${item.price || ''}" id="receipt-price-${index}" class="form-input" placeholder="가격">
+                        </div>
+                    </div>
+                `).join('')}
+                <button class="submit-btn" onclick="saveReceiptItems(${items.length})">모두 저장</button>
+            `;
+        }
+        
+        // 탭 전환
+        function switchTab(tab) {
+            appState.currentTab = tab;
+            
+            // 탭 활성화 상태 업데이트
+            document.querySelectorAll('.tab-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // 현재 클릭된 탭 활성화
+            event.target.classList.add('active');
+            
+            // 탭별 동작
+            switch (tab) {
+                case 'receipt':
+                    openReceiptModal();
+                    break;
+                case 'search':
+                    const searchInput = document.getElementById('searchInput');
+                    if (searchInput) searchInput.focus();
+                    break;
+                default:
+                    break;
+            }
+        }
+        
+        // 폼 제출 처리
+        function setupFormSubmission() {
+            const itemForm = document.getElementById('itemForm');
+            if (!itemForm) return;
+            
+            itemForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const nameInput = document.getElementById('itemName');
+                const categorySelect = document.getElementById('itemCategory');
+                const quantityInput = document.getElementById('itemQuantity');
+                const descriptionInput = document.getElementById('itemDescription');
+                
+                if (!nameInput || !nameInput.value.trim()) {
+                    showToast('물건 이름을 입력하세요');
+                    return;
+                }
+                
+                showLoading();
+                
+                // 이미지 파일 확인
+                const imageInput = document.getElementById('itemImage');
+                const imageFile = imageInput && imageInput.files ? imageInput.files[0] : null;
+                
+                // 이미지가 있으면 FormData 사용, 없으면 JSON 사용
+                let requestOptions;
+                
+                if (imageFile) {
+                    // 이미지가 있는 경우: FormData 사용
+                    const formData = new FormData();
+                    formData.append('name', nameInput.value.trim());
+                    formData.append('categoryId', categorySelect ? parseInt(categorySelect.value) || '' : '');
+                    formData.append('locationId', getSelectedItemLocationId() ? parseInt(getSelectedItemLocationId()) || '' : '');
+                    formData.append('quantity', quantityInput ? parseInt(quantityInput.value) || 1 : 1);
+                    formData.append('unit', '개');
+                    formData.append('description', descriptionInput ? descriptionInput.value.trim() : '');
+                    formData.append('image', imageFile);
+                    
+                    requestOptions = {
+                        method: 'POST',
+                        body: formData
+                        // FormData일 때는 Content-Type 헤더를 설정하지 않음
+                    };
+                } else {
+                    // 이미지가 없는 경우: JSON 사용
+                    const jsonData = {
+                        name: nameInput.value.trim(),
+                        categoryId: categorySelect ? parseInt(categorySelect.value) || null : null,
+                        locationId: getSelectedItemLocationId() ? parseInt(getSelectedItemLocationId()) || null : null,
+                        quantity: quantityInput ? parseInt(quantityInput.value) || 1 : 1,
+                        unit: '개',
+                        description: descriptionInput ? descriptionInput.value.trim() : ''
+                    };
+                    
+                    requestOptions = {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(jsonData)
+                    };
+                }
+                
+                try {
+                    const response = await fetch(`${API_URL}/items`, requestOptions);
+                    
+                    if (response.ok) {
+                        await loadData();
+                        closeModal('addModal');
+                        itemForm.reset();
+                        resetItemLevelSelectors();
+                        showToast('저장되었습니다');
+                        
+                        // 알림
+                        if ('Notification' in window && Notification.permission === 'granted') {
+                            new Notification('물건 추가됨', {
+                                body: formData.name,
+                                icon: '📦'
+                            });
+                        }
+                    } else {
+                        throw new Error('저장 실패');
+                    }
+                } catch (error) {
+                    console.error('저장 실패:', error);
+                    showToast('저장에 실패했습니다');
+                } finally {
+                    hideLoading();
+                }
+            });
+        }
+        
+        // 영수증 아이템 저장
+        async function saveReceiptItems(itemCount) {
+            const items = [];
+            
+            for (let i = 0; i < itemCount; i++) {
+                const nameInput = document.getElementById(`receipt-name-${i}`);
+                const qtyInput = document.getElementById(`receipt-qty-${i}`);
+                
+                if (nameInput && nameInput.value.trim()) {
+                    items.push({
+                        name: nameInput.value.trim(),
+                        quantity: qtyInput ? parseInt(qtyInput.value) || 1 : 1,
+                        unit: '개'
+                    });
+                }
+            }
+            
+            if (items.length === 0) {
+                showToast('저장할 항목이 없습니다');
+                return;
+            }
+            
+            showLoading();
+            let savedCount = 0;
+            
+            try {
+                for (const item of items) {
+                    const response = await fetch(`${API_URL}/items`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(item)
+                    });
+                    
+                    if (response.ok) {
+                        savedCount++;
+                    }
+                }
+                
+                await loadData();
+                closeModal('receiptModal');
+                showToast(`${savedCount}개 항목이 저장되었습니다`);
+                
+            } catch (error) {
+                console.error('저장 실패:', error);
+                showToast('일부 항목 저장에 실패했습니다');
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        // 앱 초기화 및 폼 설정
+        document.addEventListener('DOMContentLoaded', () => {
+            init();
+            setupFormSubmission();
+        });
+        
+        // 전역 에러 핸들러
+        window.addEventListener('error', (e) => {
+            console.error('전역 에러:', e.error);
+            showToast('오류가 발생했습니다');
+        });
+        
+        // 전역 Promise 거부 핸들러
+        window.addEventListener('unhandledrejection', (e) => {
+            console.error('처리되지 않은 Promise 거부:', e.reason);
+            showToast('네트워크 오류가 발생했습니다');
+        });
+
+        // ⭐ Service Worker 등록 및 인증 확인
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                // 로그인 체크
+                checkAuthentication();
+                
+                navigator.serviceWorker.register('sw.js')
+                    .then(registration => {
+                        console.log('SW 등록 성공:', registration);
+                        console.log('Scope:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('SW 등록 실패:', error);
+                    });
+            });
+        }
+
+        // 🔐 인증 관련 함수들
+        async function checkAuthentication() {
+            const token = localStorage.getItem('auth_token');
+            
+            if (!token) {
+                // 토큰이 없으면 로그인 페이지로 리다이렉트
+                window.location.href = '/login.html';
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/auth/verify', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ token })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    // 로그인된 사용자 정보 저장 및 UI 업데이트
+                    localStorage.setItem('user_info', JSON.stringify(data.user));
+                    updateUserInterface(data.user);
+                } else {
+                    // 토큰이 유효하지 않으면 로그인 페이지로
+                    localStorage.removeItem('auth_token');
+                    localStorage.removeItem('user_info');
+                    window.location.href = '/login.html';
+                }
+            } catch (error) {
+                console.error('인증 확인 오류:', error);
+                // 네트워크 오류 등으로 인증 확인 실패 시 로그인 페이지로
+                window.location.href = '/login.html';
+            }
+        }
+
+        // 사용자 인터페이스 업데이트
+        function updateUserInterface(user) {
+            // 헤더에 사용자 정보 표시
+            const headerTitle = document.querySelector('.header-title');
+            if (headerTitle && !headerTitle.textContent.includes(user.username)) {
+                headerTitle.textContent = `물품관리 - ${user.avatar} ${user.username}`;
+            }
+
+            // 권한에 따른 기능 제한
+            if (!user.permissions.includes('write_items') && !user.permissions.includes('*')) {
+                // 쓰기 권한이 없으면 추가/수정/삭제 버튼 숨기기
+                const writeButtons = document.querySelectorAll('.add-button, .edit-button, .delete-button');
+                writeButtons.forEach(btn => {
+                    btn.style.display = 'none';
+                });
+            }
+        }
+
+        // 로그아웃
+        function logout() {
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('user_info');
+            window.location.href = '/login.html';
+        }
+
+        // API 요청에 인증 헤더 추가하는 함수
+        function getAuthHeaders() {
+            const token = localStorage.getItem('auth_token');
+            return token ? {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            } : {
+                'Content-Type': 'application/json'
+            };
+        }
+
+        // 네비게이션 함수들
+        function goToItemRegistration() {
+            // 원래 아이템 등록 페이지로 이동하거나 모달 열기
+            openAddModal();
+        }
+        
+        function goToLocationManagement() {
+            window.location.href = './locations.html';
+        }
+        
+        function goToInventoryManagement() {
+            window.location.href = './inventory.html';
+        }
+        
+        // ⭐ PWA 설치 프롬프트
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            setTimeout(() => {
+                if (deferredPrompt) {
+                    showToast('홈화면에 추가하여 앱처럼 사용하세요');
+                }
+            }, 5000);
+        });
     </script>
 </body>
 </html>

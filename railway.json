@@ -1,0 +1,32 @@
+{
+  "name": "가족용 물품관리 시스템",
+  "description": "ChatGPT 하이브리드 AI 물품관리 시스템",
+  "template": {
+    "repo": "https://github.com/pro19670/inventory",
+    "branch": "main"
+  },
+  "services": [
+    {
+      "name": "backend",
+      "source": {
+        "repo": "https://github.com/pro19670/inventory",
+        "branch": "main"
+      },
+      "build": {
+        "builder": "NIXPACKS",
+        "buildCommand": "cd backend && npm install"
+      },
+      "deploy": {
+        "startCommand": "cd backend && npm start"
+      },
+      "variables": {
+        "NODE_ENV": "production",
+        "USE_CHATGPT": "true",
+        "CHATGPT_MODEL": "gpt-3.5-turbo"
+      },
+      "healthcheck": {
+        "path": "/api/health"
+      }
+    }
+  ]
+}
