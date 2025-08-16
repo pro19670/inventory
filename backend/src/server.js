@@ -1092,6 +1092,79 @@ const server = http.createServer((req, res) => {
             sendErrorResponse(res, 500, 'Failed to upload location image');
         }
     }
+    // 위치 데이터 정리 (중복 제거) - 개발/테스트용
+    else if (pathname === '/api/locations/cleanup' && method === 'POST') {
+        try {
+            const beforeCount = locations.length;
+            
+            // 이름이 같은 위치들을 그룹화
+            const locationGroups = {};
+            locations.forEach(loc => {
+                const key = loc.name.toLowerCase().trim();
+                if (!locationGroups[key]) {
+                    locationGroups[key] = [];
+                }
+                locationGroups[key].push(loc);
+            });
+            
+            // 각 그룹에서 대표 위치만 남기고 나머지는 제거
+            const cleanedLocations = [];
+            const itemUpdates = [];
+            
+            Object.values(locationGroups).forEach(group => {
+                if (group.length === 1) {
+                    cleanedLocations.push(group[0]);
+                } else {
+                    // 가장 완전한 정보를 가진 위치를 대표로 선택
+                    const representative = group.reduce((best, current) => {
+                        const bestScore = (best.description ? 1 : 0) + (best.imageUrl ? 1 : 0) + (best.type ? 1 : 0);
+                        const currentScore = (current.description ? 1 : 0) + (current.imageUrl ? 1 : 0) + (current.type ? 1 : 0);
+                        
+                        if (currentScore > bestScore) {
+                            return current;
+                        } else if (currentScore === bestScore) {
+                            return new Date(current.createdAt || 0) > new Date(best.createdAt || 0) ? current : best;
+                        }
+                        return best;
+                    });
+                    
+                    cleanedLocations.push(representative);
+                    
+                    // 제거되는 위치들의 물건을 대표 위치로 이동
+                    group.forEach(loc => {
+                        if (loc.id !== representative.id) {
+                            items.forEach(item => {
+                                if (item.locationId === loc.id) {
+                                    item.locationId = representative.id;
+                                    itemUpdates.push({
+                                        itemId: item.id,
+                                        oldLocationId: loc.id,
+                                        newLocationId: representative.id
+                                    });
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+            
+            locations = cleanedLocations;
+            scheduleSave();
+            
+            sendJsonResponse(res, 200, {
+                success: true,
+                message: 'Location cleanup completed',
+                beforeCount: beforeCount,
+                afterCount: locations.length,
+                removedCount: beforeCount - locations.length,
+                itemUpdates: itemUpdates.length
+            });
+            
+        } catch (error) {
+            console.error('위치 정리 실패:', error);
+            sendErrorResponse(res, 500, 'Failed to cleanup locations');
+        }
+    }
     // 카테고리 삭제
     else if (pathname.match(/^\/api\/categories\/(\d+)$/) && method === 'DELETE') {
         const categoryId = parseInt(pathname.split('/')[3]);
