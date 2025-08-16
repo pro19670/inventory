@@ -2173,16 +2173,23 @@
 
         // 🔐 인증 관련 함수들
         async function checkAuthentication() {
+            // 무한 리다이렉트 방지를 위한 플래그 확인
+            if (window.location.pathname === '/login.html') {
+                return; // 이미 로그인 페이지에 있으면 체크하지 않음
+            }
+
             const token = localStorage.getItem('auth_token');
             
             if (!token) {
+                console.log('토큰이 없음 - 로그인 페이지로 이동');
                 // 토큰이 없으면 로그인 페이지로 리다이렉트
                 window.location.href = '/login.html';
                 return;
             }
 
             try {
-                const response = await fetch('/api/auth/verify', {
+                console.log('토큰 검증 시작:', token.substring(0, 20) + '...');
+                const response = await fetch(`${API_URL}/auth/verify`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -2191,12 +2198,15 @@
                 });
 
                 const data = await response.json();
+                console.log('토큰 검증 결과:', data);
                 
                 if (data.success) {
                     // 로그인된 사용자 정보 저장 및 UI 업데이트
                     localStorage.setItem('user_info', JSON.stringify(data.user));
                     updateUserInterface(data.user);
+                    console.log('인증 성공 - 사용자:', data.user.username);
                 } else {
+                    console.log('토큰 무효 - 로그인 페이지로 이동');
                     // 토큰이 유효하지 않으면 로그인 페이지로
                     localStorage.removeItem('auth_token');
                     localStorage.removeItem('user_info');
@@ -2204,8 +2214,9 @@
                 }
             } catch (error) {
                 console.error('인증 확인 오류:', error);
-                // 네트워크 오류 등으로 인증 확인 실패 시 로그인 페이지로
-                window.location.href = '/login.html';
+                // 네트워크 오류 등으로 인증 확인 실패 시는 경고만 표시
+                console.warn('인증 서버 연결 실패 - 기존 세션 유지');
+                // window.location.href = '/login.html'; // 네트워크 오류 시 강제 로그아웃 방지
             }
         }
 

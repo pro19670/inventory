@@ -368,12 +368,13 @@
                     localStorage.setItem('auth_token', data.token);
                     localStorage.setItem('user_info', JSON.stringify(data.user));
                     
+                    console.log('로그인 성공:', data.user.username);
                     showSuccess(`${data.user.username}님, 환영합니다! 메인 페이지로 이동합니다...`);
                     
-                    // 2초 후 메인 페이지로 리다이렉트
+                    // 즉시 메인 페이지로 리다이렉트 (무한 리다이렉트 방지를 위해 빠르게)
                     setTimeout(() => {
-                        window.location.href = '/';
-                    }, 2000);
+                        window.location.replace('/'); // replace 사용으로 히스토리 남기지 않음
+                    }, 1000);
                 } else {
                     showError(data.error || '로그인에 실패했습니다.');
                 }
@@ -402,10 +403,11 @@
                     const data = await response.json();
                     if (data.success) {
                         // 이미 로그인된 사용자는 메인 페이지로 리다이렉트
+                        console.log('기존 토큰 유효 - 메인 페이지로 이동');
                         showSuccess(`${data.user.username}님, 이미 로그인되어 있습니다. 메인 페이지로 이동합니다...`);
                         setTimeout(() => {
-                            window.location.href = '/';
-                        }, 1000);
+                            window.location.replace('/'); // replace 사용
+                        }, 500);
                     }
                 } catch (error) {
                     // 토큰이 유효하지 않으면 로컬 스토리지에서 제거
