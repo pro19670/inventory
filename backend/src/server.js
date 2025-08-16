@@ -33,6 +33,7 @@ const DATA_DIR = path.join(__dirname, '../../data');
 const ITEMS_FILE = path.join(DATA_DIR, 'items.json');
 const LOCATIONS_FILE = path.join(DATA_DIR, 'locations.json');
 const CATEGORIES_FILE = path.join(DATA_DIR, 'categories.json');
+const INVENTORY_HISTORY_FILE = path.join(DATA_DIR, 'inventory_history.json');
 const IMAGES_DIR = path.join(DATA_DIR, 'images');
 const THUMBNAILS_DIR = path.join(DATA_DIR, 'thumbnails');
 const TEMP_DIR = path.join(__dirname, 'temp');
@@ -41,10 +42,12 @@ const TEMP_DIR = path.join(__dirname, 'temp');
 let items = [];
 let locations = [];
 let categories = [];
+let inventoryHistory = []; // 재고 이력
 let itemImages = {};
 let nextId = 1;
 let nextLocationId = 1;
 let nextCategoryId = 1;
+let nextInventoryHistoryId = 1;
 
 // 환경 설정
 const CONFIG = {
@@ -275,6 +278,36 @@ async function loadData() {
             console.error('Categories 로드 실패:', error.message);
             initializeCategories();
         }
+        
+        // inventory_history.json 읽기
+        try {
+            let data = null;
+            
+            if (CONFIG.USE_S3) {
+                const s3Data = await loadFromS3('backup/inventory_history.json');
+                if (s3Data) data = s3Data;
+            }
+            
+            if (!data && fs.existsSync(INVENTORY_HISTORY_FILE)) {
+                data = fs.readFileSync(INVENTORY_HISTORY_FILE, 'utf8');
+            }
+            
+            if (data) {
+                if (data.charCodeAt(0) === 0xFEFF) data = data.substr(1);
+                const parsed = JSON.parse(data);
+                inventoryHistory = parsed.history || [];
+                nextInventoryHistoryId = parsed.nextId || 1;
+                console.log(`${inventoryHistory.length}개의 재고 이력 데이터 로드됨`);
+            } else {
+                inventoryHistory = [];
+                nextInventoryHistoryId = 1;
+                console.log('빈 재고 이력 데이터 초기화됨');
+            }
+        } catch (error) {
+            console.error('Inventory History 로드 실패:', error.message);
+            inventoryHistory = [];
+            nextInventoryHistoryId = 1;
+        }
     } catch (error) {
         console.error('데이터 로드 중 오류:', error);
     }
@@ -316,6 +349,16 @@ async function saveData() {
         const categoriesBuffer = Buffer.concat([Buffer.from('\ufeff'), Buffer.from(categoriesJson, 'utf8')]);
         fs.writeFileSync(CATEGORIES_FILE, categoriesBuffer);
         
+        // inventory_history.json 저장
+        const inventoryHistoryData = {
+            history: inventoryHistory,
+            nextId: nextInventoryHistoryId,
+            lastSaved: new Date().toISOString()
+        };
+        const inventoryHistoryJson = JSON.stringify(inventoryHistoryData, null, 2);
+        const inventoryHistoryBuffer = Buffer.concat([Buffer.from('\ufeff'), Buffer.from(inventoryHistoryJson, 'utf8')]);
+        fs.writeFileSync(INVENTORY_HISTORY_FILE, inventoryHistoryBuffer);
+        
         console.log('로컬 데이터 저장 완료');
         
         // S3 백업
@@ -323,7 +366,8 @@ async function saveData() {
             await Promise.all([
                 saveToS3('backup/items.json', itemsJson),
                 saveToS3('backup/locations.json', locationsJson),
-                saveToS3('backup/categories.json', categoriesJson)
+                saveToS3('backup/categories.json', categoriesJson),
+                saveToS3('backup/inventory_history.json', inventoryHistoryJson)
             ]);
         }
     } catch (error) {
@@ -1505,6 +1549,194 @@ const server = http.createServer((req, res) => {
             res.end(data);
         });
     }
+    // 재고 이력 조회
+    else if (pathname === '/api/inventory/history' && method === 'GET') {
+        try {
+            const itemId = parsedUrl.query.itemId;
+            let filteredHistory = [...inventoryHistory];
+            
+            if (itemId) {
+                filteredHistory = inventoryHistory.filter(h => h.itemId === parseInt(itemId));
+            }
+            
+            // 최신 순으로 정렬
+            filteredHistory.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            
+            sendJsonResponse(res, 200, {
+                success: true,
+                history: filteredHistory
+            });
+        } catch (error) {
+            console.error('재고 이력 조회 실패:', error);
+            sendErrorResponse(res, 500, 'Failed to fetch inventory history');
+        }
+    }
+    // 입고 처리
+    else if (pathname === '/api/inventory/stock-in' && method === 'POST') {
+        let body = '';
+        req.on('data', chunk => body += chunk);
+        req.on('end', () => {
+            try {
+                const data = JSON.parse(body);
+                const { itemId, quantity, note, reason } = data;
+                
+                if (!itemId || !quantity || quantity <= 0) {
+                    sendErrorResponse(res, 400, '상품 ID와 양수 수량이 필요합니다.');
+                    return;
+                }
+                
+                const itemIndex = items.findIndex(item => item.id === parseInt(itemId));
+                if (itemIndex === -1) {
+                    sendErrorResponse(res, 404, '상품을 찾을 수 없습니다.');
+                    return;
+                }
+                
+                const item = items[itemIndex];
+                const oldQuantity = item.quantity || 0;
+                const newQuantity = oldQuantity + parseInt(quantity);
+                
+                // 상품 수량 업데이트
+                item.quantity = newQuantity;
+                item.updatedAt = new Date().toISOString();
+                
+                // 재고 이력 추가
+                const historyEntry = {
+                    id: nextInventoryHistoryId++,
+                    itemId: item.id,
+                    type: 'stock_in', // 입고
+                    quantity: parseInt(quantity),
+                    previousQuantity: oldQuantity,
+                    currentQuantity: newQuantity,
+                    note: note || '',
+                    reason: reason || '일반 입고',
+                    createdAt: new Date().toISOString()
+                };
+                
+                inventoryHistory.push(historyEntry);
+                scheduleSave();
+                
+                sendJsonResponse(res, 200, {
+                    success: true,
+                    message: `입고 완료: ${item.name} ${quantity}${item.unit} 입고됨`,
+                    item: item,
+                    history: historyEntry
+                });
+            } catch (error) {
+                console.error('입고 처리 실패:', error);
+                sendErrorResponse(res, 400, 'Failed to process stock in');
+            }
+        });
+    }
+    // 출고 처리
+    else if (pathname === '/api/inventory/stock-out' && method === 'POST') {
+        let body = '';
+        req.on('data', chunk => body += chunk);
+        req.on('end', () => {
+            try {
+                const data = JSON.parse(body);
+                const { itemId, quantity, note, reason } = data;
+                
+                if (!itemId || !quantity || quantity <= 0) {
+                    sendErrorResponse(res, 400, '상품 ID와 양수 수량이 필요합니다.');
+                    return;
+                }
+                
+                const itemIndex = items.findIndex(item => item.id === parseInt(itemId));
+                if (itemIndex === -1) {
+                    sendErrorResponse(res, 404, '상품을 찾을 수 없습니다.');
+                    return;
+                }
+                
+                const item = items[itemIndex];
+                const oldQuantity = item.quantity || 0;
+                const requestedQuantity = parseInt(quantity);
+                
+                if (oldQuantity < requestedQuantity) {
+                    sendErrorResponse(res, 400, `재고 부족: 현재 재고 ${oldQuantity}${item.unit}, 요청 출고 ${requestedQuantity}${item.unit}`);
+                    return;
+                }
+                
+                const newQuantity = oldQuantity - requestedQuantity;
+                
+                // 상품 수량 업데이트
+                item.quantity = newQuantity;
+                item.updatedAt = new Date().toISOString();
+                
+                // 재고 이력 추가
+                const historyEntry = {
+                    id: nextInventoryHistoryId++,
+                    itemId: item.id,
+                    type: 'stock_out', // 출고
+                    quantity: requestedQuantity,
+                    previousQuantity: oldQuantity,
+                    currentQuantity: newQuantity,
+                    note: note || '',
+                    reason: reason || '일반 출고',
+                    createdAt: new Date().toISOString()
+                };
+                
+                inventoryHistory.push(historyEntry);
+                scheduleSave();
+                
+                sendJsonResponse(res, 200, {
+                    success: true,
+                    message: `출고 완료: ${item.name} ${requestedQuantity}${item.unit} 출고됨`,
+                    item: item,
+                    history: historyEntry
+                });
+            } catch (error) {
+                console.error('출고 처리 실패:', error);
+                sendErrorResponse(res, 400, 'Failed to process stock out');
+            }
+        });
+    }
+    // 재고 현황 조회 (전체)
+    else if (pathname === '/api/inventory/status' && method === 'GET') {
+        try {
+            const inventoryStatus = items.map(item => {
+                const locationPath = getLocationPath(item.locationId);
+                const category = categories.find(cat => cat.id === item.categoryId);
+                
+                // 최근 재고 대령 조회 (5개)
+                const recentHistory = inventoryHistory
+                    .filter(h => h.itemId === item.id)
+                    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                    .slice(0, 5);
+                
+                return {
+                    ...item,
+                    locationPath: locationPath,
+                    locationName: locationPath.join(' > '),
+                    categoryName: category ? category.name : null,
+                    categoryColor: category ? category.color : null,
+                    categoryIcon: category ? category.icon : null,
+                    recentHistory: recentHistory,
+                    isLowStock: item.quantity <= 5, // 저재고 경고 (수량 5 이하)
+                    isOutOfStock: item.quantity <= 0 // 품절
+                };
+            });
+            
+            // 전체 통계
+            const totalItems = items.length;
+            const lowStockItems = inventoryStatus.filter(item => item.isLowStock && !item.isOutOfStock).length;
+            const outOfStockItems = inventoryStatus.filter(item => item.isOutOfStock).length;
+            const totalValue = inventoryStatus.reduce((sum, item) => sum + (item.quantity || 0), 0);
+            
+            sendJsonResponse(res, 200, {
+                success: true,
+                inventory: inventoryStatus,
+                statistics: {
+                    totalItems,
+                    lowStockItems,
+                    outOfStockItems,
+                    totalQuantity: totalValue
+                }
+            });
+        } catch (error) {
+            console.error('재고 현황 조회 실패:', error);
+            sendErrorResponse(res, 500, 'Failed to fetch inventory status');
+        }
+    }
     // 404 처리
     else {
         sendErrorResponse(res, 404, 'Not Found', { path: pathname });
@@ -1548,6 +1780,11 @@ server.listen(PORT, '0.0.0.0', () => {
     console.log('  POST /api/categories - 카테고리 추가');
     console.log('  GET  /api/locations - 위치 목록');
     console.log('  POST /api/locations - 위치 추가');
+    console.log('  📦 재고 관리 API:');
+    console.log('  GET  /api/inventory/status - 재고 현황');
+    console.log('  GET  /api/inventory/history - 재고 이력');
+    console.log('  POST /api/inventory/stock-in - 입고 처리');
+    console.log('  POST /api/inventory/stock-out - 출고 처리');
     console.log('=====================================');
     console.log(`📁 데이터 저장: ${DATA_DIR}`);
     console.log(`🖼️ 이미지 저장: ${IMAGES_DIR}`);
