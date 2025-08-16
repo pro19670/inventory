@@ -833,8 +833,9 @@ const server = http.createServer((req, res) => {
                     return;
                 }
                 
-                const parentLocation = data.parentId ? 
-                    locations.find(loc => loc.id === data.parentId) : null;
+                const parentId = data.parentId ? parseInt(data.parentId) : null;
+                const parentLocation = parentId ? 
+                    locations.find(loc => loc.id === parentId) : null;
                 
                 const newLevel = parentLocation ? parentLocation.level + 1 : 0;
                 
@@ -850,7 +851,7 @@ const server = http.createServer((req, res) => {
                 const newLocation = {
                     id: nextLocationId++,
                     name: data.name.trim(),
-                    parentId: data.parentId || null,
+                    parentId: parentId,
                     level: newLevel,
                     type: locationType,
                     description: data.description || '',
@@ -1163,6 +1164,68 @@ const server = http.createServer((req, res) => {
         } catch (error) {
             console.error('위치 정리 실패:', error);
             sendErrorResponse(res, 500, 'Failed to cleanup locations');
+        }
+    }
+    // 위치 레벨 재계산 및 수정 API
+    else if (pathname === '/api/locations/fix-levels' && method === 'POST') {
+        try {
+            let fixedCount = 0;
+            
+            // 모든 위치의 레벨과 parentId 수정
+            locations.forEach(location => {
+                // parentId가 문자열인 경우 숫자로 변환
+                if (typeof location.parentId === 'string') {
+                    location.parentId = location.parentId === 'null' ? null : parseInt(location.parentId);
+                    fixedCount++;
+                }
+                
+                // 레벨 재계산
+                let currentLoc = location;
+                let level = 0;
+                const visited = new Set();
+                
+                while (currentLoc && currentLoc.parentId && !visited.has(currentLoc.id)) {
+                    visited.add(currentLoc.id);
+                    const parent = locations.find(loc => loc.id === currentLoc.parentId);
+                    if (parent) {
+                        level++;
+                        currentLoc = parent;
+                    } else {
+                        break;
+                    }
+                }
+                
+                if (location.level !== level) {
+                    location.level = level;
+                    fixedCount++;
+                }
+                
+                // 위치 타입 재설정
+                const locationTypes = ['위치', '공간', '가구', '층', '세부'];
+                const newType = locationTypes[level] || '기타';
+                if (!location.type || location.type !== newType) {
+                    location.type = newType;
+                }
+            });
+            
+            scheduleSave();
+            
+            sendJsonResponse(res, 200, {
+                success: true,
+                message: 'Location levels fixed',
+                fixedCount: fixedCount,
+                locations: locations.map(loc => ({
+                    id: loc.id,
+                    name: loc.name,
+                    level: loc.level,
+                    parentId: loc.parentId,
+                    type: loc.type
+                }))
+            });
+            
+        } catch (error) {
+            console.error('위치 레벨 수정 실패:', error);
+            sendErrorResponse(res, 500, 'Failed to fix location levels');
         }
     }
     // 카테고리 삭제
