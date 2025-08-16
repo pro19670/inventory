@@ -11,6 +11,7 @@ const Tesseract = require('tesseract.js');
 const sharp = require('sharp');
 const { v4: uuidv4 } = require('uuid');
 const OpenAI = require('openai');
+const { FamilyAuthSystem, ROLES } = require('./family-auth');
 
 // 미들웨어 및 유틸리티 모듈 (옵셔널)
 let auth = null;
@@ -65,6 +66,14 @@ const CONFIG = {
     CHATGPT_MODEL: process.env.CHATGPT_MODEL || 'gpt-3.5-turbo'
 };
 
+// 디버그: 환경변수 로드 상태 확인
+console.log('🔍 환경변수 디버그:');
+console.log('OPENAI_API_KEY 존재:', !!CONFIG.OPENAI_API_KEY);
+console.log('OPENAI_API_KEY 길이:', CONFIG.OPENAI_API_KEY ? CONFIG.OPENAI_API_KEY.length : 0);
+console.log('OPENAI_API_KEY 시작:', CONFIG.OPENAI_API_KEY ? CONFIG.OPENAI_API_KEY.substring(0, 20) + '...' : 'null');
+console.log('USE_CHATGPT:', CONFIG.USE_CHATGPT);
+console.log('CHATGPT_MODEL:', CONFIG.CHATGPT_MODEL);
+
 // S3 클라이언트 설정
 let s3 = null;
 if (CONFIG.USE_S3 && CONFIG.AWS_ACCESS_KEY_ID && CONFIG.AWS_SECRET_ACCESS_KEY) {
@@ -93,11 +102,18 @@ if (CONFIG.USE_CHATGPT && CONFIG.OPENAI_API_KEY) {
     }
 }
 
+// 가족 인증 시스템 초기화
+const familyAuth = new FamilyAuthSystem();
+console.log('👨‍👩‍👧‍👦 가족 로그인 시스템 초기화 완료');
+
 // 공개 엔드포인트 목록
 const publicEndpoints = [
     { path: '/', method: 'GET' },
     { path: '/api/health', method: 'GET' },
-    { path: '/api/auth/login', method: 'POST' }
+    { path: '/api/auth/login', method: 'POST' },
+    { path: '/api/auth/register', method: 'POST' },
+    { path: '/api/auth/verify', method: 'POST' },
+    { path: '/login.html', method: 'GET' }
 ];
 
 // 읽기 전용 엔드포인트
@@ -523,6 +539,39 @@ function sendErrorResponse(res, statusCode, message, details = null) {
     sendJsonResponse(res, statusCode, errorResponse);
 }
 
+// 인증 미들웨어
+function authenticateToken(req, res, next) {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+
+    if (!token) {
+        return sendErrorResponse(res, 401, '토큰이 필요합니다');
+    }
+
+    const result = familyAuth.verifyToken(token);
+    if (!result.success) {
+        return sendErrorResponse(res, 403, '유효하지 않은 토큰입니다');
+    }
+
+    req.user = result.user;
+    next();
+}
+
+// 권한 확인 미들웨어
+function requirePermission(permission) {
+    return (req, res, next) => {
+        if (!req.user) {
+            return sendErrorResponse(res, 401, '인증이 필요합니다');
+        }
+
+        if (!familyAuth.hasPermission(req.user.role, permission)) {
+            return sendErrorResponse(res, 403, '권한이 없습니다');
+        }
+
+        next();
+    };
+}
+
 // ChatGPT API 호출 함수
 async function callChatGPT(userMessage, context) {
     if (!CONFIG.OPENAI_API_KEY) {
@@ -838,6 +887,104 @@ const server = http.createServer((req, res) => {
             environment: CONFIG.NODE_ENV
         });
     }
+    // 가족 로그인
+    else if (pathname === '/api/auth/login' && method === 'POST') {
+        let body = '';
+        req.on('data', chunk => {
+            body += chunk.toString();
+        });
+        req.on('end', async () => {
+            try {
+                const { username, password } = JSON.parse(body);
+                
+                if (!username || !password) {
+                    return sendErrorResponse(res, 400, '사용자명과 비밀번호가 필요합니다');
+                }
+
+                const result = await familyAuth.login(username, password);
+                
+                if (result.success) {
+                    sendJsonResponse(res, 200, {
+                        success: true,
+                        message: '로그인 성공',
+                        token: result.token,
+                        user: result.user
+                    });
+                } else {
+                    sendErrorResponse(res, 401, result.error);
+                }
+            } catch (error) {
+                console.error('로그인 오류:', error);
+                sendErrorResponse(res, 500, '서버 오류가 발생했습니다');
+            }
+        });
+    }
+    // 토큰 검증
+    else if (pathname === '/api/auth/verify' && method === 'POST') {
+        let body = '';
+        req.on('data', chunk => {
+            body += chunk.toString();
+        });
+        req.on('end', () => {
+            try {
+                const { token } = JSON.parse(body);
+                const result = familyAuth.verifyToken(token);
+                
+                if (result.success) {
+                    sendJsonResponse(res, 200, {
+                        success: true,
+                        user: result.user
+                    });
+                } else {
+                    sendErrorResponse(res, 401, result.error);
+                }
+            } catch (error) {
+                console.error('토큰 검증 오류:', error);
+                sendErrorResponse(res, 500, '서버 오류가 발생했습니다');
+            }
+        });
+    }
+    // 가족 구성원 조회
+    else if (pathname === '/api/family/members' && method === 'GET') {
+        // 인증 확인
+        const authHeader = req.headers['authorization'];
+        const token = authHeader && authHeader.split(' ')[1];
+        
+        if (!token) {
+            return sendErrorResponse(res, 401, '토큰이 필요합니다');
+        }
+
+        const authResult = familyAuth.verifyToken(token);
+        if (!authResult.success) {
+            return sendErrorResponse(res, 403, '유효하지 않은 토큰입니다');
+        }
+
+        const members = familyAuth.getFamilyMembers(authResult.user.familyId);
+        sendJsonResponse(res, 200, {
+            success: true,
+            members
+        });
+    }
+    // 가족 활동 내역 조회
+    else if (pathname === '/api/family/activities' && method === 'GET') {
+        const authHeader = req.headers['authorization'];
+        const token = authHeader && authHeader.split(' ')[1];
+        
+        if (!token) {
+            return sendErrorResponse(res, 401, '토큰이 필요합니다');
+        }
+
+        const authResult = familyAuth.verifyToken(token);
+        if (!authResult.success) {
+            return sendErrorResponse(res, 403, '유효하지 않은 토큰입니다');
+        }
+
+        const activities = familyAuth.getFamilyActivities(authResult.user.familyId, 100);
+        sendJsonResponse(res, 200, {
+            success: true,
+            activities
+        });
+    }
     // 물건 목록 조회
     else if (pathname === '/api/items' && method === 'GET') {
         try {
@@ -900,6 +1047,24 @@ const server = http.createServer((req, res) => {
     }
     // 물건 추가
     else if (pathname === '/api/items' && method === 'POST') {
+        // 인증 확인
+        const authHeader = req.headers['authorization'];
+        const token = authHeader && authHeader.split(' ')[1];
+        
+        if (!token) {
+            return sendErrorResponse(res, 401, '로그인이 필요합니다');
+        }
+
+        const authResult = familyAuth.verifyToken(token);
+        if (!authResult.success) {
+            return sendErrorResponse(res, 403, '유효하지 않은 토큰입니다');
+        }
+
+        if (!familyAuth.hasPermission(authResult.user.role, 'write_items')) {
+            return sendErrorResponse(res, 403, '물건 추가 권한이 없습니다');
+        }
+
+        const currentUser = authResult.user;
         const contentType = req.headers['content-type'] || '';
         
         // JSON 형식인지 멀티파트 형식인지 확인

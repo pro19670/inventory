@@ -1365,9 +1365,7 @@
                 // 백엔드 챗봇 API 호출
                 const response = await fetch(`${API_URL}/chatbot`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: getAuthHeaders(),
                     body: JSON.stringify({
                         message: userMessage
                     })
@@ -2156,9 +2154,12 @@
             showToast('네트워크 오류가 발생했습니다');
         });
 
-        // ⭐ Service Worker 등록
+        // ⭐ Service Worker 등록 및 인증 확인
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
+                // 로그인 체크
+                checkAuthentication();
+                
                 navigator.serviceWorker.register('sw.js')
                     .then(registration => {
                         console.log('SW 등록 성공:', registration);
@@ -2168,6 +2169,80 @@
                         console.log('SW 등록 실패:', error);
                     });
             });
+        }
+
+        // 🔐 인증 관련 함수들
+        async function checkAuthentication() {
+            const token = localStorage.getItem('auth_token');
+            
+            if (!token) {
+                // 토큰이 없으면 로그인 페이지로 리다이렉트
+                window.location.href = '/login.html';
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/auth/verify', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ token })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    // 로그인된 사용자 정보 저장 및 UI 업데이트
+                    localStorage.setItem('user_info', JSON.stringify(data.user));
+                    updateUserInterface(data.user);
+                } else {
+                    // 토큰이 유효하지 않으면 로그인 페이지로
+                    localStorage.removeItem('auth_token');
+                    localStorage.removeItem('user_info');
+                    window.location.href = '/login.html';
+                }
+            } catch (error) {
+                console.error('인증 확인 오류:', error);
+                // 네트워크 오류 등으로 인증 확인 실패 시 로그인 페이지로
+                window.location.href = '/login.html';
+            }
+        }
+
+        // 사용자 인터페이스 업데이트
+        function updateUserInterface(user) {
+            // 헤더에 사용자 정보 표시
+            const headerTitle = document.querySelector('.header-title');
+            if (headerTitle && !headerTitle.textContent.includes(user.username)) {
+                headerTitle.textContent = `물품관리 - ${user.avatar} ${user.username}`;
+            }
+
+            // 권한에 따른 기능 제한
+            if (!user.permissions.includes('write_items') && !user.permissions.includes('*')) {
+                // 쓰기 권한이 없으면 추가/수정/삭제 버튼 숨기기
+                const writeButtons = document.querySelectorAll('.add-button, .edit-button, .delete-button');
+                writeButtons.forEach(btn => {
+                    btn.style.display = 'none';
+                });
+            }
+        }
+
+        // 로그아웃
+        function logout() {
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('user_info');
+            window.location.href = '/login.html';
+        }
+
+        // API 요청에 인증 헤더 추가하는 함수
+        function getAuthHeaders() {
+            const token = localStorage.getItem('auth_token');
+            return token ? {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            } : {
+                'Content-Type': 'application/json'
+            };
         }
 
         // 네비게이션 함수들
