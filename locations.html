@@ -1166,7 +1166,11 @@
             // 중복 위치 검사 (최상위 레벨이므로 parentId는 null)
             const isDuplicate = checkDuplicateLocation(name, null);
             if (isDuplicate) {
-                showMessage(`"${name}"이(가) 이미 존재합니다.\n같은 이름의 최상위 위치가 있습니다.`, 'error');
+                const errorMessage = `"${name}"이(가) 이미 존재합니다.\n같은 이름의 최상위 위치가 있습니다.`;
+                console.log('퀵 추가 중복 감지:', errorMessage);
+                
+                showMessage(errorMessage, 'error');
+                alert(`⚠️ 중복 위치 감지\n\n${errorMessage}`);
                 return;
             }
             
@@ -1340,8 +1344,14 @@
                 if (isDuplicate) {
                     const parentPath = getLocationPath(parentId);
                     const fullPath = parentPath ? `${parentPath} > ${name}` : name;
+                    const errorMessage = `같은 공간에 "${name}"이(가) 이미 존재합니다.\n경로: ${fullPath}`;
+                    
                     console.log('중복 감지됨 - 에러 메시지 표시');
-                    showMessage(`같은 공간에 "${name}"이(가) 이미 존재합니다.\n경로: ${fullPath}`, 'error');
+                    console.log('에러 메시지:', errorMessage);
+                    
+                    // showMessage와 alert 둘 다 사용하여 확실히 표시
+                    showMessage(errorMessage, 'error');
+                    alert(`⚠️ 중복 위치 감지\n\n${errorMessage}`);
                     return;
                 } else {
                     console.log('중복 없음 - 계속 진행');
@@ -1359,12 +1369,28 @@
         
         // 메시지 표시
         function showMessage(text, type) {
+            console.log('showMessage 호출됨:', { text, type });
+            
             const messageEl = document.getElementById('message');
+            console.log('message 요소 찾기 결과:', messageEl);
+            
+            if (!messageEl) {
+                console.error('message 요소를 찾을 수 없음 - alert으로 대체');
+                alert(`${type.toUpperCase()}: ${text}`);
+                return;
+            }
+            
             messageEl.textContent = text;
             messageEl.className = `message ${type} show`;
+            console.log('메시지 설정 완료:', { textContent: messageEl.textContent, className: messageEl.className });
+            
+            // 강제로 표시되도록 스타일 직접 적용
+            messageEl.style.display = 'block';
+            messageEl.style.opacity = '1';
             
             setTimeout(() => {
                 messageEl.classList.remove('show');
+                messageEl.style.display = 'none';
             }, 4000);
         }
         
