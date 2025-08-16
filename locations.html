@@ -414,6 +414,110 @@
             100% { transform: rotate(360deg); }
         }
         
+        /* 계층형 트리 스타일 (index.html과 동일) */
+        .hierarchy-tree {
+            background: #f8f9ff;
+            border-radius: 12px;
+            padding: 15px;
+            border: 2px solid #e0e6ff;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .hierarchy-item {
+            margin: 8px 0;
+            padding: 12px;
+            border-radius: 8px;
+            background: white;
+            border: 1px solid #e5e5e5;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .hierarchy-item:hover {
+            background: #f0f4ff;
+            border-color: #667eea;
+            transform: translateX(2px);
+        }
+        
+        .hierarchy-item.selected {
+            background: #667eea;
+            color: white;
+            border-color: #5a67d8;
+            font-weight: 600;
+        }
+        
+        .hierarchy-item.has-children {
+            position: relative;
+        }
+        
+        .hierarchy-item.has-children::before {
+            content: '▶';
+            position: absolute;
+            left: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            transition: transform 0.2s ease;
+            font-size: 12px;
+            color: #667eea;
+        }
+        
+        .hierarchy-item.expanded::before {
+            transform: translateY(-50%) rotate(90deg);
+        }
+        
+        .hierarchy-content {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding-left: 20px;
+        }
+        
+        .hierarchy-icon {
+            font-size: 18px;
+            min-width: 24px;
+        }
+        
+        .hierarchy-text {
+            flex: 1;
+            font-size: 15px;
+            font-weight: 500;
+        }
+        
+        .hierarchy-level {
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 12px;
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+            font-weight: 500;
+        }
+        
+        .hierarchy-children {
+            margin-left: 20px;
+            margin-top: 8px;
+            padding-left: 15px;
+            border-left: 2px solid #e0e6ff;
+            display: none;
+        }
+        
+        .hierarchy-children.expanded {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                max-height: 0;
+            }
+            to {
+                opacity: 1;
+                max-height: 500px;
+            }
+        }
+
         @media (max-width: 768px) {
             .container {
                 padding: 15px;
@@ -517,8 +621,10 @@
         </div>
         
         <div class="section">
-            <h2>📋 위치 목록 (엘리베이터 기능)</h2>
-            <p style="color: #666; font-size: 0.9rem; margin-bottom: 15px;">📁 클릭하여 하위 위치를 펼치거나 접으세요</p>
+            <h2>🌳 위치 목록 (계층형 트리)</h2>
+            <p style="color: #667eea; font-size: 0.9rem; margin-bottom: 15px; font-weight: 500;">
+                ✨ <strong>새로운 계층형 트리 방식</strong> - 홈 화면과 동일한 인터페이스로 통일되었습니다!
+            </p>
             <div id="locationsList" class="locations-list">
                 <div class="loading">
                     <div class="loading-spinner"></div>
@@ -604,7 +710,7 @@
             updateParentSelect();
         }
         
-        // 위치 목록 업데이트 (계층형)
+        // 위치 목록 업데이트 (계층형 트리로 변경)
         function updateLocationsList() {
             const container = document.getElementById('locationsList');
             
@@ -623,6 +729,120 @@
                 `;
                 return;
             }
+            
+            // 계층형 트리 스타일로 변경
+            container.className = 'hierarchy-tree';
+            container.innerHTML = '';
+            
+            // 최상위 위치들 가져오기
+            const rootLocations = appData.locations.filter(loc => loc.level === 0);
+            
+            rootLocations.forEach(location => {
+                const itemElement = createLocationHierarchyItem(location);
+                container.appendChild(itemElement);
+            });
+        }
+        
+        // 위치 목록용 계층 아이템 생성
+        function createLocationHierarchyItem(location) {
+            const item = document.createElement('div');
+            item.className = `hierarchy-item level-${location.level}`;
+            item.dataset.locationId = location.id;
+            
+            // 자식 위치 확인
+            const hasChildren = appData.locations.some(loc => loc.parentId === location.id);
+            if (hasChildren) {
+                item.classList.add('has-children');
+            }
+            
+            const levelIcons = ['🏠', '🏢', '🪑', '📦'];
+            const levelNames = ['위치', '공간', '가구', '세부위치'];
+            const icon = levelIcons[location.level] || '📍';
+            const levelName = levelNames[location.level] || '기타';
+            
+            // 해당 위치에 있는 물건 수 계산
+            const itemCount = appData.items.filter(item => item.locationId === location.id).length;
+            
+            // 상위 경로 정보 구성 (중복 이름 구분용)
+            let parentPath = '';
+            if (location.parentId) {
+                const pathParts = [];
+                let currentId = location.parentId;
+                
+                while (currentId) {
+                    const parentLocation = appData.locations.find(l => l.id === currentId);
+                    if (parentLocation) {
+                        pathParts.unshift(parentLocation.name);
+                        currentId = parentLocation.parentId;
+                    } else {
+                        break;
+                    }
+                }
+                parentPath = pathParts.length > 0 ? ` (${pathParts.join(' → ')})` : '';
+            }
+            
+            item.innerHTML = `
+                <div class="hierarchy-content">
+                    <span class="hierarchy-icon">${icon}</span>
+                    <div style="flex: 1;">
+                        <div class="hierarchy-text">${location.name}${parentPath}</div>
+                        <div style="font-size: 0.8rem; color: #666; margin-top: 2px;">
+                            ${location.description || ''}
+                            ${itemCount > 0 ? `• 물건 ${itemCount}개` : ''}
+                            ${hasChildren ? ` • 하위 위치 있음` : ''}
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span class="hierarchy-level">${levelName}</span>
+                        <button onclick="event.stopPropagation(); deleteLocation(${location.id}, '${location.name}')" 
+                                style="background: none; border: 1px solid #dc3545; color: #dc3545; padding: 4px 8px; border-radius: 4px; font-size: 12px; cursor: pointer;"
+                                ${itemCount > 0 || hasChildren ? 'disabled' : ''}>
+                            🗑️
+                        </button>
+                    </div>
+                </div>
+                <div class="hierarchy-children"></div>
+            `;
+            
+            // 클릭 이벤트
+            item.addEventListener('click', (e) => {
+                // 삭제 버튼 클릭 시 이벤트 전파 중단
+                if (e.target.closest('button')) {
+                    return;
+                }
+                
+                e.stopPropagation();
+                
+                if (hasChildren) {
+                    toggleLocationHierarchyItem(item, location);
+                }
+            });
+            
+            return item;
+        }
+        
+        // 위치 계층 아이템 토글 (확장/축소)
+        function toggleLocationHierarchyItem(item, location) {
+            const childrenContainer = item.querySelector('.hierarchy-children');
+            
+            if (item.classList.contains('expanded')) {
+                // 축소
+                item.classList.remove('expanded');
+                childrenContainer.classList.remove('expanded');
+                childrenContainer.innerHTML = '';
+            } else {
+                // 확장
+                item.classList.add('expanded');
+                childrenContainer.classList.add('expanded');
+                
+                // 자식 위치들 로드
+                const childLocations = appData.locations.filter(loc => loc.parentId === location.id);
+                childLocations.forEach(childLocation => {
+                    const childElement = createLocationHierarchyItem(childLocation);
+                    childrenContainer.appendChild(childElement);
+                });
+            }
+        }
             
             // 최상위 위치들만 표시하되 중복 제거
             const allTopLevelLocations = appData.locations.filter(loc => loc.level === 0);
