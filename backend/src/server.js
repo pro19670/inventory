@@ -1228,6 +1228,54 @@ const server = http.createServer((req, res) => {
             sendErrorResponse(res, 500, 'Failed to fix location levels');
         }
     }
+    // 위치 구조 재조정 API (거실, 침실 등을 집 하위로 이동)
+    else if (pathname === '/api/locations/restructure' && method === 'POST') {
+        try {
+            let updatedCount = 0;
+            
+            // "집" 위치 찾기 (id: 16)
+            const homeLocation = locations.find(loc => loc.name === '집' && loc.level === 0);
+            
+            if (!homeLocation) {
+                sendErrorResponse(res, 404, '집 위치를 찾을 수 없습니다');
+                return;
+            }
+            
+            // 집의 하위 공간으로 이동할 위치들
+            const roomNames = ['거실', '침실', '주방', '화장실', '베란다'];
+            
+            locations.forEach(location => {
+                if (roomNames.includes(location.name) && location.level === 0 && !location.parentId) {
+                    location.parentId = homeLocation.id;
+                    location.level = 1;
+                    location.type = '공간';
+                    location.updatedAt = new Date().toISOString();
+                    updatedCount++;
+                }
+            });
+            
+            scheduleSave();
+            
+            sendJsonResponse(res, 200, {
+                success: true,
+                message: 'Location structure restructured',
+                updatedCount: updatedCount,
+                homeLocationId: homeLocation.id,
+                restructuredRooms: roomNames,
+                currentStructure: locations.filter(loc => loc.level <= 1).map(loc => ({
+                    id: loc.id,
+                    name: loc.name,
+                    level: loc.level,
+                    parentId: loc.parentId,
+                    type: loc.type
+                }))
+            });
+            
+        } catch (error) {
+            console.error('위치 구조 재조정 실패:', error);
+            sendErrorResponse(res, 500, 'Failed to restructure locations');
+        }
+    }
     // 카테고리 삭제
     else if (pathname.match(/^\/api\/categories\/(\d+)$/) && method === 'DELETE') {
         const categoryId = parseInt(pathname.split('/')[3]);
