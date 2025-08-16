@@ -294,6 +294,107 @@
                 gap: 8px;
             }
         }
+        
+        /* 아이콘 선택기 스타일 */
+        .icon-picker {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .icon-picker > div {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .icon-picker-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #e9ecef;
+            padding-bottom: 10px;
+        }
+        
+        .icon-picker-header h4 {
+            margin: 0;
+            color: #333;
+        }
+        
+        .icon-picker-header button {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: #666;
+            padding: 5px;
+        }
+        
+        .icon-category {
+            margin-bottom: 20px;
+        }
+        
+        .icon-category h5 {
+            margin-bottom: 10px;
+            color: #555;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .icon-row {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 10px;
+        }
+        
+        @media (max-width: 480px) {
+            .icon-row {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+        
+        .icon-btn {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px 10px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .icon-btn:hover {
+            background: #e9ecef;
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+        
+        .icon-btn:active {
+            transform: translateY(0);
+        }
+        
+        .icon-btn.selected {
+            background: #667eea;
+            border-color: #667eea;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -323,7 +424,94 @@
                 <div class="form-group">
                     <label for="categoryIcon">아이콘 (선택사항)</label>
                     <input type="text" id="categoryIcon" class="form-input"
-                           placeholder="예: 📱, 👔, 📚 (이모지 하나)">
+                           placeholder="예: 📱, 👔, 📚 (이모지 하나)" readonly onclick="showIconPicker()">
+                    
+                    <!-- 아이콘 선택기 -->
+                    <div id="iconPicker" class="icon-picker" style="display: none;">
+                        <div class="icon-picker-header">
+                            <h4>아이콘 선택</h4>
+                            <button type="button" onclick="hideIconPicker()">✕</button>
+                        </div>
+                        <div class="icon-grid">
+                            <!-- 전자제품 -->
+                            <div class="icon-category">
+                                <h5>전자제품</h5>
+                                <div class="icon-row">
+                                    <button type="button" class="icon-btn" onclick="selectIcon('📱')">📱</button>
+                                    <button type="button" class="icon-btn" onclick="selectIcon('💻')">💻</button>
+                                    <button type="button" class="icon-btn" onclick="selectIcon('⌚')">⌚</button>
+                                    <button type="button" class="icon-btn" onclick="selectIcon('📷')">📷</button>
+                                    <button type="button" class="icon-btn" onclick="selectIcon('🖥️')">🖥️</button>
+                                    <button type="button" class="icon-btn" onclick="selectIcon('⌨️')">⌨️</button>
+                                </div>
+                            </div>
+                            
+                            <!-- 의류 -->
+                            <div class="icon-category">
+                                <h5>의류</h5>
+                                <div class="icon-row">
+                                    <button type="button" class="icon-btn" onclick="selectIcon('👔')">👔</button>
+                                    <button type="button" class="icon-btn" onclick="selectIcon('👗')">👗</button>
+                                    <button type="button" class="icon-btn" onclick="selectIcon('👕')">👕</button>
+                                    <button type="button" class="icon-btn" onclick="selectIcon('👖')">👖</button>
+                                    <button type="button" class="icon-btn" onclick="selectIcon('👟')">👟</button>
+                                    <button type="button" class="icon-btn" onclick="selectIcon('🧥')">🧥</button>
+                                </div>
+                            </div>
+                            
+                            <!-- 생활용품 -->
+                            <div class="icon-category">
+                                <h5>생활용품</h5>
+                                <div class="icon-row">
+                                    <button type="button" class="icon-btn" onclick="selectIcon('🧴')">🧴</button>
+                                    <button type="button" class="icon-btn" onclick="selectIcon('🧽')">🧽</button>
+                                    <button type="button" class="icon-btn" onclick="selectIcon('🧻')">🧻</button>
+                                    <button type="button" class="icon-btn" onclick="selectIcon('🕯️')">🕯️</button>
+                                    <button type="button" class="icon-btn" onclick="selectIcon('🛁')">🛁</button>
+                                    <button type="button" class="icon-btn" onclick="selectIcon('🚿')">🚿</button>
+                                </div>
+                            </div>
+                            
+                            <!-- 도서/문구 -->
+                            <div class="icon-category">
+                                <h5>도서/문구</h5>
+                                <div class="icon-row">
+                                    <button type="button" class="icon-btn" onclick="selectIcon('📚')">📚</button>
+                                    <button type="button" class="icon-btn" onclick="selectIcon('📖')">📖</button>
+                                    <button type="button" class="icon-btn" onclick="selectIcon('✏️')">✏️</button>
+                                    <button type="button" class="icon-btn" onclick="selectIcon('📝')">📝</button>
+                                    <button type="button" class="icon-btn" onclick="selectIcon('📊')">📊</button>
+                                    <button type="button" class="icon-btn" onclick="selectIcon('📋')">📋</button>
+                                </div>
+                            </div>
+                            
+                            <!-- 음식/식품 -->
+                            <div class="icon-category">
+                                <h5>음식/식품</h5>
+                                <div class="icon-row">
+                                    <button type="button" class="icon-btn" onclick="selectIcon('🍎')">🍎</button>
+                                    <button type="button" class="icon-btn" onclick="selectIcon('🥛')">🥛</button>
+                                    <button type="button" class="icon-btn" onclick="selectIcon('🍞')">🍞</button>
+                                    <button type="button" class="icon-btn" onclick="selectIcon('🥘')">🥘</button>
+                                    <button type="button" class="icon-btn" onclick="selectIcon('☕')">☕</button>
+                                    <button type="button" class="icon-btn" onclick="selectIcon('🍽️')">🍽️</button>
+                                </div>
+                            </div>
+                            
+                            <!-- 기타 -->
+                            <div class="icon-category">
+                                <h5>기타</h5>
+                                <div class="icon-row">
+                                    <button type="button" class="icon-btn" onclick="selectIcon('🎮')">🎮</button>
+                                    <button type="button" class="icon-btn" onclick="selectIcon('🎵')">🎵</button>
+                                    <button type="button" class="icon-btn" onclick="selectIcon('🏃')">🏃</button>
+                                    <button type="button" class="icon-btn" onclick="selectIcon('🚗')">🚗</button>
+                                    <button type="button" class="icon-btn" onclick="selectIcon('🌱')">🌱</button>
+                                    <button type="button" class="icon-btn" onclick="selectIcon('🎁')">🎁</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
                 <button type="submit" class="btn-add">
@@ -563,6 +751,50 @@
                 messageEl.classList.remove('show');
             }, 4000);
         }
+        
+        // 아이콘 선택기 관련 함수들
+        function showIconPicker() {
+            const iconPicker = document.getElementById('iconPicker');
+            if (iconPicker) {
+                iconPicker.style.display = 'flex';
+            }
+        }
+        
+        function hideIconPicker() {
+            const iconPicker = document.getElementById('iconPicker');
+            if (iconPicker) {
+                iconPicker.style.display = 'none';
+            }
+        }
+        
+        function selectIcon(icon) {
+            const iconInput = document.getElementById('categoryIcon');
+            if (iconInput) {
+                iconInput.value = icon;
+                
+                // 선택 효과 표시
+                const allIconBtns = document.querySelectorAll('.icon-btn');
+                allIconBtns.forEach(btn => btn.classList.remove('selected'));
+                
+                const selectedBtn = document.querySelector(`.icon-btn[onclick="selectIcon('${icon}')"]`);
+                if (selectedBtn) {
+                    selectedBtn.classList.add('selected');
+                }
+            }
+            
+            // 선택 후 0.3초 후에 닫기
+            setTimeout(() => {
+                hideIconPicker();
+            }, 300);
+        }
+        
+        // 아이콘 선택기 외부 클릭 시 닫기
+        document.addEventListener('click', function(e) {
+            const iconPicker = document.getElementById('iconPicker');
+            if (iconPicker && e.target === iconPicker) {
+                hideIconPicker();
+            }
+        });
         
         // 페이지 로드 시 초기화
         document.addEventListener('DOMContentLoaded', init);
