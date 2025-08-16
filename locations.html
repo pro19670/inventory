@@ -949,16 +949,27 @@
         
         // 레벨 선택기 업데이트 함수
         function updateLevelSelectors(currentLevel) {
+            console.log('updateLevelSelectors called with level:', currentLevel);
+            
             const currentSelect = document.getElementById(`level${currentLevel}`);
+            if (!currentSelect) {
+                console.error('Current select element not found for level', currentLevel);
+                return;
+            }
+            
             const selectedValue = currentSelect.value;
+            console.log('Selected value:', selectedValue);
+            console.log('Available locations:', appData.locations.length);
             
             // 하위 레벨들 초기화
             for (let i = currentLevel + 1; i <= 3; i++) {
                 const selector = document.getElementById(`level${i}Selector`);
                 const select = document.getElementById(`level${i}`);
                 
-                selector.style.display = 'none';
-                select.innerHTML = '<option value="">-- 선택하세요 --</option>';
+                if (selector && select) {
+                    selector.style.display = 'none';
+                    select.innerHTML = '<option value="">-- 선택하세요 --</option>';
+                }
             }
             
             // 경로 표시 업데이트
@@ -967,30 +978,50 @@
             if (selectedValue) {
                 // 다음 레벨 선택기 표시 및 옵션 로드
                 const nextLevel = currentLevel + 1;
+                console.log('Loading next level:', nextLevel);
+                
                 if (nextLevel <= 3) {
                     loadNextLevelOptions(selectedValue, nextLevel);
                 }
+            } else {
+                console.log('No value selected, not loading next level');
             }
         }
         
         // 다음 레벨 옵션 로드
         function loadNextLevelOptions(parentId, targetLevel) {
+            console.log('loadNextLevelOptions called:', { parentId, targetLevel });
+            
             const targetSelect = document.getElementById(`level${targetLevel}`);
             const targetSelector = document.getElementById(`level${targetLevel}Selector`);
+            
+            console.log('Target elements found:', { targetSelect: !!targetSelect, targetSelector: !!targetSelector });
+            
+            if (!targetSelect || !targetSelector) {
+                console.error('Target elements not found for level', targetLevel);
+                return;
+            }
             
             // 해당 부모 위치의 하위 위치들 찾기
             const childLocations = appData.locations.filter(loc => 
                 loc.parentId === parentId && loc.level === targetLevel
             );
             
+            console.log('Child locations found:', childLocations.length);
+            
+            // 하위 위치가 있든 없든 다음 레벨 선택기는 항상 표시 (새로운 위치 추가를 위해)
             if (childLocations.length > 0) {
                 targetSelect.innerHTML = '<option value="">-- 선택하세요 --</option>' + 
                     childLocations.map(location => 
                         `<option value="${location.id}">${location.name}</option>`
                     ).join('');
-                
-                targetSelector.style.display = 'block';
+            } else {
+                // 기존 하위 위치가 없어도 새로운 위치 추가 가능하도록 선택기 표시
+                targetSelect.innerHTML = '<option value="">-- 새로운 하위 위치 생성 --</option>';
             }
+            
+            targetSelector.style.display = 'block';
+            console.log('Level selector displayed for level', targetLevel);
         }
         
         // 선택된 경로 표시 업데이트
@@ -1051,6 +1082,19 @@
             }
             
             return selectedParentId;
+        }
+        
+        // 디버깅용 테스트 함수
+        function testLevelSelectors() {
+            console.log('Testing level selectors...');
+            console.log('AppData locations:', appData.locations);
+            
+            // 강제로 레벨 1 표시 테스트
+            const level1Selector = document.getElementById('level1Selector');
+            if (level1Selector) {
+                level1Selector.style.display = 'block';
+                console.log('Level 1 selector forced to display');
+            }
         }
         
         // 빠른 위치 추가
