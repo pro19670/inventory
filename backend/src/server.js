@@ -672,36 +672,159 @@ const server = http.createServer((req, res) => {
     }
     // 물건 추가
     else if (pathname === '/api/items' && method === 'POST') {
-        let body = '';
-        req.on('data', chunk => body += chunk);
-        req.on('end', async () => {
-            try {
-                const data = JSON.parse(body);
-                
-                // 기본 검증
-                if (!data.name || typeof data.name !== 'string') {
-                    sendErrorResponse(res, 400, 'Item name is required');
-                    return;
+        const contentType = req.headers['content-type'] || '';
+        
+        // JSON 형식인지 멀티파트 형식인지 확인
+        if (contentType.includes('multipart/form-data')) {
+            // 멀티파트 폼 데이터 (이미지 포함) 처리
+            const boundary = contentType.split('boundary=')[1];
+            let body = Buffer.alloc(0);
+            
+            req.on('data', chunk => {
+                body = Buffer.concat([body, chunk]);
+            });
+            
+            req.on('end', async () => {
+                try {
+                    const parts = parseMultipart(body, boundary);
+                    
+                    // 폼 데이터 파싱
+                    const formData = {};
+                    let imagePart = null;
+                    
+                    parts.forEach(part => {
+                        if (part.name === 'image') {
+                            imagePart = part;
+                        } else {
+                            formData[part.name] = part.data.toString('utf8');
+                        }
+                    });
+                    
+                    // 기본 검증
+                    if (!formData.name || !formData.name.trim()) {
+                        sendErrorResponse(res, 400, 'Item name is required');
+                        return;
+                    }
+                    
+                    const newItem = {
+                        id: nextId++,
+                        name: formData.name.trim(),
+                        description: formData.description ? formData.description.trim() : '',
+                        locationId: formData.locationId && formData.locationId !== '' ? parseInt(formData.locationId) : null,
+                        categoryId: formData.categoryId && formData.categoryId !== '' ? parseInt(formData.categoryId) : null,
+                        quantity: formData.quantity ? parseInt(formData.quantity) : 1,
+                        unit: formData.unit || '개',
+                        imageUrl: null,
+                        thumbnailUrl: null,
+                        createdAt: new Date().toISOString(),
+                        updatedAt: new Date().toISOString()
+                    };
+                    
+                    // 이미지 처리
+                    if (imagePart && imagePart.data && imagePart.data.length > 0) {
+                        try {
+                            const fileExtension = getFileExtension(imagePart.filename || imagePart.contentType);
+                            const filename = `item_${newItem.id}_${Date.now()}${fileExtension}`;
+                            const filepath = path.join(IMAGES_DIR, filename);
+                            
+                            // 이미지 저장
+                            fs.writeFileSync(filepath, imagePart.data);
+                            
+                            // 썸네일 생성
+                            const thumbnailFilename = `thumb_${filename}`;
+                            const thumbnailPath = path.join(THUMBNAILS_DIR, thumbnailFilename);
+                            
+                            try {
+                                await sharp(imagePart.data)
+                                    .resize(200, 200, { fit: 'cover' })
+                                    .jpeg({ quality: 80 })
+                                    .toFile(thumbnailPath);
+                                
+                                newItem.imageUrl = `/images/${filename}`;
+                                newItem.thumbnailUrl = `/thumbnails/${thumbnailFilename}`;
+                            } catch (error) {
+                                console.warn('썸네일 생성 실패:', error);
+                                newItem.imageUrl = `/images/${filename}`;
+                            }
+                            
+                            // S3 업로드 (옵션)
+                            if (CONFIG.USE_S3 && s3) {
+                                try {
+                                    const s3Key = `items/${filename}`;
+                                    const s3Params = {
+                                        Bucket: CONFIG.S3_BUCKET,
+                                        Key: s3Key,
+                                        Body: imagePart.data,
+                                        ContentType: imagePart.contentType || 'image/jpeg'
+                                    };
+                                    
+                                    const s3Result = await s3.upload(s3Params).promise();
+                                    newItem.imageUrl = s3Result.Location;
+                                    console.log('S3 이미지 업로드 완료:', s3Result.Location);
+                                } catch (s3Error) {
+                                    console.error('S3 업로드 실패:', s3Error);
+                                }
+                            }
+                        } catch (imageError) {
+                            console.error('이미지 처리 실패:', imageError);
+                            // 이미지 실패해도 아이템은 생성
+                        }
+                    }
+                    
+                    items.push(newItem);
+                    scheduleSave();
+                    
+                    const locationPath = getLocationPath(newItem.locationId);
+                    const category = categories.find(cat => cat.id === newItem.categoryId);
+                    
+                    sendJsonResponse(res, 201, {
+                        success: true,
+                        item: {
+                            ...newItem,
+                            locationPath: locationPath,
+                            locationName: locationPath.join(' > '),
+                            categoryName: category ? category.name : null,
+                            categoryColor: category ? category.color : null,
+                            categoryIcon: category ? category.icon : null
+                        }
+                    });
+                } catch (error) {
+                    console.error('Item 추가 실패 (멀티파트):', error);
+                    sendErrorResponse(res, 400, 'Failed to create item');
                 }
-                
-                const newItem = {
-                    id: nextId++,
-                    name: data.name.trim(),
-                    description: data.description ? data.description.trim() : '',
-                    locationId: data.locationId ? parseInt(data.locationId) : null,
-                    categoryId: data.categoryId ? parseInt(data.categoryId) : null,
-                    quantity: data.quantity ? parseInt(data.quantity) : 1,
-                    unit: data.unit || '개',
-                    imageUrl: data.imageUrl || null,
-                    thumbnailUrl: data.thumbnailUrl || null,
-                    createdAt: new Date().toISOString(),
-                    updatedAt: new Date().toISOString()
-                };
-                
-                items.push(newItem);
-                scheduleSave();
-                
-                const locationPath = getLocationPath(newItem.locationId);
+            });
+        } else {
+            // JSON 형식 처리 (기존 방식)
+            let body = '';
+            req.on('data', chunk => body += chunk);
+            req.on('end', async () => {
+                try {
+                    const data = JSON.parse(body);
+                    
+                    // 기본 검증
+                    if (!data.name || typeof data.name !== 'string') {
+                        sendErrorResponse(res, 400, 'Item name is required');
+                        return;
+                    }
+                    
+                    const newItem = {
+                        id: nextId++,
+                        name: data.name.trim(),
+                        description: data.description ? data.description.trim() : '',
+                        locationId: data.locationId ? parseInt(data.locationId) : null,
+                        categoryId: data.categoryId ? parseInt(data.categoryId) : null,
+                        quantity: data.quantity ? parseInt(data.quantity) : 1,
+                        unit: data.unit || '개',
+                        imageUrl: data.imageUrl || null,
+                        thumbnailUrl: data.thumbnailUrl || null,
+                        createdAt: new Date().toISOString(),
+                        updatedAt: new Date().toISOString()
+                    };
+                    
+                    items.push(newItem);
+                    scheduleSave();
+                    
+                    const locationPath = getLocationPath(newItem.locationId);
                 const category = categories.find(cat => cat.id === newItem.categoryId);
                 
                 sendJsonResponse(res, 201, {

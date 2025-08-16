@@ -730,10 +730,19 @@
                 
                 <div class="form-group">
                     <label class="form-label">사진 추가</label>
-                    <input type="file" id="itemImage" accept="image/*" capture="environment" style="display: none;">
+                    <input type="file" id="itemImage" accept="image/*" capture="environment" style="display: none;" onchange="handleImageSelection()">
                     <button type="button" class="receipt-upload-btn" onclick="document.getElementById('itemImage').click()">
                         📷 사진 선택
                     </button>
+                    <div id="imagePreview" style="display: none; margin-top: 10px;">
+                        <img id="previewImg" style="max-width: 100%; max-height: 200px; border-radius: 8px; border: 1px solid #ddd;">
+                        <div style="margin-top: 5px; font-size: 0.9rem; color: #666;">
+                            <span id="imageInfo"></span>
+                            <button type="button" onclick="removeImage()" style="margin-left: 10px; background: none; border: none; color: #dc3545; cursor: pointer;">
+                                ❌ 삭제
+                            </button>
+                        </div>
+                    </div>
                 </div>
                 
                 <button type="submit" class="submit-btn">저장하기</button>
@@ -1199,6 +1208,70 @@
             }
         }
         
+        // 이미지 선택 처리
+        function handleImageSelection() {
+            const imageInput = document.getElementById('itemImage');
+            const previewDiv = document.getElementById('imagePreview');
+            const previewImg = document.getElementById('previewImg');
+            const imageInfo = document.getElementById('imageInfo');
+            
+            if (imageInput && imageInput.files && imageInput.files[0]) {
+                const file = imageInput.files[0];
+                
+                // 파일 크기 창졩 (5MB 이하)
+                if (file.size > 5 * 1024 * 1024) {
+                    showToast('이미지 크기는 5MB 이하여야 합니다.');
+                    imageInput.value = '';
+                    return;
+                }
+                
+                // 이미지 타입 창식
+                if (!file.type.startsWith('image/')) {
+                    showToast('이미지 파일만 선택 가능합니다.');
+                    imageInput.value = '';
+                    return;
+                }
+                
+                // 미리보기 표시
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    if (previewImg) {
+                        previewImg.src = e.target.result;
+                    }
+                };
+                reader.readAsDataURL(file);
+                
+                // 파일 정보 표시
+                if (imageInfo) {
+                    const fileSize = (file.size / 1024).toFixed(1);
+                    imageInfo.textContent = `${file.name} (${fileSize}KB)`;
+                }
+                
+                // 미리보기 보이기
+                if (previewDiv) {
+                    previewDiv.style.display = 'block';
+                }
+                
+                showToast('이미지가 선택되었습니다.');
+            }
+        }
+        
+        // 이미지 제거
+        function removeImage() {
+            const imageInput = document.getElementById('itemImage');
+            const previewDiv = document.getElementById('imagePreview');
+            
+            if (imageInput) {
+                imageInput.value = '';
+            }
+            
+            if (previewDiv) {
+                previewDiv.style.display = 'none';
+            }
+            
+            showToast('이미지가 제거되었습니다.');
+        }
+        
         // UI 피드백
         function showToast(message) {
             const toast = document.getElementById('toast');
@@ -1445,21 +1518,50 @@
                 }
                 
                 showLoading();
-                const formData = {
-                    name: nameInput.value.trim(),
-                    categoryId: categorySelect ? parseInt(categorySelect.value) || null : null,
-                    locationId: getSelectedItemLocationId() ? parseInt(getSelectedItemLocationId()) || null : null,
-                    quantity: quantityInput ? parseInt(quantityInput.value) || 1 : 1,
-                    unit: '개',
-                    description: descriptionInput ? descriptionInput.value.trim() : ''
-                };
                 
-                try {
-                    const response = await fetch(`${API_URL}/items`, {
+                // 이미지 파일 확인
+                const imageInput = document.getElementById('itemImage');
+                const imageFile = imageInput && imageInput.files ? imageInput.files[0] : null;
+                
+                // 이미지가 있으면 FormData 사용, 없으면 JSON 사용
+                let requestOptions;
+                
+                if (imageFile) {
+                    // 이미지가 있는 경우: FormData 사용
+                    const formData = new FormData();
+                    formData.append('name', nameInput.value.trim());
+                    formData.append('categoryId', categorySelect ? parseInt(categorySelect.value) || '' : '');
+                    formData.append('locationId', getSelectedItemLocationId() ? parseInt(getSelectedItemLocationId()) || '' : '');
+                    formData.append('quantity', quantityInput ? parseInt(quantityInput.value) || 1 : 1);
+                    formData.append('unit', '개');
+                    formData.append('description', descriptionInput ? descriptionInput.value.trim() : '');
+                    formData.append('image', imageFile);
+                    
+                    requestOptions = {
+                        method: 'POST',
+                        body: formData
+                        // FormData일 때는 Content-Type 헤더를 설정하지 않음
+                    };
+                } else {
+                    // 이미지가 없는 경우: JSON 사용
+                    const jsonData = {
+                        name: nameInput.value.trim(),
+                        categoryId: categorySelect ? parseInt(categorySelect.value) || null : null,
+                        locationId: getSelectedItemLocationId() ? parseInt(getSelectedItemLocationId()) || null : null,
+                        quantity: quantityInput ? parseInt(quantityInput.value) || 1 : 1,
+                        unit: '개',
+                        description: descriptionInput ? descriptionInput.value.trim() : ''
+                    };
+                    
+                    requestOptions = {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(formData)
-                    });
+                        body: JSON.stringify(jsonData)
+                    };
+                }
+                
+                try {
+                    const response = await fetch(`${API_URL}/items`, requestOptions);
                     
                     if (response.ok) {
                         await loadData();
