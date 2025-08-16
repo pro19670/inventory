@@ -624,15 +624,64 @@
                 return;
             }
             
-            // 최상위 위치들만 표시
-            const topLevelLocations = appData.locations.filter(loc => loc.level === 0);
+            // 최상위 위치들만 표시하되 중복 제거
+            const allTopLevelLocations = appData.locations.filter(loc => loc.level === 0);
+            
+            // 이름이 같은 위치들을 그룹화하고 통합
+            const locationGroups = {};
+            allTopLevelLocations.forEach(loc => {
+                const key = loc.name.toLowerCase().trim();
+                if (!locationGroups[key]) {
+                    locationGroups[key] = [];
+                }
+                locationGroups[key].push(loc);
+            });
+            
+            // 각 그룹에서 대표 위치 선택 (가장 최근에 생성된 것 또는 가장 많은 정보를 가진 것)
+            const topLevelLocations = Object.values(locationGroups).map(group => {
+                if (group.length === 1) {
+                    return group[0];
+                }
+                
+                // 여러 개가 있으면 가장 완전한 정보를 가진 것을 선택
+                return group.reduce((best, current) => {
+                    const bestScore = (best.description ? 1 : 0) + (best.imageUrl ? 1 : 0) + (best.type ? 1 : 0);
+                    const currentScore = (current.description ? 1 : 0) + (current.imageUrl ? 1 : 0) + (current.type ? 1 : 0);
+                    
+                    if (currentScore > bestScore) {
+                        return current;
+                    } else if (currentScore === bestScore) {
+                        // 점수가 같으면 최신 것 선택
+                        return new Date(current.createdAt || 0) > new Date(best.createdAt || 0) ? current : best;
+                    }
+                    return best;
+                });
+            });
             
             const locationsHtml = topLevelLocations.map(location => {
-                // 해당 위치에 있는 물건 수 계산
-                const itemCount = location.itemCount || appData.items.filter(item => item.locationId === location.id).length;
+                // 하위 위치들 (같은 이름의 모든 위치의 하위 위치들 포함)
+                const sameNameLocations = locationGroups[location.name.toLowerCase().trim()] || [location];
+                const allSubLocations = [];
                 
-                // 하위 위치들
-                const subLocations = appData.locations.filter(loc => loc.parentId === location.id);
+                sameNameLocations.forEach(parentLoc => {
+                    const subs = appData.locations.filter(loc => loc.parentId === parentLoc.id);
+                    allSubLocations.push(...subs);
+                });
+                
+                // 하위 위치들도 중복 제거
+                const subLocationGroups = {};
+                allSubLocations.forEach(loc => {
+                    const key = `${loc.name}_${loc.level}`;
+                    if (!subLocationGroups[key]) {
+                        subLocationGroups[key] = loc;
+                    }
+                });
+                
+                const subLocations = Object.values(subLocationGroups);
+                
+                // 해당 위치에 있는 물건 수 계산 (같은 이름의 모든 위치 포함)
+                const sameNameLocationIds = sameNameLocations.map(loc => loc.id);
+                const itemCount = appData.items.filter(item => sameNameLocationIds.includes(item.locationId)).length;
                 
                 // 위치 이미지 처리
                 const locationImage = location.imageUrl ? 
