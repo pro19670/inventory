@@ -1096,6 +1096,37 @@
             return selectedParentId;
         }
         
+        // 중복 위치 검사 함수
+        function checkDuplicateLocation(name, parentId) {
+            if (!appData.locations || !name) return false;
+            
+            // 같은 이름과 같은 부모ID를 가진 위치가 있는지 확인
+            return appData.locations.some(location => {
+                const nameMatch = location.name.toLowerCase().trim() === name.toLowerCase().trim();
+                const parentMatch = String(location.parentId || '') === String(parentId || '');
+                return nameMatch && parentMatch;
+            });
+        }
+        
+        // 위치의 전체 경로 생성 함수
+        function getLocationPath(locationId) {
+            if (!locationId || !appData.locations) return '';
+            
+            const path = [];
+            let currentId = locationId;
+            
+            // 최대 10번까지만 반복 (무한루프 방지)
+            for (let i = 0; i < 10 && currentId; i++) {
+                const location = appData.locations.find(loc => String(loc.id) === String(currentId));
+                if (!location) break;
+                
+                path.unshift(location.name); // 앞에 추가
+                currentId = location.parentId;
+            }
+            
+            return path.join(' > ');
+        }
+        
         // 디버깅용 테스트 함수
         function testLevelSelectors() {
             console.log('Testing level selectors...');
@@ -1111,6 +1142,13 @@
         
         // 빠른 위치 추가
         async function quickAddLocation(name, icon) {
+            // 중복 위치 검사 (최상위 레벨이므로 parentId는 null)
+            const isDuplicate = checkDuplicateLocation(name, null);
+            if (isDuplicate) {
+                showMessage(`"${name}"이(가) 이미 존재합니다.\n같은 이름의 최상위 위치가 있습니다.`, 'error');
+                return;
+            }
+            
             const success = await addLocation(name, null);
             if (success) {
                 showMessage(`"${name}" 위치가 추가되었습니다!`, 'success');
@@ -1267,6 +1305,15 @@
                 
                 if (!name) {
                     showMessage('위치 이름을 입력해주세요.', 'error');
+                    return;
+                }
+                
+                // 중복 위치 검사
+                const isDuplicate = checkDuplicateLocation(name, parentId);
+                if (isDuplicate) {
+                    const parentPath = getLocationPath(parentId);
+                    const fullPath = parentPath ? `${parentPath} > ${name}` : name;
+                    showMessage(`같은 공간에 "${name}"이(가) 이미 존재합니다.\n경로: ${fullPath}`, 'error');
                     return;
                 }
                 
