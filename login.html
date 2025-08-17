@@ -364,9 +364,9 @@
                 const data = await response.json();
 
                 if (data.success) {
-                    // 토큰을 로컬 스토리지에 저장
-                    localStorage.setItem('auth_token', data.token);
-                    localStorage.setItem('user_info', JSON.stringify(data.user));
+                    // 가족 토큰을 로컬 스토리지에 저장
+                    localStorage.setItem('familyAuthToken', data.token);
+                    localStorage.setItem('currentUser', JSON.stringify(data.user));
                     
                     console.log('로그인 성공:', data.user.username);
                     showSuccess(`${data.user.username}님, 환영합니다! 메인 페이지로 이동합니다...`);
@@ -387,33 +387,51 @@
             }
         });
 
-        // 페이지 로드 시 기존 토큰 확인
+        // 페이지 로드 시 기존 토큰 확인 (자동 리디렉션 비활성화)
         window.addEventListener('load', async () => {
-            const token = localStorage.getItem('auth_token');
+            const token = localStorage.getItem('familyAuthToken');
+            console.log('🔍 로그인 페이지 로드, 토큰 상태:', !!token);
+            
             if (token) {
                 try {
-                    const response = await fetch(`${API_BASE}/api/auth/verify`, {
+                    // 토큰 유효성만 확인하고 자동 리디렉션하지 않음
+                    const response = await fetch(`${API_BASE}/api/family-auth/verify`, {
                         method: 'POST',
                         headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ token })
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        }
                     });
 
                     const data = await response.json();
                     if (data.success) {
-                        // 이미 로그인된 사용자는 메인 페이지로 리다이렉트
-                        console.log('기존 토큰 유효 - 메인 페이지로 이동');
-                        showSuccess(`${data.user.username}님, 이미 로그인되어 있습니다. 메인 페이지로 이동합니다...`);
-                        setTimeout(() => {
-                            window.location.replace('/'); // replace 사용
-                        }, 500);
+                        console.log('✅ 기존 토큰 유효:', data.user.username);
+                        // 자동 리디렉션 대신 사용자에게 선택권 제공
+                        showSuccess(`${data.user.username}님, 이미 로그인되어 있습니다. 메인 페이지로 이동하시겠습니까?`);
+                        
+                        // 3초 후 자동 이동 (사용자가 취소할 수 있도록)
+                        let countdown = 3;
+                        const countdownInterval = setInterval(() => {
+                            document.querySelector('.success-message').textContent = 
+                                `${data.user.username}님, 이미 로그인되어 있습니다. ${countdown}초 후 메인 페이지로 이동합니다...`;
+                            countdown--;
+                            if (countdown < 0) {
+                                clearInterval(countdownInterval);
+                                window.location.replace('/');
+                            }
+                        }, 1000);
+                    } else {
+                        console.log('❌ 기존 토큰 무효, 토큰 제거');
+                        localStorage.removeItem('familyAuthToken');
+                        localStorage.removeItem('currentUser');
                     }
                 } catch (error) {
-                    // 토큰이 유효하지 않으면 로컬 스토리지에서 제거
-                    localStorage.removeItem('auth_token');
-                    localStorage.removeItem('user_info');
+                    console.log('❌ 토큰 검증 실패:', error.message);
+                    localStorage.removeItem('familyAuthToken');
+                    localStorage.removeItem('currentUser');
                 }
+            } else {
+                console.log('ℹ️ 토큰 없음 - 로그인 폼 표시');
             }
         });
     </script>
