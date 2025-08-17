@@ -454,7 +454,31 @@
         }
 
         // 현재 사용자로 계속
-        function continueAsCurrentUser() {
+        async function continueAsCurrentUser() {
+            console.log('👤 현재 사용자로 계속 진행...');
+            
+            // 토큰 재검증
+            const token = localStorage.getItem('familyAuthToken');
+            if (token) {
+                try {
+                    const response = await fetch(`${API_BASE}/api/family-auth/verify`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+                    
+                    const data = await response.json();
+                    if (data.success) {
+                        console.log('✅ 토큰 재검증 성공, 사용자 정보 업데이트');
+                        localStorage.setItem('currentUser', JSON.stringify(data.user));
+                    }
+                } catch (error) {
+                    console.error('토큰 재검증 실패:', error);
+                }
+            }
+            
             window.location.href = '/';
         }
 
@@ -509,15 +533,27 @@
                 const data = await response.json();
 
                 if (data.success) {
+                    console.log('🎉 로그인 성공! 데이터:', data);
+                    console.log('📝 토큰 저장 시작...');
+                    
                     // 가족 토큰을 로컬 스토리지에 저장
                     localStorage.setItem('familyAuthToken', data.token);
                     localStorage.setItem('currentUser', JSON.stringify(data.user));
                     
-                    console.log('로그인 성공:', data.user.username);
+                    // 저장 확인
+                    const savedToken = localStorage.getItem('familyAuthToken');
+                    const savedUser = localStorage.getItem('currentUser');
+                    
+                    console.log('✅ 토큰 저장 완료!');
+                    console.log('- 저장된 토큰:', savedToken ? savedToken.substring(0, 30) + '...' : '❌ 저장 실패');
+                    console.log('- 저장된 사용자:', savedUser ? JSON.parse(savedUser).username : '❌ 저장 실패');
+                    console.log('- localStorage 키들:', Object.keys(localStorage));
+                    
                     showSuccess(`${data.user.username}님, 환영합니다! 메인 페이지로 이동합니다...`);
                     
                     // 즉시 메인 페이지로 리다이렉트 (무한 리다이렉트 방지를 위해 빠르게)
                     setTimeout(() => {
+                        console.log('🔄 메인 페이지로 이동 중...');
                         window.location.replace('/'); // replace 사용으로 히스토리 남기지 않음
                     }, 1000);
                 } else {
