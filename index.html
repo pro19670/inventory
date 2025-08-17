@@ -35,12 +35,64 @@
             backdrop-filter: blur(10px);
         }
         
+        .mobile-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+        
         .mobile-header h1 {
             font-size: 22px;
-            text-align: center;
             font-weight: 700;
             text-shadow: 0 2px 4px rgba(0,0,0,0.2);
             margin: 0;
+            flex: 1;
+            text-align: center;
+        }
+        
+        .auth-buttons {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .auth-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            padding: 8px 16px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            backdrop-filter: blur(10px);
+        }
+        
+        .auth-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
+        }
+        
+        .auth-btn:active {
+            transform: translateY(0);
+        }
+        
+        .user-info {
+            color: white;
+            font-size: 12px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 6px 12px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .user-avatar {
+            font-size: 14px;
         }
         
         .bottom-nav {
@@ -906,7 +958,16 @@
 </head>
 <body>
     <div class="mobile-header">
-        <h1>물품관리</h1>
+        <div style="width: 80px;"></div> <!-- 왼쪽 공간 유지 -->
+        <h1 id="headerTitle">물품관리</h1>
+        <div class="auth-buttons">
+            <div id="userInfo" class="user-info" style="display: none;">
+                <span class="user-avatar" id="userAvatar">👤</span>
+                <span id="userName">사용자</span>
+            </div>
+            <button id="loginBtn" class="auth-btn" onclick="goToLogin()">로그인</button>
+            <button id="logoutBtn" class="auth-btn" onclick="logout()" style="display: none;">로그아웃</button>
+        </div>
     </div>
     
     <div class="pull-to-refresh" id="pullToRefresh">
@@ -1166,6 +1227,9 @@
         // 초기화 함수
         async function init() {
             try {
+                // 헤더 인증 상태 먼저 업데이트
+                updateHeaderAuthState();
+                
                 await loadData();
                 setupPullToRefresh();
                 setupSwipeGestures();
@@ -2318,11 +2382,11 @@
 
         // 사용자 인터페이스 업데이트
         function updateUserInterface(user) {
-            // 헤더에 사용자 정보 표시
-            const headerTitle = document.querySelector('.header-title');
-            if (headerTitle && !headerTitle.textContent.includes(user.username)) {
-                headerTitle.textContent = `물품관리 - ${user.avatar} ${user.username}`;
-            }
+            // 현재 사용자 정보 저장
+            localStorage.setItem('currentUser', JSON.stringify(user));
+            
+            // 헤더 상태 업데이트
+            updateHeaderAuthState();
 
             // 권한에 따른 기능 제한
             if (!user.permissions.includes('write_items') && !user.permissions.includes('*')) {
@@ -2334,11 +2398,58 @@
             }
         }
 
+        // 헤더 인증 상태 업데이트
+        function updateHeaderAuthState() {
+            const token = localStorage.getItem('familyAuthToken');
+            const loginBtn = document.getElementById('loginBtn');
+            const logoutBtn = document.getElementById('logoutBtn');
+            const userInfo = document.getElementById('userInfo');
+            const headerTitle = document.getElementById('headerTitle');
+            
+            if (token) {
+                // 로그인 상태
+                try {
+                    const userStr = localStorage.getItem('currentUser');
+                    if (userStr) {
+                        const user = JSON.parse(userStr);
+                        // 사용자 정보 표시
+                        document.getElementById('userAvatar').textContent = user.avatar || '👤';
+                        document.getElementById('userName').textContent = user.username || '사용자';
+                        userInfo.style.display = 'flex';
+                        headerTitle.textContent = `물품관리`;
+                    } else {
+                        userInfo.style.display = 'none';
+                    }
+                } catch (e) {
+                    userInfo.style.display = 'none';
+                }
+                
+                loginBtn.style.display = 'none';
+                logoutBtn.style.display = 'block';
+            } else {
+                // 로그아웃 상태
+                userInfo.style.display = 'none';
+                loginBtn.style.display = 'block';
+                logoutBtn.style.display = 'none';
+                headerTitle.textContent = '물품관리';
+            }
+        }
+        
+        // 로그인 페이지로 이동
+        function goToLogin() {
+            window.location.href = '/login.html';
+        }
+        
         // 로그아웃
         function logout() {
-            localStorage.removeItem('auth_token');
-            localStorage.removeItem('user_info');
-            window.location.href = '/login.html';
+            localStorage.removeItem('familyAuthToken');
+            localStorage.removeItem('currentUser');
+            updateHeaderAuthState();
+            showToast('로그아웃되었습니다.');
+            // 페이지 새로고침으로 상태 초기화
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
         }
 
         // API 요청에 인증 헤더 추가하는 함수
