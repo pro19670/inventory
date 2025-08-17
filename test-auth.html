@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>인증 테스트</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        button { margin: 10px; padding: 10px 20px; font-size: 16px; }
+        .result { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .info { background-color: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <h1>🔐 인증 시스템 테스트</h1>
+    
+    <div>
+        <button onclick="testLogin()">👨‍💼 관리자 로그인 테스트</button>
+        <button onclick="testLogin('엄마', 'mom123')">👩 엄마 로그인 테스트</button>
+        <button onclick="testLogout()">🚪 로그아웃 테스트</button>
+        <button onclick="checkAuthState()">🔍 현재 상태 확인</button>
+    </div>
+    
+    <div id="results"></div>
+    
+    <script>
+        const API_URL = 'https://3001-i72krmbsmpnff1c7v14w6-6532622b.e2b.dev/api';
+        
+        function addResult(message, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.innerHTML = `[${new Date().toLocaleTimeString()}] ${message}`;
+            results.appendChild(div);
+            results.scrollTop = results.scrollHeight;
+        }
+        
+        async function testLogin(username = '관리자', password = 'admin123') {
+            try {
+                addResult(`🔄 ${username} 계정으로 로그인 시도 중...`, 'info');
+                
+                const response = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    localStorage.setItem('familyAuthToken', data.token);
+                    localStorage.setItem('currentUser', JSON.stringify(data.user));
+                    
+                    addResult(`✅ 로그인 성공! 사용자: ${data.user.username} (${data.user.role})`, 'success');
+                    addResult(`🎫 토큰: ${data.token.substring(0, 30)}...`, 'info');
+                    
+                    // 메인 페이지로 상태 전파
+                    if (window.opener) {
+                        window.opener.postMessage({
+                            type: 'LOGIN_SUCCESS',
+                            token: data.token,
+                            user: data.user
+                        }, '*');
+                    }
+                } else {
+                    addResult(`❌ 로그인 실패: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                addResult(`💥 로그인 오류: ${error.message}`, 'error');
+            }
+        }
+        
+        function testLogout() {
+            const token = localStorage.getItem('familyAuthToken');
+            if (!token) {
+                addResult('⚠️ 로그인되지 않은 상태입니다', 'error');
+                return;
+            }
+            
+            localStorage.removeItem('familyAuthToken');
+            localStorage.removeItem('currentUser');
+            
+            addResult('🚪 로그아웃 완료 - 토큰 및 사용자 정보 제거됨', 'success');
+            
+            // 메인 페이지로 상태 전파
+            if (window.opener) {
+                window.opener.postMessage({
+                    type: 'LOGOUT_SUCCESS'
+                }, '*');
+            }
+        }
+        
+        function checkAuthState() {
+            const token = localStorage.getItem('familyAuthToken');
+            const user = localStorage.getItem('currentUser');
+            
+            if (token) {
+                const userInfo = user ? JSON.parse(user) : null;
+                addResult(`🔐 로그인 상태: ${userInfo?.username || '알 수 없음'} (${userInfo?.role || '역할 미상'})`, 'success');
+                addResult(`🎫 토큰: ${token.substring(0, 30)}...`, 'info');
+            } else {
+                addResult('🔓 로그아웃 상태 - 토큰 없음', 'info');
+            }
+        }
+        
+        // 페이지 로드 시 상태 확인
+        window.onload = () => {
+            checkAuthState();
+        };
+    </script>
+</body>
+</html>

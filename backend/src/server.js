@@ -10,6 +10,8 @@ const AWS = require('aws-sdk');
 const Tesseract = require('tesseract.js');
 const sharp = require('sharp');
 const { v4: uuidv4 } = require('uuid');
+const OpenAI = require('openai');
+const { FamilyAuthSystem, ROLES } = require('./family-auth');
 
 // 미들웨어 및 유틸리티 모듈 (옵셔널)
 let auth = null;
@@ -33,6 +35,7 @@ const DATA_DIR = path.join(__dirname, '../../data');
 const ITEMS_FILE = path.join(DATA_DIR, 'items.json');
 const LOCATIONS_FILE = path.join(DATA_DIR, 'locations.json');
 const CATEGORIES_FILE = path.join(DATA_DIR, 'categories.json');
+const INVENTORY_HISTORY_FILE = path.join(DATA_DIR, 'inventory_history.json');
 const IMAGES_DIR = path.join(DATA_DIR, 'images');
 const THUMBNAILS_DIR = path.join(DATA_DIR, 'thumbnails');
 const TEMP_DIR = path.join(__dirname, 'temp');
@@ -41,10 +44,12 @@ const TEMP_DIR = path.join(__dirname, 'temp');
 let items = [];
 let locations = [];
 let categories = [];
+let inventoryHistory = []; // 재고 이력
 let itemImages = {};
 let nextId = 1;
 let nextLocationId = 1;
 let nextCategoryId = 1;
+let nextInventoryHistoryId = 1;
 
 // 환경 설정
 const CONFIG = {
@@ -54,8 +59,20 @@ const CONFIG = {
     USE_S3: process.env.USE_S3 === 'true' || false,
     AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID,
     AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY,
-    NODE_ENV: process.env.NODE_ENV || 'development'
+    NODE_ENV: process.env.NODE_ENV || 'development',
+    // OpenAI API 설정
+    OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+    USE_CHATGPT: process.env.USE_CHATGPT === 'true' || false,
+    CHATGPT_MODEL: process.env.CHATGPT_MODEL || 'gpt-3.5-turbo'
 };
+
+// 디버그: 환경변수 로드 상태 확인
+console.log('🔍 환경변수 디버그:');
+console.log('OPENAI_API_KEY 존재:', !!CONFIG.OPENAI_API_KEY);
+console.log('OPENAI_API_KEY 길이:', CONFIG.OPENAI_API_KEY ? CONFIG.OPENAI_API_KEY.length : 0);
+console.log('OPENAI_API_KEY 시작:', CONFIG.OPENAI_API_KEY ? CONFIG.OPENAI_API_KEY.substring(0, 20) + '...' : 'null');
+console.log('USE_CHATGPT:', CONFIG.USE_CHATGPT);
+console.log('CHATGPT_MODEL:', CONFIG.CHATGPT_MODEL);
 
 // S3 클라이언트 설정
 let s3 = null;
@@ -72,11 +89,31 @@ if (CONFIG.USE_S3 && CONFIG.AWS_ACCESS_KEY_ID && CONFIG.AWS_SECRET_ACCESS_KEY) {
     }
 }
 
+// OpenAI 클라이언트 설정
+let openai = null;
+if (CONFIG.USE_CHATGPT && CONFIG.OPENAI_API_KEY) {
+    try {
+        openai = new OpenAI({
+            apiKey: CONFIG.OPENAI_API_KEY,
+        });
+        console.log('OpenAI 클라이언트 초기화 완료');
+    } catch (error) {
+        console.log('OpenAI 클라이언트 초기화 실패:', error.message);
+    }
+}
+
+// 가족 인증 시스템 초기화
+const familyAuth = new FamilyAuthSystem();
+console.log('👨‍👩‍👧‍👦 가족 로그인 시스템 초기화 완료');
+
 // 공개 엔드포인트 목록
 const publicEndpoints = [
     { path: '/', method: 'GET' },
     { path: '/api/health', method: 'GET' },
-    { path: '/api/auth/login', method: 'POST' }
+    { path: '/api/auth/login', method: 'POST' },
+    { path: '/api/auth/register', method: 'POST' },
+    { path: '/api/auth/verify', method: 'POST' },
+    { path: '/login.html', method: 'GET' }
 ];
 
 // 읽기 전용 엔드포인트
@@ -275,6 +312,36 @@ async function loadData() {
             console.error('Categories 로드 실패:', error.message);
             initializeCategories();
         }
+        
+        // inventory_history.json 읽기
+        try {
+            let data = null;
+            
+            if (CONFIG.USE_S3) {
+                const s3Data = await loadFromS3('backup/inventory_history.json');
+                if (s3Data) data = s3Data;
+            }
+            
+            if (!data && fs.existsSync(INVENTORY_HISTORY_FILE)) {
+                data = fs.readFileSync(INVENTORY_HISTORY_FILE, 'utf8');
+            }
+            
+            if (data) {
+                if (data.charCodeAt(0) === 0xFEFF) data = data.substr(1);
+                const parsed = JSON.parse(data);
+                inventoryHistory = parsed.history || [];
+                nextInventoryHistoryId = parsed.nextId || 1;
+                console.log(`${inventoryHistory.length}개의 재고 이력 데이터 로드됨`);
+            } else {
+                inventoryHistory = [];
+                nextInventoryHistoryId = 1;
+                console.log('빈 재고 이력 데이터 초기화됨');
+            }
+        } catch (error) {
+            console.error('Inventory History 로드 실패:', error.message);
+            inventoryHistory = [];
+            nextInventoryHistoryId = 1;
+        }
     } catch (error) {
         console.error('데이터 로드 중 오류:', error);
     }
@@ -316,6 +383,16 @@ async function saveData() {
         const categoriesBuffer = Buffer.concat([Buffer.from('\ufeff'), Buffer.from(categoriesJson, 'utf8')]);
         fs.writeFileSync(CATEGORIES_FILE, categoriesBuffer);
         
+        // inventory_history.json 저장
+        const inventoryHistoryData = {
+            history: inventoryHistory,
+            nextId: nextInventoryHistoryId,
+            lastSaved: new Date().toISOString()
+        };
+        const inventoryHistoryJson = JSON.stringify(inventoryHistoryData, null, 2);
+        const inventoryHistoryBuffer = Buffer.concat([Buffer.from('\ufeff'), Buffer.from(inventoryHistoryJson, 'utf8')]);
+        fs.writeFileSync(INVENTORY_HISTORY_FILE, inventoryHistoryBuffer);
+        
         console.log('로컬 데이터 저장 완료');
         
         // S3 백업
@@ -323,7 +400,8 @@ async function saveData() {
             await Promise.all([
                 saveToS3('backup/items.json', itemsJson),
                 saveToS3('backup/locations.json', locationsJson),
-                saveToS3('backup/categories.json', categoriesJson)
+                saveToS3('backup/categories.json', categoriesJson),
+                saveToS3('backup/inventory_history.json', inventoryHistoryJson)
             ]);
         }
     } catch (error) {
@@ -363,6 +441,36 @@ function getLocationPath(locationId) {
     }
     
     return path;
+}
+
+// 위치 전체 경로 계산 (타입 포함)
+function getLocationPathWithTypes(locationId) {
+    if (!locationId) return [];
+    
+    const path = [];
+    let currentLocation = locations.find(loc => loc.id === locationId);
+    
+    while (currentLocation) {
+        path.unshift({
+            id: currentLocation.id,
+            name: currentLocation.name,
+            type: currentLocation.type || '위치',
+            level: currentLocation.level
+        });
+        currentLocation = locations.find(loc => loc.id === currentLocation.parentId);
+    }
+    
+    return path;
+}
+
+// 파일 확장자 추출
+function getFileExtension(filename) {
+    if (!filename) return '.jpg';
+    
+    const ext = path.extname(filename).toLowerCase();
+    const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+    
+    return allowedExtensions.includes(ext) ? ext : '.jpg';
 }
 
 // Multipart 파싱 함수
@@ -429,6 +537,249 @@ function sendErrorResponse(res, statusCode, message, details = null) {
     if (details) errorResponse.details = details;
     
     sendJsonResponse(res, statusCode, errorResponse);
+}
+
+// 인증 미들웨어
+function authenticateToken(req, res, next) {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+
+    if (!token) {
+        return sendErrorResponse(res, 401, '토큰이 필요합니다');
+    }
+
+    const result = familyAuth.verifyToken(token);
+    if (!result.success) {
+        return sendErrorResponse(res, 403, '유효하지 않은 토큰입니다');
+    }
+
+    req.user = result.user;
+    next();
+}
+
+// 권한 확인 미들웨어
+function requirePermission(permission) {
+    return (req, res, next) => {
+        if (!req.user) {
+            return sendErrorResponse(res, 401, '인증이 필요합니다');
+        }
+
+        if (!familyAuth.hasPermission(req.user.role, permission)) {
+            return sendErrorResponse(res, 403, '권한이 없습니다');
+        }
+
+        next();
+    };
+}
+
+// ChatGPT API 호출 함수
+async function callChatGPT(userMessage, context) {
+    if (!CONFIG.OPENAI_API_KEY) {
+        throw new Error('OpenAI API key not configured');
+    }
+    
+    const { items, locations, categories, inventoryHistory } = context;
+    
+    // 현재 상황 요약
+    const totalItems = items.length;
+    const totalQuantity = items.reduce((sum, item) => sum + (item.quantity || 0), 0);
+    const lowStockItems = items.filter(item => (item.quantity || 0) <= 2);
+    const recentHistory = inventoryHistory
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        .slice(0, 3);
+    
+    // ChatGPT에 제공할 컨텍스트
+    const contextPrompt = `당신은 물품관리 시스템의 AI 도우미입니다. 
+    
+현재 상황:
+- 전체 물품: ${totalItems}개
+- 총 수량: ${totalQuantity}개  
+- 카테고리: ${categories.length}개
+- 위치: ${locations.length}개
+- 재고 부족 물품: ${lowStockItems.map(item => `${item.name}(${item.quantity || 0}${item.unit || '개'})`).join(', ')}
+
+최근 활동:
+${recentHistory.map(h => `- ${new Date(h.createdAt).toLocaleDateString('ko-KR')} ${h.type === 'stock-in' ? '입고' : '출고'}: ${h.quantity}${h.unit || '개'}`).join('\\n')}
+
+주요 기능:
+1. 물품 등록: ➕ 버튼 > 새 물건 등록
+2. 재고 관리: 하단 '재고관리' 메뉴
+3. 위치 관리: 하단 '위치' 메뉴 (계층형 구조)
+4. 카테고리 관리: 하단 '카테고리' 메뉴
+
+사용자의 질문에 친근하고 도움이 되는 답변을 한국어로 제공해주세요. HTML 태그(<br>, <strong> 등)를 사용해서 보기 좋게 포맷팅해주세요.`;
+
+    try {
+        if (!openai) {
+            throw new Error('OpenAI client not initialized');
+        }
+        
+        const completion = await openai.chat.completions.create({
+            model: CONFIG.CHATGPT_MODEL,
+            messages: [
+                {
+                    role: 'system',
+                    content: contextPrompt
+                },
+                {
+                    role: 'user', 
+                    content: userMessage
+                }
+            ],
+            max_tokens: 500,
+            temperature: 0.7
+        });
+        
+        return completion.choices[0]?.message?.content || 'ChatGPT 응답을 받을 수 없습니다.';
+        
+    } catch (error) {
+        console.error('ChatGPT API 호출 실패:', error);
+        throw error;
+    }
+}
+
+// 로컬 지능형 응답 생성 (ChatGPT 실패 시 대체용)
+function generateLocalResponse(userMessage, context) {
+    const message = userMessage.toLowerCase().trim();
+    const { items, locations, categories, inventoryHistory } = context;
+    
+    // 현재 시간
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+    
+    // 데이터 분석
+    const totalItems = items.length;
+    const totalQuantity = items.reduce((sum, item) => sum + (item.quantity || 0), 0);
+    const totalCategories = categories.length;
+    const totalLocations = locations.length;
+    
+    // 재고 부족 아이템
+    const lowStockItems = items.filter(item => (item.quantity || 0) <= 2);
+    
+    // 기본적인 패턴 매칭 응답
+    if (message.includes('안녕') || message.includes('hi') || message.includes('hello')) {
+        return `안녕하세요! 😊 현재 시간은 ${timeStr}입니다.<br>총 ${totalItems}개의 물품을 관리하고 있어요. 무엇을 도와드릴까요?`;
+    }
+    
+    if (message.includes('재고') || message.includes('현황')) {
+        let response = `📊 <strong>현재 재고 현황</strong><br><br>`;
+        response += `• 전체 물품: ${totalItems}개<br>`;
+        response += `• 총 수량: ${totalQuantity}개<br>`;
+        response += `• 카테고리: ${totalCategories}개<br>`;
+        response += `• 위치: ${totalLocations}개<br>`;
+        
+        if (lowStockItems.length > 0) {
+            response += `<br>⚠️ <strong>재고 부족 알림</strong><br>`;
+            lowStockItems.slice(0, 3).forEach(item => {
+                response += `• ${item.name}: ${item.quantity || 0}${item.unit || '개'}<br>`;
+            });
+        }
+        return response;
+    }
+    
+    if (message.includes('도움') || message.includes('help')) {
+        return `❓ <strong>물품관리 시스템 도움말</strong><br><br>` +
+               `🏠 홈: 챗봇과 대화<br>` +
+               `📦 재고관리: 입출고 처리<br>` +
+               `📍 위치: 보관 장소 관리<br>` +
+               `🏷️ 카테고리: 분류 관리<br><br>` +
+               `더 자세한 도움이 필요하시면 구체적으로 질문해주세요!`;
+    }
+    
+    // 기본 응답
+    return `죄송해요, "${userMessage}"에 대해 정확히 이해하지 못했어요. 😅<br><br>` +
+           `다음과 같이 질문해보세요:<br>` +
+           `• "재고 현황 알려줘"<br>` +
+           `• "물건 추가하는 방법"<br>` +
+           `• "도움말"<br><br>` +
+           `💡 현재 로컬 모드로 제한적인 응답만 가능합니다.`;
+}
+
+// 하이브리드 지능적인 챗봇 응답 생성
+async function generateIntelligentResponse(userMessage, context) {
+    // 1단계: ChatGPT 사용 가능한지 확인
+    const useChatGPT = CONFIG.USE_CHATGPT && CONFIG.OPENAI_API_KEY;
+    
+    console.log(`ChatGPT 사용: ${useChatGPT ? 'YES' : 'NO'}`);
+    
+    if (useChatGPT) {
+        try {
+            // 2단계: ChatGPT API 호출 시도
+            console.log('ChatGPT API 호출 중...');
+            const chatGptResponse = await callChatGPT(userMessage, context);
+            console.log('ChatGPT 응답 성공');
+            
+            // ChatGPT 응답에 로컬 데이터 보완
+            return enhanceWithLocalData(chatGptResponse, userMessage, context);
+            
+        } catch (error) {
+            console.error('ChatGPT API 실패, 로컬 응답으로 대체:', error);
+            // 3단계: ChatGPT 실패 시 로컬 응답으로 대체
+            return generateLocalResponse(userMessage, context);
+        }
+    } else {
+        console.log('ChatGPT 비활성화, 로컬 응답 사용');
+        // 4단계: ChatGPT 비활성화 시 로컬 응답 사용
+        return generateLocalResponse(userMessage, context);
+    }
+}
+
+// ChatGPT 응답을 로컬 데이터로 보완
+function enhanceWithLocalData(chatGptResponse, userMessage, context) {
+    const message = userMessage.toLowerCase();
+    const { items, categories, locations } = context;
+    
+    // 특정 물품 조회 시 상세 데이터 추가
+    const foundItems = items.filter(item => 
+        message.includes(item.name.toLowerCase()) || 
+        item.name.toLowerCase().includes(message.replace(/재고|현황|수량|얼마|있어|없어|찾아|어디/g, '').trim())
+    );
+    
+    if (foundItems.length > 0) {
+        const item = foundItems[0];
+        const category = categories.find(cat => cat.id === item.categoryId);
+        const location = getLocationPath(item.locationId).join(' > ');
+        
+        const detailInfo = `<br><br>🔍 <strong>${item.name} 상세 정보:</strong><br>` +
+                          `📦 현재 수량: <strong>${item.quantity || 0}${item.unit || '개'}</strong><br>` +
+                          `🏷️ 카테고리: ${category ? category.name : '미분류'}<br>` +
+                          `📍 위치: ${location}`;
+        
+        return chatGptResponse + detailInfo;
+    }
+    
+    // 재고 현황 요청 시 실시간 데이터 추가
+    if (message.includes('재고') || message.includes('현황')) {
+        const lowStockItems = items.filter(item => (item.quantity || 0) <= 2);
+        if (lowStockItems.length > 0) {
+            const lowStockInfo = `<br><br>⚠️ <strong>재고 부족 알림:</strong><br>` +
+                               lowStockItems.slice(0, 3).map(item => 
+                                   `• ${item.name}: ${item.quantity || 0}${item.unit || '개'}`
+                               ).join('<br>');
+            return chatGptResponse + lowStockInfo;
+        }
+    }
+    
+    return chatGptResponse;
+}
+
+// 위치 경로 가져오기 헬퍼 함수
+function getLocationPath(locationId) {
+    if (!locationId) return ['위치 미설정'];
+    
+    const path = [];
+    let currentLocation = locations.find(loc => loc.id === locationId);
+    
+    while (currentLocation) {
+        path.unshift(currentLocation.name);
+        if (currentLocation.parentId) {
+            currentLocation = locations.find(loc => loc.id === currentLocation.parentId);
+        } else {
+            break;
+        }
+    }
+    
+    return path.length > 0 ? path : ['위치 미설정'];
 }
 
 // HTML 파일에서 API URL 동적 교체
@@ -536,6 +887,104 @@ const server = http.createServer((req, res) => {
             environment: CONFIG.NODE_ENV
         });
     }
+    // 가족 로그인 (두 경로 모두 지원)
+    else if ((pathname === '/api/auth/login' || pathname === '/api/family-auth/login') && method === 'POST') {
+        let body = '';
+        req.on('data', chunk => {
+            body += chunk.toString();
+        });
+        req.on('end', async () => {
+            try {
+                const { username, password } = JSON.parse(body);
+                
+                if (!username || !password) {
+                    return sendErrorResponse(res, 400, '사용자명과 비밀번호가 필요합니다');
+                }
+
+                const result = await familyAuth.login(username, password);
+                
+                if (result.success) {
+                    sendJsonResponse(res, 200, {
+                        success: true,
+                        message: '로그인 성공',
+                        token: result.token,
+                        user: result.user
+                    });
+                } else {
+                    sendErrorResponse(res, 401, result.error);
+                }
+            } catch (error) {
+                console.error('로그인 오류:', error);
+                sendErrorResponse(res, 500, '서버 오류가 발생했습니다');
+            }
+        });
+    }
+    // 토큰 검증 (두 경로 모두 지원)
+    else if ((pathname === '/api/auth/verify' || pathname === '/api/family-auth/verify') && method === 'POST') {
+        let body = '';
+        req.on('data', chunk => {
+            body += chunk.toString();
+        });
+        req.on('end', () => {
+            try {
+                const { token } = JSON.parse(body);
+                const result = familyAuth.verifyToken(token);
+                
+                if (result.success) {
+                    sendJsonResponse(res, 200, {
+                        success: true,
+                        user: result.user
+                    });
+                } else {
+                    sendErrorResponse(res, 401, result.error);
+                }
+            } catch (error) {
+                console.error('토큰 검증 오류:', error);
+                sendErrorResponse(res, 500, '서버 오류가 발생했습니다');
+            }
+        });
+    }
+    // 가족 구성원 조회
+    else if (pathname === '/api/family/members' && method === 'GET') {
+        // 인증 확인
+        const authHeader = req.headers['authorization'];
+        const token = authHeader && authHeader.split(' ')[1];
+        
+        if (!token) {
+            return sendErrorResponse(res, 401, '토큰이 필요합니다');
+        }
+
+        const authResult = familyAuth.verifyToken(token);
+        if (!authResult.success) {
+            return sendErrorResponse(res, 403, '유효하지 않은 토큰입니다');
+        }
+
+        const members = familyAuth.getFamilyMembers(authResult.user.familyId);
+        sendJsonResponse(res, 200, {
+            success: true,
+            members
+        });
+    }
+    // 가족 활동 내역 조회
+    else if (pathname === '/api/family/activities' && method === 'GET') {
+        const authHeader = req.headers['authorization'];
+        const token = authHeader && authHeader.split(' ')[1];
+        
+        if (!token) {
+            return sendErrorResponse(res, 401, '토큰이 필요합니다');
+        }
+
+        const authResult = familyAuth.verifyToken(token);
+        if (!authResult.success) {
+            return sendErrorResponse(res, 403, '유효하지 않은 토큰입니다');
+        }
+
+        const activities = familyAuth.getFamilyActivities(authResult.user.familyId, 100);
+        sendJsonResponse(res, 200, {
+            success: true,
+            activities
+        });
+    }
     // 물건 목록 조회
     else if (pathname === '/api/items' && method === 'GET') {
         try {
@@ -598,54 +1047,224 @@ const server = http.createServer((req, res) => {
     }
     // 물건 추가
     else if (pathname === '/api/items' && method === 'POST') {
-        let body = '';
-        req.on('data', chunk => body += chunk);
-        req.on('end', async () => {
-            try {
-                const data = JSON.parse(body);
-                
-                // 기본 검증
-                if (!data.name || typeof data.name !== 'string') {
-                    sendErrorResponse(res, 400, 'Item name is required');
-                    return;
+        // 인증 확인 (선택적)
+        let currentUser = null;
+        const authHeader = req.headers['authorization'];
+        const token = authHeader && authHeader.split(' ')[1];
+        
+        if (token) {
+            const authResult = familyAuth.verifyToken(token);
+            if (authResult.success && familyAuth.hasPermission(authResult.user.role, 'write_items')) {
+                currentUser = authResult.user;
+            }
+        }
+        
+        // 인증된 사용자가 없으면 기본 사용자로 설정 (개발/테스트용)
+        if (!currentUser) {
+            console.log('익명 사용자로 물품 등록');
+            currentUser = {
+                id: 'anonymous',
+                username: 'anonymous',
+                role: 'parent',
+                avatar: '👤',
+                permissions: ['read_items', 'write_items']
+            };
+        }
+        const contentType = req.headers['content-type'] || '';
+        
+        // JSON 형식인지 멀티파트 형식인지 확인
+        if (contentType.includes('multipart/form-data')) {
+            // 멀티파트 폼 데이터 (이미지 포함) 처리
+            const boundary = contentType.split('boundary=')[1];
+            let body = Buffer.alloc(0);
+            
+            req.on('data', chunk => {
+                body = Buffer.concat([body, chunk]);
+            });
+            
+            req.on('end', async () => {
+                try {
+                    const parts = parseMultipart(body, boundary);
+                    
+                    // 폼 데이터 파싱
+                    const formData = {};
+                    let imagePart = null;
+                    
+                    parts.forEach(part => {
+                        if (part.name === 'image') {
+                            imagePart = part;
+                        } else {
+                            formData[part.name] = part.data.toString('utf8');
+                        }
+                    });
+                    
+                    // 기본 검증
+                    if (!formData.name || !formData.name.trim()) {
+                        sendErrorResponse(res, 400, 'Item name is required');
+                        return;
+                    }
+                    
+                    const newItem = {
+                        id: nextId++,
+                        name: formData.name.trim(),
+                        description: formData.description ? formData.description.trim() : '',
+                        locationId: formData.locationId && formData.locationId !== '' ? parseInt(formData.locationId) : null,
+                        categoryId: formData.categoryId && formData.categoryId !== '' ? parseInt(formData.categoryId) : null,
+                        quantity: formData.quantity ? parseInt(formData.quantity) : 1,
+                        unit: formData.unit || '개',
+                        imageUrl: null,
+                        thumbnailUrl: null,
+                        createdAt: new Date().toISOString(),
+                        updatedAt: new Date().toISOString()
+                    };
+                    
+                    // 이미지 처리
+                    if (imagePart && imagePart.data && imagePart.data.length > 0) {
+                        try {
+                            console.log(`이미지 파트 수신: ${imagePart.data.length} bytes, 타입: ${imagePart.contentType}`);
+                            
+                            const fileExtension = getFileExtension(imagePart.filename || imagePart.contentType);
+                            const filename = `item_${newItem.id}_${Date.now()}${fileExtension}`;
+                            const filepath = path.join(IMAGES_DIR, filename);
+                            
+                            console.log(`이미지 저장 시작: ${filepath}`);
+                            // 이미지 저장
+                            fs.writeFileSync(filepath, imagePart.data);
+                            console.log('이미지 파일 저장 완료');
+                            
+                            // 썸네일 생성
+                            const thumbnailFilename = `thumb_${filename}`;
+                            const thumbnailPath = path.join(THUMBNAILS_DIR, thumbnailFilename);
+                            
+                            try {
+                                console.log(`이미지 처리 시작: ${filename} (${imagePart.data.length} bytes)`);
+                                
+                                // 이미지 크기 제한 (2MB)
+                                if (imagePart.data.length > 2 * 1024 * 1024) {
+                                    throw new Error('이미지 크기가 너무 큽니다 (최대 2MB)');
+                                }
+                                
+                                // 타임아웃 설정으로 Sharp 처리
+                                const processImage = () => {
+                                    return Promise.race([
+                                        sharp(imagePart.data)
+                                            .resize(200, 200, { fit: 'cover' })
+                                            .jpeg({ quality: 80 })
+                                            .toFile(thumbnailPath),
+                                        new Promise((_, reject) => 
+                                            setTimeout(() => reject(new Error('이미지 처리 타임아웃')), 10000)
+                                        )
+                                    ]);
+                                };
+                                
+                                await processImage();
+                                console.log('썸네일 생성 완료');
+                                
+                                newItem.imageUrl = `/images/${filename}`;
+                                newItem.thumbnailUrl = `/thumbnails/${thumbnailFilename}`;
+                            } catch (error) {
+                                console.warn('썸네일 생성 실패:', error.message);
+                                newItem.imageUrl = `/images/${filename}`;
+                                // 썸네일 실패시에도 원본 이미지는 사용
+                            }
+                            
+                            // S3 업로드 (옵션)
+                            if (CONFIG.USE_S3 && s3) {
+                                try {
+                                    const s3Key = `items/${filename}`;
+                                    const s3Params = {
+                                        Bucket: CONFIG.S3_BUCKET,
+                                        Key: s3Key,
+                                        Body: imagePart.data,
+                                        ContentType: imagePart.contentType || 'image/jpeg'
+                                    };
+                                    
+                                    const s3Result = await s3.upload(s3Params).promise();
+                                    newItem.imageUrl = s3Result.Location;
+                                    console.log('S3 이미지 업로드 완료:', s3Result.Location);
+                                } catch (s3Error) {
+                                    console.error('S3 업로드 실패:', s3Error);
+                                }
+                            }
+                        } catch (imageError) {
+                            console.error('이미지 처리 실패:', imageError);
+                            // 이미지 실패해도 아이템은 생성
+                        }
+                    }
+                    
+                    items.push(newItem);
+                    scheduleSave();
+                    
+                    const locationPath = getLocationPath(newItem.locationId);
+                    const category = categories.find(cat => cat.id === newItem.categoryId);
+                    
+                    sendJsonResponse(res, 201, {
+                        success: true,
+                        item: {
+                            ...newItem,
+                            locationPath: locationPath,
+                            locationName: locationPath.join(' > '),
+                            categoryName: category ? category.name : null,
+                            categoryColor: category ? category.color : null,
+                            categoryIcon: category ? category.icon : null
+                        }
+                    });
+                } catch (error) {
+                    console.error('Item 추가 실패 (멀티파트):', error);
+                    sendErrorResponse(res, 400, 'Failed to create item');
                 }
-                
-                const newItem = {
-                    id: nextId++,
-                    name: data.name.trim(),
-                    description: data.description ? data.description.trim() : '',
-                    locationId: data.locationId ? parseInt(data.locationId) : null,
-                    categoryId: data.categoryId ? parseInt(data.categoryId) : null,
-                    quantity: data.quantity ? parseInt(data.quantity) : 1,
-                    unit: data.unit || '개',
-                    imageUrl: data.imageUrl || null,
-                    thumbnailUrl: data.thumbnailUrl || null,
-                    createdAt: new Date().toISOString(),
-                    updatedAt: new Date().toISOString()
-                };
-                
-                items.push(newItem);
-                scheduleSave();
-                
-                const locationPath = getLocationPath(newItem.locationId);
+            });
+        } else {
+            // JSON 형식 처리 (기존 방식)
+            let body = '';
+            req.on('data', chunk => body += chunk);
+            req.on('end', async () => {
+                try {
+                    const data = JSON.parse(body);
+                    
+                    // 기본 검증
+                    if (!data.name || typeof data.name !== 'string') {
+                        sendErrorResponse(res, 400, 'Item name is required');
+                        return;
+                    }
+                    
+                    const newItem = {
+                        id: nextId++,
+                        name: data.name.trim(),
+                        description: data.description ? data.description.trim() : '',
+                        locationId: data.locationId ? parseInt(data.locationId) : null,
+                        categoryId: data.categoryId ? parseInt(data.categoryId) : null,
+                        quantity: data.quantity ? parseInt(data.quantity) : 1,
+                        unit: data.unit || '개',
+                        imageUrl: data.imageUrl || null,
+                        thumbnailUrl: data.thumbnailUrl || null,
+                        createdAt: new Date().toISOString(),
+                        updatedAt: new Date().toISOString()
+                    };
+                    
+                    items.push(newItem);
+                    scheduleSave();
+                    
+                    const locationPath = getLocationPath(newItem.locationId);
                 const category = categories.find(cat => cat.id === newItem.categoryId);
                 
-                sendJsonResponse(res, 201, {
-                    success: true,
-                    item: {
-                        ...newItem,
-                        locationPath: locationPath,
-                        locationName: locationPath.join(' > '),
-                        categoryName: category ? category.name : null,
-                        categoryColor: category ? category.color : null,
-                        categoryIcon: category ? category.icon : null
-                    }
-                });
-            } catch (error) {
-                console.error('Item 추가 실패:', error);
-                sendErrorResponse(res, 400, 'Failed to create item');
-            }
-        });
+                    sendJsonResponse(res, 201, {
+                        success: true,
+                        item: {
+                            ...newItem,
+                            locationPath: locationPath,
+                            locationName: locationPath.join(' > '),
+                            categoryName: category ? category.name : null,
+                            categoryColor: category ? category.color : null,
+                            categoryIcon: category ? category.icon : null
+                        }
+                    });
+                } catch (error) {
+                    console.error('Item 추가 실패 (JSON):', error);
+                    sendErrorResponse(res, 400, 'Failed to create item');
+                }
+            });
+        }
     }
     // 물건 수정
     else if (pathname.match(/^\/api\/items\/(\d+)$/) && method === 'PUT') {
@@ -763,9 +1382,27 @@ const server = http.createServer((req, res) => {
                 );
             }
             
+            // 각 위치에 추가 정보 제공
+            const locationsWithDetails = filteredLocations.map(location => {
+                const path = getLocationPath(location.id);
+                const pathString = path.join(' => ');
+                const itemCount = items.filter(item => item.locationId === location.id).length;
+                const subLocations = locations.filter(loc => loc.parentId === location.id);
+                
+                return {
+                    ...location,
+                    path: path,
+                    pathString: pathString,
+                    itemCount: itemCount,
+                    subLocationCount: subLocations.length,
+                    hasItems: itemCount > 0,
+                    hasSubLocations: subLocations.length > 0
+                };
+            });
+            
             sendJsonResponse(res, 200, {
                 success: true,
-                locations: filteredLocations
+                locations: locationsWithDetails
             });
         } catch (error) {
             console.error('Locations 조회 실패:', error);
@@ -785,8 +1422,9 @@ const server = http.createServer((req, res) => {
                     return;
                 }
                 
-                const parentLocation = data.parentId ? 
-                    locations.find(loc => loc.id === data.parentId) : null;
+                const parentId = data.parentId ? parseInt(data.parentId) : null;
+                const parentLocation = parentId ? 
+                    locations.find(loc => loc.id === parentId) : null;
                 
                 const newLevel = parentLocation ? parentLocation.level + 1 : 0;
                 
@@ -795,11 +1433,21 @@ const server = http.createServer((req, res) => {
                     return;
                 }
                 
+                // 위치 타입 결정 (level 기반)
+                const locationTypes = ['위치', '공간', '가구', '층'];
+                const locationType = locationTypes[newLevel] || '기타';
+                
                 const newLocation = {
                     id: nextLocationId++,
                     name: data.name.trim(),
-                    parentId: data.parentId || null,
-                    level: newLevel
+                    parentId: parentId,
+                    level: newLevel,
+                    type: locationType,
+                    description: data.description || '',
+                    imageUrl: null,
+                    thumbnailUrl: null,
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString()
                 };
                 
                 locations.push(newLocation);
@@ -857,6 +1505,457 @@ const server = http.createServer((req, res) => {
             } catch (error) {
                 console.error('Category 추가 실패:', error);
                 sendErrorResponse(res, 400, 'Failed to create category');
+            }
+        });
+    }
+    // 위치 삭제
+    else if (pathname.match(/^\/api\/locations\/(\d+)$/) && method === 'DELETE') {
+        const locationId = parseInt(pathname.split('/')[3]);
+        
+        try {
+            // 해당 위치를 사용하는 물건이 있는지 확인
+            const itemsUsingLocation = items.filter(item => item.locationId === locationId);
+            
+            if (itemsUsingLocation.length > 0) {
+                sendErrorResponse(res, 400, `이 위치에 ${itemsUsingLocation.length}개의 물건이 있습니다. 먼저 물건을 다른 곳으로 이동해주세요.`);
+                return;
+            }
+            
+            // 위치 삭제
+            const locationIndex = locations.findIndex(location => location.id === locationId);
+            
+            if (locationIndex === -1) {
+                sendErrorResponse(res, 404, 'Location not found');
+                return;
+            }
+            
+            const deletedLocation = locations.splice(locationIndex, 1)[0];
+            scheduleSave();
+            
+            sendJsonResponse(res, 200, {
+                success: true,
+                message: 'Location deleted successfully',
+                deletedLocation: deletedLocation
+            });
+            
+        } catch (error) {
+            console.error('위치 삭제 실패:', error);
+            sendErrorResponse(res, 500, 'Failed to delete location');
+        }
+    }
+    // 위치 수정 (이미지 포함)
+    else if (pathname.match(/^\/api\/locations\/(\d+)$/) && method === 'PUT') {
+        const locationId = parseInt(pathname.split('/')[3]);
+        
+        let body = '';
+        req.on('data', chunk => body += chunk);
+        req.on('end', async () => {
+            try {
+                const data = JSON.parse(body);
+                
+                const locationIndex = locations.findIndex(loc => loc.id === locationId);
+                
+                if (locationIndex === -1) {
+                    sendErrorResponse(res, 404, 'Location not found');
+                    return;
+                }
+                
+                const location = locations[locationIndex];
+                
+                // 업데이트할 필드들
+                if (data.name && typeof data.name === 'string') {
+                    location.name = data.name.trim();
+                }
+                
+                if (data.description !== undefined) {
+                    location.description = data.description;
+                }
+                
+                // 이미지 URL 업데이트
+                if (data.imageUrl !== undefined) {
+                    location.imageUrl = data.imageUrl;
+                }
+                
+                if (data.thumbnailUrl !== undefined) {
+                    location.thumbnailUrl = data.thumbnailUrl;
+                }
+                
+                location.updatedAt = new Date().toISOString();
+                
+                scheduleSave();
+                
+                sendJsonResponse(res, 200, {
+                    success: true,
+                    location: location
+                });
+                
+            } catch (error) {
+                console.error('위치 수정 실패:', error);
+                sendErrorResponse(res, 400, 'Failed to update location');
+            }
+        });
+    }
+    // 위치 이미지 업로드
+    else if (pathname.match(/^\/api\/locations\/(\d+)\/image$/) && method === 'POST') {
+        const locationId = parseInt(pathname.split('/')[3]);
+        
+        try {
+            const locationIndex = locations.findIndex(loc => loc.id === locationId);
+            
+            if (locationIndex === -1) {
+                sendErrorResponse(res, 404, 'Location not found');
+                return;
+            }
+            
+            const contentType = req.headers['content-type'] || '';
+            
+            if (!contentType.includes('multipart/form-data')) {
+                sendErrorResponse(res, 400, 'Content-Type must be multipart/form-data');
+                return;
+            }
+            
+            const boundary = contentType.split('boundary=')[1];
+            let body = Buffer.alloc(0);
+            
+            req.on('data', chunk => {
+                body = Buffer.concat([body, chunk]);
+            });
+            
+            req.on('end', async () => {
+                try {
+                    const parts = parseMultipart(body, boundary);
+                    const imagePart = parts.find(part => part.name === 'image');
+                    
+                    if (!imagePart || !imagePart.data) {
+                        sendErrorResponse(res, 400, 'No image file provided');
+                        return;
+                    }
+                    
+                    // 이미지 파일 저장
+                    const fileExtension = getFileExtension(imagePart.filename || imagePart.contentType);
+                    const filename = `location_${locationId}_${Date.now()}${fileExtension}`;
+                    const filepath = path.join(IMAGES_DIR, filename);
+                    
+                    // 이미지 저장
+                    fs.writeFileSync(filepath, imagePart.data);
+                    
+                    // 썸네일 생성
+                    const thumbnailFilename = `thumb_${filename}`;
+                    const thumbnailPath = path.join(THUMBNAILS_DIR, thumbnailFilename);
+                    
+                    try {
+                        await sharp(imagePart.data)
+                            .resize(200, 200, { fit: 'cover' })
+                            .jpeg({ quality: 80 })
+                            .toFile(thumbnailPath);
+                    } catch (error) {
+                        console.warn('썸네일 생성 실패:', error);
+                    }
+                    
+                    // URL 생성
+                    const imageUrl = `/images/${filename}`;
+                    const thumbnailUrl = `/images/${thumbnailFilename}`;
+                    
+                    // 위치 정보 업데이트
+                    const location = locations[locationIndex];
+                    location.imageUrl = imageUrl;
+                    location.thumbnailUrl = thumbnailUrl;
+                    location.updatedAt = new Date().toISOString();
+                    
+                    scheduleSave();
+                    
+                    sendJsonResponse(res, 200, {
+                        success: true,
+                        imageUrl: imageUrl,
+                        thumbnailUrl: thumbnailUrl,
+                        location: location
+                    });
+                    
+                } catch (error) {
+                    console.error('이미지 처리 실패:', error);
+                    sendErrorResponse(res, 500, 'Failed to process image');
+                }
+            });
+            
+        } catch (error) {
+            console.error('위치 이미지 업로드 실패:', error);
+            sendErrorResponse(res, 500, 'Failed to upload location image');
+        }
+    }
+    // 위치 데이터 정리 (중복 제거) - 개발/테스트용
+    else if (pathname === '/api/locations/cleanup' && method === 'POST') {
+        try {
+            const beforeCount = locations.length;
+            
+            // 이름이 같은 위치들을 그룹화
+            const locationGroups = {};
+            locations.forEach(loc => {
+                const key = loc.name.toLowerCase().trim();
+                if (!locationGroups[key]) {
+                    locationGroups[key] = [];
+                }
+                locationGroups[key].push(loc);
+            });
+            
+            // 각 그룹에서 대표 위치만 남기고 나머지는 제거
+            const cleanedLocations = [];
+            const itemUpdates = [];
+            
+            Object.values(locationGroups).forEach(group => {
+                if (group.length === 1) {
+                    cleanedLocations.push(group[0]);
+                } else {
+                    // 가장 완전한 정보를 가진 위치를 대표로 선택
+                    const representative = group.reduce((best, current) => {
+                        const bestScore = (best.description ? 1 : 0) + (best.imageUrl ? 1 : 0) + (best.type ? 1 : 0);
+                        const currentScore = (current.description ? 1 : 0) + (current.imageUrl ? 1 : 0) + (current.type ? 1 : 0);
+                        
+                        if (currentScore > bestScore) {
+                            return current;
+                        } else if (currentScore === bestScore) {
+                            return new Date(current.createdAt || 0) > new Date(best.createdAt || 0) ? current : best;
+                        }
+                        return best;
+                    });
+                    
+                    cleanedLocations.push(representative);
+                    
+                    // 제거되는 위치들의 물건을 대표 위치로 이동
+                    group.forEach(loc => {
+                        if (loc.id !== representative.id) {
+                            items.forEach(item => {
+                                if (item.locationId === loc.id) {
+                                    item.locationId = representative.id;
+                                    itemUpdates.push({
+                                        itemId: item.id,
+                                        oldLocationId: loc.id,
+                                        newLocationId: representative.id
+                                    });
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+            
+            locations = cleanedLocations;
+            scheduleSave();
+            
+            sendJsonResponse(res, 200, {
+                success: true,
+                message: 'Location cleanup completed',
+                beforeCount: beforeCount,
+                afterCount: locations.length,
+                removedCount: beforeCount - locations.length,
+                itemUpdates: itemUpdates.length
+            });
+            
+        } catch (error) {
+            console.error('위치 정리 실패:', error);
+            sendErrorResponse(res, 500, 'Failed to cleanup locations');
+        }
+    }
+    // 위치 레벨 재계산 및 수정 API
+    else if (pathname === '/api/locations/fix-levels' && method === 'POST') {
+        try {
+            let fixedCount = 0;
+            
+            // 모든 위치의 레벨과 parentId 수정
+            locations.forEach(location => {
+                // parentId가 문자열인 경우 숫자로 변환
+                if (typeof location.parentId === 'string') {
+                    location.parentId = location.parentId === 'null' ? null : parseInt(location.parentId);
+                    fixedCount++;
+                }
+                
+                // 레벨 재계산
+                let currentLoc = location;
+                let level = 0;
+                const visited = new Set();
+                
+                while (currentLoc && currentLoc.parentId && !visited.has(currentLoc.id)) {
+                    visited.add(currentLoc.id);
+                    const parent = locations.find(loc => loc.id === currentLoc.parentId);
+                    if (parent) {
+                        level++;
+                        currentLoc = parent;
+                    } else {
+                        break;
+                    }
+                }
+                
+                if (location.level !== level) {
+                    location.level = level;
+                    fixedCount++;
+                }
+                
+                // 위치 타입 재설정
+                const locationTypes = ['위치', '공간', '가구', '층', '세부'];
+                const newType = locationTypes[level] || '기타';
+                if (!location.type || location.type !== newType) {
+                    location.type = newType;
+                }
+            });
+            
+            scheduleSave();
+            
+            sendJsonResponse(res, 200, {
+                success: true,
+                message: 'Location levels fixed',
+                fixedCount: fixedCount,
+                locations: locations.map(loc => ({
+                    id: loc.id,
+                    name: loc.name,
+                    level: loc.level,
+                    parentId: loc.parentId,
+                    type: loc.type
+                }))
+            });
+            
+        } catch (error) {
+            console.error('위치 레벨 수정 실패:', error);
+            sendErrorResponse(res, 500, 'Failed to fix location levels');
+        }
+    }
+    // 위치 구조 재조정 API (거실, 침실 등을 집 하위로 이동)
+    else if (pathname === '/api/locations/restructure' && method === 'POST') {
+        try {
+            let updatedCount = 0;
+            
+            // "집" 위치 찾기 (id: 16)
+            const homeLocation = locations.find(loc => loc.name === '집' && loc.level === 0);
+            
+            if (!homeLocation) {
+                sendErrorResponse(res, 404, '집 위치를 찾을 수 없습니다');
+                return;
+            }
+            
+            // 집의 하위 공간으로 이동할 위치들
+            const roomNames = ['거실', '침실', '주방', '화장실', '베란다'];
+            
+            locations.forEach(location => {
+                if (roomNames.includes(location.name) && location.level === 0 && !location.parentId) {
+                    location.parentId = homeLocation.id;
+                    location.level = 1;
+                    location.type = '공간';
+                    location.updatedAt = new Date().toISOString();
+                    updatedCount++;
+                }
+            });
+            
+            scheduleSave();
+            
+            sendJsonResponse(res, 200, {
+                success: true,
+                message: 'Location structure restructured',
+                updatedCount: updatedCount,
+                homeLocationId: homeLocation.id,
+                restructuredRooms: roomNames,
+                currentStructure: locations.filter(loc => loc.level <= 1).map(loc => ({
+                    id: loc.id,
+                    name: loc.name,
+                    level: loc.level,
+                    parentId: loc.parentId,
+                    type: loc.type
+                }))
+            });
+            
+        } catch (error) {
+            console.error('위치 구조 재조정 실패:', error);
+            sendErrorResponse(res, 500, 'Failed to restructure locations');
+        }
+    }
+    // 카테고리 삭제
+    else if (pathname.match(/^\/api\/categories\/(\d+)$/) && method === 'DELETE') {
+        const categoryId = parseInt(pathname.split('/')[3]);
+        
+        try {
+            // 해당 카테고리를 사용하는 물건이 있는지 확인
+            const itemsUsingCategory = items.filter(item => item.categoryId === categoryId);
+            
+            if (itemsUsingCategory.length > 0) {
+                sendErrorResponse(res, 400, `이 카테고리에 ${itemsUsingCategory.length}개의 물건이 있습니다. 먼저 물건의 카테고리를 변경해주세요.`);
+                return;
+            }
+            
+            // 카테고리 삭제
+            const categoryIndex = categories.findIndex(category => category.id === categoryId);
+            
+            if (categoryIndex === -1) {
+                sendErrorResponse(res, 404, 'Category not found');
+                return;
+            }
+            
+            const deletedCategory = categories.splice(categoryIndex, 1)[0];
+            scheduleSave();
+            
+            sendJsonResponse(res, 200, {
+                success: true,
+                message: 'Category deleted successfully',
+                deletedCategory: deletedCategory
+            });
+            
+        } catch (error) {
+            console.error('카테고리 삭제 실패:', error);
+            sendErrorResponse(res, 500, 'Failed to delete category');
+        }
+    }
+    // AI 자연어 검색
+    else if (pathname === '/api/ai-search' && method === 'POST') {
+        let body = '';
+        req.on('data', chunk => body += chunk);
+        req.on('end', () => {
+            try {
+                const data = JSON.parse(body);
+                const query = data.query?.toLowerCase() || '';
+                
+                if (!query) {
+                    sendErrorResponse(res, 400, 'Search query is required');
+                    return;
+                }
+                
+                // 간단한 키워드 매칭 검색 (실제 AI는 아니지만 유사한 기능)
+                const results = items.filter(item => {
+                    const itemText = `${item.name} ${item.description}`.toLowerCase();
+                    const categoryName = categories.find(c => c.id === item.categoryId)?.name?.toLowerCase() || '';
+                    const locationName = locations.find(l => l.id === item.locationId)?.name?.toLowerCase() || '';
+                    
+                    // 키워드 매칭
+                    const keywords = query.split(' ').filter(k => k.length > 0);
+                    return keywords.some(keyword => 
+                        itemText.includes(keyword) || 
+                        categoryName.includes(keyword) || 
+                        locationName.includes(keyword)
+                    );
+                });
+                
+                // 카테고리 정보와 위치 정보 추가
+                const enrichedResults = results.map(item => {
+                    const category = categories.find(c => c.id === item.categoryId);
+                    const location = locations.find(l => l.id === item.locationId);
+                    
+                    return {
+                        ...item,
+                        categoryName: category?.name || null,
+                        categoryColor: category?.color || null,
+                        categoryIcon: category?.icon || null,
+                        locationName: location?.name || null,
+                        locationPath: location ? [location.name] : []
+                    };
+                });
+                
+                sendJsonResponse(res, 200, {
+                    success: true,
+                    query: data.query,
+                    results: enrichedResults,
+                    count: enrichedResults.length,
+                    message: enrichedResults.length > 0 
+                        ? `"${data.query}"에 대한 ${enrichedResults.length}개의 결과를 찾았습니다.`
+                        : `"${data.query}"에 대한 검색 결과가 없습니다.`
+                });
+            } catch (error) {
+                console.error('AI 검색 실패:', error);
+                sendErrorResponse(res, 400, 'Search failed');
             }
         });
     }
@@ -995,6 +2094,228 @@ const server = http.createServer((req, res) => {
             res.end(data);
         });
     }
+    // 재고 이력 조회
+    else if (pathname === '/api/inventory/history' && method === 'GET') {
+        try {
+            const itemId = parsedUrl.query.itemId;
+            let filteredHistory = [...inventoryHistory];
+            
+            if (itemId) {
+                filteredHistory = inventoryHistory.filter(h => h.itemId === parseInt(itemId));
+            }
+            
+            // 최신 순으로 정렬
+            filteredHistory.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            
+            sendJsonResponse(res, 200, {
+                success: true,
+                history: filteredHistory
+            });
+        } catch (error) {
+            console.error('재고 이력 조회 실패:', error);
+            sendErrorResponse(res, 500, 'Failed to fetch inventory history');
+        }
+    }
+    // 입고 처리
+    else if (pathname === '/api/inventory/stock-in' && method === 'POST') {
+        let body = '';
+        req.on('data', chunk => body += chunk);
+        req.on('end', () => {
+            try {
+                const data = JSON.parse(body);
+                const { itemId, quantity, note, reason } = data;
+                
+                if (!itemId || !quantity || quantity <= 0) {
+                    sendErrorResponse(res, 400, '상품 ID와 양수 수량이 필요합니다.');
+                    return;
+                }
+                
+                const itemIndex = items.findIndex(item => item.id === parseInt(itemId));
+                if (itemIndex === -1) {
+                    sendErrorResponse(res, 404, '상품을 찾을 수 없습니다.');
+                    return;
+                }
+                
+                const item = items[itemIndex];
+                const oldQuantity = item.quantity || 0;
+                const newQuantity = oldQuantity + parseInt(quantity);
+                
+                // 상품 수량 업데이트
+                item.quantity = newQuantity;
+                item.updatedAt = new Date().toISOString();
+                
+                // 재고 이력 추가
+                const historyEntry = {
+                    id: nextInventoryHistoryId++,
+                    itemId: item.id,
+                    type: 'stock_in', // 입고
+                    quantity: parseInt(quantity),
+                    previousQuantity: oldQuantity,
+                    currentQuantity: newQuantity,
+                    note: note || '',
+                    reason: reason || '일반 입고',
+                    createdAt: new Date().toISOString()
+                };
+                
+                inventoryHistory.push(historyEntry);
+                scheduleSave();
+                
+                sendJsonResponse(res, 200, {
+                    success: true,
+                    message: `입고 완료: ${item.name} ${quantity}${item.unit} 입고됨`,
+                    item: item,
+                    history: historyEntry
+                });
+            } catch (error) {
+                console.error('입고 처리 실패:', error);
+                sendErrorResponse(res, 400, 'Failed to process stock in');
+            }
+        });
+    }
+    // 출고 처리
+    else if (pathname === '/api/inventory/stock-out' && method === 'POST') {
+        let body = '';
+        req.on('data', chunk => body += chunk);
+        req.on('end', () => {
+            try {
+                const data = JSON.parse(body);
+                const { itemId, quantity, note, reason } = data;
+                
+                if (!itemId || !quantity || quantity <= 0) {
+                    sendErrorResponse(res, 400, '상품 ID와 양수 수량이 필요합니다.');
+                    return;
+                }
+                
+                const itemIndex = items.findIndex(item => item.id === parseInt(itemId));
+                if (itemIndex === -1) {
+                    sendErrorResponse(res, 404, '상품을 찾을 수 없습니다.');
+                    return;
+                }
+                
+                const item = items[itemIndex];
+                const oldQuantity = item.quantity || 0;
+                const requestedQuantity = parseInt(quantity);
+                
+                if (oldQuantity < requestedQuantity) {
+                    sendErrorResponse(res, 400, `재고 부족: 현재 재고 ${oldQuantity}${item.unit}, 요청 출고 ${requestedQuantity}${item.unit}`);
+                    return;
+                }
+                
+                const newQuantity = oldQuantity - requestedQuantity;
+                
+                // 상품 수량 업데이트
+                item.quantity = newQuantity;
+                item.updatedAt = new Date().toISOString();
+                
+                // 재고 이력 추가
+                const historyEntry = {
+                    id: nextInventoryHistoryId++,
+                    itemId: item.id,
+                    type: 'stock_out', // 출고
+                    quantity: requestedQuantity,
+                    previousQuantity: oldQuantity,
+                    currentQuantity: newQuantity,
+                    note: note || '',
+                    reason: reason || '일반 출고',
+                    createdAt: new Date().toISOString()
+                };
+                
+                inventoryHistory.push(historyEntry);
+                scheduleSave();
+                
+                sendJsonResponse(res, 200, {
+                    success: true,
+                    message: `출고 완료: ${item.name} ${requestedQuantity}${item.unit} 출고됨`,
+                    item: item,
+                    history: historyEntry
+                });
+            } catch (error) {
+                console.error('출고 처리 실패:', error);
+                sendErrorResponse(res, 400, 'Failed to process stock out');
+            }
+        });
+    }
+    // 재고 현황 조회 (전체)
+    else if (pathname === '/api/inventory/status' && method === 'GET') {
+        try {
+            const inventoryStatus = items.map(item => {
+                const locationPath = getLocationPath(item.locationId);
+                const category = categories.find(cat => cat.id === item.categoryId);
+                
+                // 최근 재고 대령 조회 (5개)
+                const recentHistory = inventoryHistory
+                    .filter(h => h.itemId === item.id)
+                    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                    .slice(0, 5);
+                
+                return {
+                    ...item,
+                    locationPath: locationPath,
+                    locationName: locationPath.join(' > '),
+                    categoryName: category ? category.name : null,
+                    categoryColor: category ? category.color : null,
+                    categoryIcon: category ? category.icon : null,
+                    recentHistory: recentHistory,
+                    isLowStock: item.quantity <= 5, // 저재고 경고 (수량 5 이하)
+                    isOutOfStock: item.quantity <= 0 // 품절
+                };
+            });
+            
+            // 전체 통계
+            const totalItems = items.length;
+            const lowStockItems = inventoryStatus.filter(item => item.isLowStock && !item.isOutOfStock).length;
+            const outOfStockItems = inventoryStatus.filter(item => item.isOutOfStock).length;
+            const totalValue = inventoryStatus.reduce((sum, item) => sum + (item.quantity || 0), 0);
+            
+            sendJsonResponse(res, 200, {
+                success: true,
+                inventory: inventoryStatus,
+                statistics: {
+                    totalItems,
+                    lowStockItems,
+                    outOfStockItems,
+                    totalQuantity: totalValue
+                }
+            });
+        } catch (error) {
+            console.error('재고 현황 조회 실패:', error);
+            sendErrorResponse(res, 500, 'Failed to fetch inventory status');
+        }
+    }
+    // 챗봇 API
+    else if (pathname === '/api/chatbot' && method === 'POST') {
+        let body = '';
+        req.on('data', chunk => body += chunk);
+        req.on('end', async () => {
+            try {
+                const data = JSON.parse(body);
+                const userMessage = data.message;
+                
+                if (!userMessage || typeof userMessage !== 'string') {
+                    sendErrorResponse(res, 400, 'Message is required');
+                    return;
+                }
+                
+                // 지능적인 응답 생성
+                const botResponse = await generateIntelligentResponse(userMessage, {
+                    items,
+                    locations,
+                    categories,
+                    inventoryHistory
+                });
+                
+                sendJsonResponse(res, 200, {
+                    success: true,
+                    response: botResponse,
+                    timestamp: new Date().toISOString()
+                });
+                
+            } catch (error) {
+                console.error('챗봇 API 오류:', error);
+                sendErrorResponse(res, 500, 'Failed to process chatbot request');
+            }
+        });
+    }
     // 404 처리
     else {
         sendErrorResponse(res, 404, 'Not Found', { path: pathname });
@@ -1038,6 +2359,13 @@ server.listen(PORT, '0.0.0.0', () => {
     console.log('  POST /api/categories - 카테고리 추가');
     console.log('  GET  /api/locations - 위치 목록');
     console.log('  POST /api/locations - 위치 추가');
+    console.log('  📦 재고 관리 API:');
+    console.log('  GET  /api/inventory/status - 재고 현황');
+    console.log('  GET  /api/inventory/history - 재고 이력');
+    console.log('  POST /api/inventory/stock-in - 입고 처리');
+    console.log('  POST /api/inventory/stock-out - 출고 처리');
+    console.log('  🤖 챗봇 API:');
+    console.log('  POST /api/chatbot - 지능형 챗봇 응답');
     console.log('=====================================');
     console.log(`📁 데이터 저장: ${DATA_DIR}`);
     console.log(`🖼️ 이미지 저장: ${IMAGES_DIR}`);

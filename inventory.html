@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📦 재고 관리 - 스마트 물건관리</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+        
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.8;
+            margin-bottom: 20px;
+        }
+        
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .nav-tab {
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: 2px solid rgba(102, 126, 234, 0.2);
+        }
+        
+        .nav-tab:hover {
+            background: rgba(102, 126, 234, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .nav-tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            text-align: center;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            display: block;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 0.95rem;
+            color: #666;
+            font-weight: 500;
+        }
+        
+        .section {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .section h2 {
+            color: #333;
+            margin-bottom: 25px;
+            font-size: 1.5rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .inventory-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .inventory-card {
+            background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
+            border: 2px solid #e1e8f7;
+            border-radius: 15px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .inventory-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 30px rgba(102, 126, 234, 0.2);
+            border-color: #667eea;
+        }
+        
+        .inventory-card.low-stock {
+            border-color: #ffa726;
+            background: linear-gradient(135deg, #fff8e1 0%, #ffffff 100%);
+        }
+        
+        .inventory-card.out-of-stock {
+            border-color: #ef5350;
+            background: linear-gradient(135deg, #ffebee 0%, #ffffff 100%);
+        }
+        
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+        
+        .item-info h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .item-location {
+            font-size: 0.85rem;
+            color: #666;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .stock-info {
+            text-align: right;
+        }
+        
+        .stock-quantity {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #333;
+        }
+        
+        .stock-unit {
+            font-size: 0.9rem;
+            color: #666;
+            margin-left: 5px;
+        }
+        
+        .stock-status {
+            font-size: 0.8rem;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-weight: 500;
+            margin-top: 5px;
+            display: inline-block;
+        }
+        
+        .stock-status.normal {
+            background: #e8f5e8;
+            color: #2e7d32;
+        }
+        
+        .stock-status.low {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+        
+        .stock-status.out {
+            background: #ffebee;
+            color: #c62828;
+        }
+        
+        .item-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-in {
+            background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+            color: white;
+        }
+        
+        .btn-in:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(76, 175, 80, 0.3);
+        }
+        
+        .btn-out {
+            background: linear-gradient(135deg, #ff5722 0%, #e64a19 100%);
+            color: white;
+        }
+        
+        .btn-out:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 87, 34, 0.3);
+        }
+        
+        .btn-history {
+            background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
+            color: white;
+        }
+        
+        .btn-history:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(33, 150, 243, 0.3);
+        }
+        
+        /* 모달 스타일 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+            transform: scale(0.8) translateY(30px);
+            transition: all 0.3s ease;
+        }
+        
+        .modal-overlay.show .modal-content {
+            transform: scale(1) translateY(0);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f1f3f4;
+        }
+        
+        .modal-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #333;
+            margin: 0;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: #666;
+            padding: 5px;
+            line-height: 1;
+            transition: color 0.2s ease;
+        }
+        
+        .modal-close:hover {
+            color: #ef5350;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+            font-size: 1rem;
+        }
+        
+        .form-input, .form-select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e8ed;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .btn-submit {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid #ffffff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .message {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-weight: 500;
+            display: none;
+        }
+        
+        .message.success {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .message.error {
+            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .message.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+        
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 1.6rem;
+            }
+            
+            .nav-tabs {
+                gap: 8px;
+            }
+            
+            .nav-tab {
+                padding: 8px 15px;
+                font-size: 0.9rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 15px;
+            }
+            
+            .inventory-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>📦 재고 관리</h1>
+            <p>입고, 출고, 재고 현황을 한눈에 관리하세요</p>
+            <nav class="nav-tabs">
+                <a href="index.html" class="nav-tab">🏠 홈</a>
+                <a href="locations.html" class="nav-tab">📍 위치</a>
+                <a href="categories.html" class="nav-tab">🏷️ 카테고리</a>
+                <a href="inventory.html" class="nav-tab active">📦 재고관리</a>
+            </nav>
+        </header>
+        
+        <div id="message" class="message"></div>
+        
+        <!-- 통계 카드 -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span class="stat-icon">📦</span>
+                <div class="stat-number" id="totalItems">-</div>
+                <div class="stat-label">전체 상품</div>
+            </div>
+            <div class="stat-card">
+                <span class="stat-icon">⚠️</span>
+                <div class="stat-number" id="lowStockItems">-</div>
+                <div class="stat-label">저재고 경고</div>
+            </div>
+            <div class="stat-card">
+                <span class="stat-icon">❌</span>
+                <div class="stat-number" id="outOfStockItems">-</div>
+                <div class="stat-label">품절 상품</div>
+            </div>
+            <div class="stat-card">
+                <span class="stat-icon">📊</span>
+                <div class="stat-number" id="totalQuantity">-</div>
+                <div class="stat-label">총 보유수량</div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>📋 재고 현황</h2>
+            <div id="inventoryGrid" class="inventory-grid">
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <p>재고 데이터를 불러오는 중...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 입고 모달 -->
+    <div id="stockInModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">📥 입고 처리</h3>
+                <button class="modal-close" onclick="closeModal('stockInModal')">&times;</button>
+            </div>
+            <form id="stockInForm">
+                <div class="form-group">
+                    <label>상품 정보</label>
+                    <div id="stockInItemInfo" style="padding: 10px; background: #f8f9fa; border-radius: 8px; color: #666;">
+                        선택된 상품 정보가 여기에 표시됩니다
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="stockInQuantity">입고 수량 *</label>
+                    <input type="number" id="stockInQuantity" class="form-input" required min="1" placeholder="입고할 수량을 입력하세요">
+                </div>
+                <div class="form-group">
+                    <label for="stockInReason">입고 사유</label>
+                    <select id="stockInReason" class="form-select">
+                        <option value="일반 입고">일반 입고</option>
+                        <option value="신규 구매">신규 구매</option>
+                        <option value="반품 입고">반품 입고</option>
+                        <option value="재고 조정">재고 조정</option>
+                        <option value="기타">기타</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="stockInNote">메모 (선택사항)</label>
+                    <input type="text" id="stockInNote" class="form-input" placeholder="추가 메모사항">
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 25px;">
+                    <button type="submit" class="btn-submit" style="background: linear-gradient(135deg, #4caf50 0%, #45a049 100%); color: white;">
+                        ✅ 입고 처리
+                    </button>
+                    <button type="button" class="btn-submit" onclick="closeModal('stockInModal')" 
+                            style="background: #6c757d; color: white; flex: 0 0 100px;">
+                        취소
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- 출고 모달 -->
+    <div id="stockOutModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">📤 출고 처리</h3>
+                <button class="modal-close" onclick="closeModal('stockOutModal')">&times;</button>
+            </div>
+            <form id="stockOutForm">
+                <div class="form-group">
+                    <label>상품 정보</label>
+                    <div id="stockOutItemInfo" style="padding: 10px; background: #f8f9fa; border-radius: 8px; color: #666;">
+                        선택된 상품 정보가 여기에 표시됩니다
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="stockOutQuantity">출고 수량 *</label>
+                    <input type="number" id="stockOutQuantity" class="form-input" required min="1" placeholder="출고할 수량을 입력하세요">
+                </div>
+                <div class="form-group">
+                    <label for="stockOutReason">출고 사유</label>
+                    <select id="stockOutReason" class="form-select">
+                        <option value="일반 출고">일반 출고</option>
+                        <option value="판매">판매</option>
+                        <option value="사용">사용</option>
+                        <option value="폐기">폐기</option>
+                        <option value="재고 조정">재고 조정</option>
+                        <option value="기타">기타</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="stockOutNote">메모 (선택사항)</label>
+                    <input type="text" id="stockOutNote" class="form-input" placeholder="추가 메모사항">
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 25px;">
+                    <button type="submit" class="btn-submit" style="background: linear-gradient(135deg, #ff5722 0%, #e64a19 100%); color: white;">
+                        ✅ 출고 처리
+                    </button>
+                    <button type="button" class="btn-submit" onclick="closeModal('stockOutModal')" 
+                            style="background: #6c757d; color: white; flex: 0 0 100px;">
+                        취소
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- 재고 이력 모달 -->
+    <div id="historyModal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h3 class="modal-title">📊 재고 이력</h3>
+                <button class="modal-close" onclick="closeModal('historyModal')">&times;</button>
+            </div>
+            <div id="historyContent">
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <p>재고 이력을 불러오는 중...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API URL 자동 감지
+        const API_URL = (function() {
+            const hostname = window.location.hostname;
+            const protocol = window.location.protocol;
+            
+            // E2B Sandbox 환경
+            if (hostname.includes('e2b.dev')) {
+                return 'https://3001-i72krmbsmpnff1c7v14w6-6532622b.e2b.dev/api';
+            }
+            
+            // GitHub Pages
+            if (hostname.endsWith('github.io')) {
+                return 'https://3001-i72krmbsmpnff1c7v14w6-6532622b.e2b.dev/api';
+            }
+            
+            // 로컬 개발 환경
+            if (hostname === 'localhost' || hostname === '127.0.0.1') {
+                return protocol + '//' + hostname + ':3001/api';
+            }
+            
+            // 기본값
+            return 'https://3001-i72krmbsmpnff1c7v14w6-6532622b.e2b.dev/api';
+        })();
+        
+        let inventoryData = [];
+        let currentSelectedItem = null;
+        
+        // 초기화
+        async function init() {
+            try {
+                await loadInventoryStatus();
+                setupEventListeners();
+            } catch (error) {
+                console.error('초기화 실패:', error);
+                showMessage('앱 초기화에 실패했습니다.', 'error');
+            }
+        }
+        
+        // 재고 현황 로드
+        async function loadInventoryStatus() {
+            try {
+                const response = await fetch(`${API_URL}/inventory/status`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    inventoryData = data.inventory;
+                    updateStatistics(data.statistics);
+                    updateInventoryGrid();
+                } else {
+                    throw new Error(data.error || '재고 데이터 로드 실패');
+                }
+            } catch (error) {
+                console.error('재고 현황 로드 실패:', error);
+                showMessage('재고 현황을 불러올 수 없습니다.', 'error');
+            }
+        }
+        
+        // 통계 업데이트
+        function updateStatistics(stats) {
+            document.getElementById('totalItems').textContent = stats.totalItems;
+            document.getElementById('lowStockItems').textContent = stats.lowStockItems;
+            document.getElementById('outOfStockItems').textContent = stats.outOfStockItems;
+            document.getElementById('totalQuantity').textContent = stats.totalQuantity;
+        }
+        
+        // 재고 그리드 업데이트
+        function updateInventoryGrid() {
+            const container = document.getElementById('inventoryGrid');
+            
+            if (inventoryData.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📦</div>
+                        <h3>등록된 상품이 없습니다</h3>
+                        <p>홈 화면에서 새 상품을 추가해보세요!</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = inventoryData.map(item => {
+                const stockClass = item.isOutOfStock ? 'out-of-stock' : 
+                                 item.isLowStock ? 'low-stock' : '';
+                
+                const statusClass = item.isOutOfStock ? 'out' : 
+                                  item.isLowStock ? 'low' : 'normal';
+                
+                const statusText = item.isOutOfStock ? '품절' : 
+                                 item.isLowStock ? '저재고' : '정상';
+                
+                return `
+                    <div class="inventory-card ${stockClass}" data-item-id="${item.id}">
+                        <div class="item-header">
+                            <div class="item-info">
+                                <h3>${item.name}</h3>
+                                <div class="item-location">
+                                    📍 ${item.locationName || '위치 없음'}
+                                </div>
+                            </div>
+                            <div class="stock-info">
+                                <div class="stock-quantity">
+                                    ${item.quantity}
+                                    <span class="stock-unit">${item.unit}</span>
+                                </div>
+                                <span class="stock-status ${statusClass}">${statusText}</span>
+                            </div>
+                        </div>
+                        <div class="item-actions">
+                            <button class="btn btn-in" onclick="openStockInModal(${item.id})">
+                                📥 입고
+                            </button>
+                            <button class="btn btn-out" onclick="openStockOutModal(${item.id})" 
+                                    ${item.quantity <= 0 ? 'disabled' : ''}>
+                                📤 출고
+                            </button>
+                            <button class="btn btn-history" onclick="openHistoryModal(${item.id})">
+                                📊 이력
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // 입고 모달 열기
+        function openStockInModal(itemId) {
+            currentSelectedItem = inventoryData.find(item => item.id === itemId);
+            if (!currentSelectedItem) return;
+            
+            document.getElementById('stockInItemInfo').innerHTML = `
+                <strong>${currentSelectedItem.name}</strong><br>
+                현재 재고: ${currentSelectedItem.quantity}${currentSelectedItem.unit}<br>
+                위치: ${currentSelectedItem.locationName || '위치 없음'}
+            `;
+            
+            document.getElementById('stockInForm').reset();
+            openModal('stockInModal');
+        }
+        
+        // 출고 모달 열기
+        function openStockOutModal(itemId) {
+            currentSelectedItem = inventoryData.find(item => item.id === itemId);
+            if (!currentSelectedItem) return;
+            
+            if (currentSelectedItem.quantity <= 0) {
+                showMessage('재고가 없어 출고할 수 없습니다.', 'error');
+                return;
+            }
+            
+            document.getElementById('stockOutItemInfo').innerHTML = `
+                <strong>${currentSelectedItem.name}</strong><br>
+                현재 재고: ${currentSelectedItem.quantity}${currentSelectedItem.unit}<br>
+                위치: ${currentSelectedItem.locationName || '위치 없음'}
+            `;
+            
+            document.getElementById('stockOutQuantity').max = currentSelectedItem.quantity;
+            document.getElementById('stockOutForm').reset();
+            openModal('stockOutModal');
+        }
+        
+        // 재고 이력 모달 열기
+        async function openHistoryModal(itemId) {
+            currentSelectedItem = inventoryData.find(item => item.id === itemId);
+            if (!currentSelectedItem) return;
+            
+            openModal('historyModal');
+            
+            document.getElementById('historyContent').innerHTML = `
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <p>재고 이력을 불러오는 중...</p>
+                </div>
+            `;
+            
+            try {
+                const response = await fetch(`${API_URL}/inventory/history?itemId=${itemId}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayHistory(data.history);
+                } else {
+                    throw new Error(data.error || '재고 이력 로드 실패');
+                }
+            } catch (error) {
+                console.error('재고 이력 로드 실패:', error);
+                document.getElementById('historyContent').innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📊</div>
+                        <h3>이력을 불러올 수 없습니다</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // 재고 이력 표시
+        function displayHistory(history) {
+            const container = document.getElementById('historyContent');
+            
+            if (history.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📊</div>
+                        <h3>재고 이력이 없습니다</h3>
+                        <p>아직 입고나 출고 기록이 없습니다.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = `
+                <div style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 10px;">
+                    <strong>${currentSelectedItem.name}</strong> 재고 이력
+                </div>
+                <div style="max-height: 400px; overflow-y: auto;">
+                    ${history.map(entry => {
+                        const typeIcon = entry.type === 'stock_in' ? '📥' : '📤';
+                        const typeText = entry.type === 'stock_in' ? '입고' : '출고';
+                        const typeColor = entry.type === 'stock_in' ? '#4caf50' : '#ff5722';
+                        
+                        return `
+                            <div style="padding: 15px; border: 1px solid #e1e8f7; border-radius: 10px; margin-bottom: 10px; background: white;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <span style="font-size: 1.2rem;">${typeIcon}</span>
+                                        <strong style="color: ${typeColor};">${typeText}</strong>
+                                    </div>
+                                    <div style="font-size: 0.9rem; color: #666;">
+                                        ${new Date(entry.createdAt).toLocaleString('ko-KR')}
+                                    </div>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                    <span>수량:</span>
+                                    <strong>${entry.quantity}${currentSelectedItem.unit}</strong>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                    <span>재고 변화:</span>
+                                    <span>${entry.previousQuantity} → <strong>${entry.currentQuantity}</strong></span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                    <span>사유:</span>
+                                    <span>${entry.reason}</span>
+                                </div>
+                                ${entry.note ? `
+                                    <div style="margin-top: 10px; padding: 8px; background: #f1f3f4; border-radius: 6px; font-size: 0.9rem;">
+                                        메모: ${entry.note}
+                                    </div>
+                                ` : ''}
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
+        
+        // 입고 처리
+        async function processStockIn(formData) {
+            try {
+                const response = await fetch(`${API_URL}/inventory/stock-in`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        itemId: currentSelectedItem.id,
+                        quantity: parseInt(formData.get('quantity')),
+                        reason: formData.get('reason'),
+                        note: formData.get('note')
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage(data.message, 'success');
+                    closeModal('stockInModal');
+                    await loadInventoryStatus(); // 재고 현황 새로고침
+                } else {
+                    throw new Error(data.error || '입고 처리 실패');
+                }
+            } catch (error) {
+                console.error('입고 처리 실패:', error);
+                showMessage(`입고 처리 실패: ${error.message}`, 'error');
+            }
+        }
+        
+        // 출고 처리
+        async function processStockOut(formData) {
+            try {
+                const response = await fetch(`${API_URL}/inventory/stock-out`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        itemId: currentSelectedItem.id,
+                        quantity: parseInt(formData.get('quantity')),
+                        reason: formData.get('reason'),
+                        note: formData.get('note')
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage(data.message, 'success');
+                    closeModal('stockOutModal');
+                    await loadInventoryStatus(); // 재고 현황 새로고침
+                } else {
+                    throw new Error(data.error || '출고 처리 실패');
+                }
+            } catch (error) {
+                console.error('출고 처리 실패:', error);
+                showMessage(`출고 처리 실패: ${error.message}`, 'error');
+            }
+        }
+        
+        // 모달 관리
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.add('show');
+        }
+        
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.remove('show');
+            currentSelectedItem = null;
+        }
+        
+        // 이벤트 리스너 설정
+        function setupEventListeners() {
+            // 입고 폼 제출
+            document.getElementById('stockInForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                formData.set('quantity', document.getElementById('stockInQuantity').value);
+                formData.set('reason', document.getElementById('stockInReason').value);
+                formData.set('note', document.getElementById('stockInNote').value);
+                
+                if (!currentSelectedItem) {
+                    showMessage('상품이 선택되지 않았습니다.', 'error');
+                    return;
+                }
+                
+                await processStockIn(formData);
+            });
+            
+            // 출고 폼 제출
+            document.getElementById('stockOutForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                formData.set('quantity', document.getElementById('stockOutQuantity').value);
+                formData.set('reason', document.getElementById('stockOutReason').value);
+                formData.set('note', document.getElementById('stockOutNote').value);
+                
+                if (!currentSelectedItem) {
+                    showMessage('상품이 선택되지 않았습니다.', 'error');
+                    return;
+                }
+                
+                const quantity = parseInt(formData.get('quantity'));
+                if (quantity > currentSelectedItem.quantity) {
+                    showMessage(`재고 부족: 현재 ${currentSelectedItem.quantity}${currentSelectedItem.unit}, 요청 ${quantity}${currentSelectedItem.unit}`, 'error');
+                    return;
+                }
+                
+                await processStockOut(formData);
+            });
+            
+            // 모달 외부 클릭 시 닫기
+            document.querySelectorAll('.modal-overlay').forEach(modal => {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        modal.classList.remove('show');
+                        currentSelectedItem = null;
+                    }
+                });
+            });
+            
+            // ESC 키로 모달 닫기
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    document.querySelectorAll('.modal-overlay.show').forEach(modal => {
+                        modal.classList.remove('show');
+                        currentSelectedItem = null;
+                    });
+                }
+            });
+        }
+        
+        // 메시지 표시
+        function showMessage(text, type) {
+            const messageEl = document.getElementById('message');
+            messageEl.textContent = text;
+            messageEl.className = `message ${type} show`;
+            
+            setTimeout(() => {
+                messageEl.classList.remove('show');
+            }, 4000);
+        }
+        
+        // 페이지 로드 시 초기화
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

@@ -1,0 +1,489 @@
+@'
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>?꾩튂 愿由?/title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .header h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .nav-links a {
+            margin-right: 15px;
+            color: #3498db;
+            text-decoration: none;
+        }
+        
+        .nav-links a:hover {
+            text-decoration: underline;
+        }
+        
+        .location-manager {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .section h2 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        button {
+            background-color: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+        }
+        
+        .delete-btn {
+            background-color: #e74c3c;
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+        
+        .delete-btn:hover {
+            background-color: #c0392b;
+        }
+        
+        .location-tree {
+            margin-top: 15px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .tree-item {
+            padding: 8px;
+            margin: 2px 0;
+            background: #f8f9fa;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 3px solid transparent;
+        }
+        
+        .tree-item.level-0 {
+            background: #e3f2fd;
+            font-weight: 600;
+            border-left-color: #2196f3;
+        }
+        
+        .tree-item.level-1 {
+            margin-left: 30px;
+            background: #f3e5f5;
+            border-left-color: #9c27b0;
+        }
+        
+        .tree-item.level-2 {
+            margin-left: 60px;
+            background: #fff3e0;
+            border-left-color: #ff9800;
+        }
+        
+        .tree-item.level-3 {
+            margin-left: 90px;
+            background: #e8f5e9;
+            border-left-color: #4caf50;
+        }
+        
+        .location-number {
+            font-family: 'Courier New', monospace;
+            color: #666;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        
+        .location-name {
+            flex: 1;
+        }
+        
+        .location-path {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .message {
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .info-box {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: #1565c0;
+        }
+        
+        .tree-structure {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 15px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .tree-line {
+            color: #999;
+        }
+        
+        @media (max-width: 768px) {
+            .location-manager {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>?뱧 ?꾩튂 愿由?/h1>
+            <div class="nav-links">
+                <a href="index-v5.html">臾쇨굔 愿由?/a>
+                <a href="locations.html">?꾩튂 愿由?/a>
+                <a href="upload.html">?대?吏 ?낅줈??/a>
+            </div>
+        </div>
+        
+        <div id="message" class="message"></div>
+        
+        <div class="location-manager">
+            <div class="section">
+                <h2>???꾩튂 異붽?</h2>
+                
+                <div class="info-box">
+                    ?뮕 ?꾩튂??理쒕? 4?④퀎源뚯? 留뚮뱾 ???덉뒿?덈떎.<br>
+                    ?? ?곕━吏?> ?덈갑 > ?좊컲 > ?곷떒
+                </div>
+                
+                <form id="locationForm">
+                    <div class="form-group">
+                        <label for="parentLocation">?곸쐞 ?꾩튂</label>
+                        <select id="parentLocation">
+                            <option value="">理쒖긽???꾩튂濡?異붽?</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="locationName">?꾩튂 ?대쫫 *</label>
+                        <input type="text" id="locationName" required placeholder="?? ?곕━吏? ?덈갑, ?좊컲, ?곷떒 ??>
+                    </div>
+                    
+                    <button type="submit">?꾩튂 異붽?</button>
+                </form>
+            </div>
+            
+            <div class="section">
+                <h2>?깅줉???꾩튂 紐⑸줉</h2>
+                <div id="locationTree" class="location-tree"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://3001-i72krmbsmpnff1c7v14w6-6532622b.e2b.dev/api';
+        let allLocations = [];
+        let locationNumbers = {};
+        
+        // ?섏씠吏 濡쒕뱶??珥덇린??
+        async function init() {
+            await loadLocations();
+        }
+        
+        // ?꾩튂 ?곗씠??濡쒕뱶
+        async function loadLocations() {
+            try {
+                const response = await fetch(API_URL + '/locations');
+                const data = await response.json();
+                allLocations = data.locations;
+                assignLocationNumbers();
+                updateParentLocationOptions();
+                renderLocationTree();
+            } catch (error) {
+                showMessage('?꾩튂 紐⑸줉??遺덈윭?ㅻ뒗???ㅽ뙣?덉뒿?덈떎.', 'error');
+            }
+        }
+        
+        // ?꾩튂 踰덊샇 ?좊떦
+        function assignLocationNumbers() {
+            locationNumbers = {};
+            
+            // 理쒖긽???꾩튂??
+            const rootLocations = allLocations.filter(loc => !loc.parentId);
+            rootLocations.sort((a, b) => a.id - b.id);
+            
+            rootLocations.forEach((root, index) => {
+                const rootNumber = (index + 1).toString();
+                locationNumbers[root.id] = rootNumber;
+                assignChildNumbers(root.id, rootNumber);
+            });
+        }
+        
+        // ?섏쐞 ?꾩튂 踰덊샇 ?좊떦 (?ш?)
+        function assignChildNumbers(parentId, parentNumber) {
+            const children = allLocations.filter(loc => loc.parentId === parentId);
+            children.sort((a, b) => a.id - b.id);
+            
+            children.forEach((child, index) => {
+                const childNumber = parentNumber + '.' + (index + 1);
+                locationNumbers[child.id] = childNumber;
+                assignChildNumbers(child.id, childNumber);
+            });
+        }
+        
+        // ?곸쐞 ?꾩튂 ?듭뀡 ?낅뜲?댄듃
+        function updateParentLocationOptions() {
+            const select = document.getElementById('parentLocation');
+            select.innerHTML = '<option value="">理쒖긽???꾩튂濡?異붽?</option>';
+            
+            // 3?④퀎 誘몃쭔???꾩튂留??곸쐞 ?꾩튂濡??좏깮 媛??
+            const selectableLocations = allLocations.filter(loc => loc.level < 3);
+            
+            selectableLocations.forEach(loc => {
+                const option = document.createElement('option');
+                option.value = loc.id;
+                const number = locationNumbers[loc.id] || '';
+                const path = getLocationFullPath(loc.id);
+                option.textContent = number ? `${number}. ${path}` : path;
+                select.appendChild(option);
+            });
+        }
+        
+        // ?꾩튂???꾩껜 寃쎈줈 媛?몄삤湲?
+        function getLocationFullPath(locationId) {
+            const location = allLocations.find(loc => loc.id === locationId);
+            if (!location) return '';
+            
+            const path = [location.name];
+            let currentLocation = location;
+            
+            while (currentLocation.parentId) {
+                const parent = allLocations.find(loc => loc.id === currentLocation.parentId);
+                if (parent) {
+                    path.unshift(parent.name);
+                    currentLocation = parent;
+                } else {
+                    break;
+                }
+            }
+            
+            return path.join(' > ');
+        }
+        
+        // ?꾩튂 ?몃━ ?뚮뜑留?
+        function renderLocationTree() {
+            const treeEl = document.getElementById('locationTree');
+            
+            if (allLocations.length === 0) {
+                treeEl.innerHTML = '<p style="text-align: center; color: #7f8c8d;">?깅줉???꾩튂媛 ?놁뒿?덈떎.</p>';
+                return;
+            }
+            
+            // ?몃━ 援ъ“濡??뺣젹
+            const rootLocations = allLocations.filter(loc => !loc.parentId);
+            rootLocations.sort((a, b) => a.id - b.id);
+            
+            let html = '<div class="tree-structure">';
+            rootLocations.forEach(root => {
+                html += renderLocationNode(root, '');
+            });
+            html += '</div>';
+            
+            treeEl.innerHTML = html;
+        }
+        
+        // ?꾩튂 ?몃뱶 ?뚮뜑留?(?ш?)
+        function renderLocationNode(location, prefix) {
+            const children = allLocations.filter(loc => loc.parentId === location.id);
+            children.sort((a, b) => a.id - b.id);
+            const hasItems = checkLocationHasItems(location.id);
+            const number = locationNumbers[location.id] || '';
+            
+            let html = `
+                <div class="tree-item level-${location.level}">
+                    <div class="location-name">
+                        <span class="location-number">${number}</span>
+                        <strong>${location.name}</strong>
+                        ${hasItems ? '<span class="location-path"> (臾쇨굔 ?덉쓬)</span>' : ''}
+                    </div>
+                    <button class="delete-btn" onclick="deleteLocation(${location.id})" 
+                        ${hasItems || children.length > 0 ? 'disabled title="?섏쐞 ?꾩튂??臾쇨굔???덉뼱 ??젣?????놁뒿?덈떎"' : ''}>
+                        ??젣
+                    </button>
+                </div>
+            `;
+            
+            // ?섏쐞 ?꾩튂???뚮뜑留?
+            children.forEach((child, index) => {
+                const isLast = index === children.length - 1;
+                html += renderLocationNode(child, prefix + (isLast ? '  ' : '??'));
+            });
+            
+            return html;
+        }
+        
+        // ?꾩튂??臾쇨굔???덈뒗吏 ?뺤씤 (?ㅼ젣濡쒕뒗 API ?몄텧 ?꾩슂)
+        function checkLocationHasItems(locationId) {
+            // TODO: ?ㅼ젣 援ы쁽??API瑜??듯빐 ?뺤씤
+            return false;
+        }
+        
+        // 硫붿떆吏 ?쒖떆
+        function showMessage(text, type) {
+            const messageEl = document.getElementById('message');
+            messageEl.textContent = text;
+            messageEl.className = 'message ' + type;
+            messageEl.style.display = 'block';
+            setTimeout(() => {
+                messageEl.style.display = 'none';
+            }, 3000);
+        }
+        
+        // ?꾩튂 ??젣
+        async function deleteLocation(id) {
+            if (!confirm('???꾩튂瑜???젣?섏떆寃좎뒿?덇퉴?')) return;
+            
+            try {
+                const response = await fetch(`${API_URL}/locations/${id}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    showMessage('?꾩튂媛 ??젣?섏뿀?듬땲??', 'success');
+                    loadLocations();
+                } else {
+                    const error = await response.json();
+                    showMessage(error.message || '??젣???ㅽ뙣?덉뒿?덈떎.', 'error');
+                }
+            } catch (error) {
+                showMessage('?쒕쾭 ?곌껐???ㅽ뙣?덉뒿?덈떎.', 'error');
+            }
+        }
+        
+        // ???쒖텧 泥섎━
+        document.getElementById('locationForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const parentId = document.getElementById('parentLocation').value;
+            const name = document.getElementById('locationName').value.trim();
+            
+            if (!name) {
+                showMessage('?꾩튂 ?대쫫???낅젰?섏꽭??', 'error');
+                return;
+            }
+            
+            const formData = {
+                name: name,
+                parentId: parentId ? parseInt(parentId) : null
+            };
+            
+            try {
+                const response = await fetch(API_URL + '/locations', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showMessage('?꾩튂媛 異붽??섏뿀?듬땲??', 'success');
+                    document.getElementById('locationForm').reset();
+                    loadLocations();
+                } else {
+                    showMessage(data.error || '?꾩튂 異붽????ㅽ뙣?덉뒿?덈떎.', 'error');
+                }
+            } catch (error) {
+                showMessage('?쒕쾭 ?곌껐???ㅽ뙣?덉뒿?덈떎.', 'error');
+            }
+        });
+        
+        // 珥덇린??
+        init();
+    </script>
+</body>
+</html>
+'@ | Out-File -FilePath frontend\locations.html -Encoding UTF8
