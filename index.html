@@ -2353,7 +2353,7 @@
                 }, 500);
                 
                 // 가족 인증 체크 (항상 수행)
-                await checkAuthentication();
+                checkAuthentication();
                 
                 navigator.serviceWorker.register('sw.js')
                     .then(registration => {
