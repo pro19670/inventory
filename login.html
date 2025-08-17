@@ -387,9 +387,9 @@
             var hostname = window.location.hostname;
             var protocol = window.location.protocol;
             
-            // GitHub Pages에서 호출 시 -> Render API 사용
+            // GitHub Pages에서 호출 시 -> 현재 E2B sandbox API 사용 (추후 변경 예정)
             if (hostname.endsWith('github.io')) {
-                return 'https://inventory.onrender.com';
+                return 'https://3001-i72krmbsmpnff1c7v14w6-6532622b.e2b.dev';
             }
             
             // 로컬 개발 환경
