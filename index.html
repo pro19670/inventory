@@ -1790,6 +1790,10 @@
         
         // 모달 관리
         function openAddModal() {
+            if (!secureAction('물품 추가', 'write_items')) {
+                return;
+            }
+            
             const modal = document.getElementById('addModal');
             if (modal) {
                 modal.classList.add('show');
@@ -1985,6 +1989,10 @@
         
         // 물건 삭제
         async function deleteItem(id) {
+            if (!secureAction('물품 삭제', 'delete_items')) {
+                return;
+            }
+            
             if (!confirm('정말 삭제하시겠습니까?')) return;
             
             showLoading();
@@ -2014,6 +2022,10 @@
         
         // 물건 수정
         function editItem(id) {
+            if (!secureAction('물품 수정', 'write_items')) {
+                return;
+            }
+            
             const item = appState.items.find(i => i.id === id);
             if (!item) return;
             
@@ -2462,6 +2474,9 @@
                 logoutBtn.style.display = 'none';
                 headerTitle.textContent = '물품관리';
             }
+            
+            // 권한 기반 UI 업데이트
+            updateUIPermissions();
         }
         
         // 로그인 페이지로 이동
@@ -2487,6 +2502,10 @@
                 // 헤더 상태 업데이트
                 updateHeaderAuthState();
                 console.log('✅ 헤더 상태 업데이트 완료');
+                
+                // 권한 기반 UI 업데이트
+                updateUIPermissions();
+                console.log('✅ 권한 기반 UI 업데이트 완료');
                 
                 // 토스트 메시지 표시
                 showToast('로그아웃되었습니다.');
@@ -2519,6 +2538,7 @@
                     localStorage.setItem('familyAuthToken', data.token);
                     localStorage.setItem('currentUser', JSON.stringify(data.user));
                     updateHeaderAuthState();
+                    updateUIPermissions();
                     showToast(`${data.user.username}님 로그인 성공!`);
                     console.log('✅ 테스트 로그인 성공:', data.user);
                 } else {
@@ -2554,11 +2574,181 @@
             localStorage.clear();
             sessionStorage.clear();
             updateHeaderAuthState();
+            updateUIPermissions();
             alert('강제 로그아웃 완료!');
             setTimeout(() => {
                 window.location.reload();
             }, 500);
         };
+        
+        // 🔐 권한 확인 함수
+        function checkPermission(requiredPermission = null) {
+            const token = localStorage.getItem('familyAuthToken');
+            const userStr = localStorage.getItem('currentUser');
+            
+            // 로그인하지 않은 경우
+            if (!token || !userStr) {
+                console.log('🚫 권한 없음: 로그인이 필요합니다');
+                return false;
+            }
+            
+            try {
+                const user = JSON.parse(userStr);
+                
+                // 관리자는 모든 권한 허용
+                if (user.permissions && user.permissions.includes('*')) {
+                    return true;
+                }
+                
+                // 특정 권한 확인
+                if (requiredPermission && user.permissions) {
+                    return user.permissions.includes(requiredPermission);
+                }
+                
+                return true; // 기본적으로 로그인한 사용자는 허용
+            } catch (error) {
+                console.error('권한 확인 오류:', error);
+                return false;
+            }
+        }
+        
+        // 🔒 권한 기반 UI 업데이트
+        function updateUIPermissions() {
+            const token = localStorage.getItem('familyAuthToken');
+            const userStr = localStorage.getItem('currentUser');
+            
+            console.log('🔒 UI 권한 업데이트 시작...');
+            
+            // 로그인하지 않은 경우 제한 모드
+            if (!token || !userStr) {
+                enableRestrictedMode();
+                return;
+            }
+            
+            try {
+                const user = JSON.parse(userStr);
+                console.log('👤 사용자 권한:', user.permissions);
+                
+                // 권한에 따른 기능 활성화/비활성화
+                if (user.permissions && user.permissions.includes('*')) {
+                    enableFullAccess();
+                } else if (user.permissions && user.permissions.includes('write_items')) {
+                    enableLimitedAccess();
+                } else {
+                    enableReadOnlyAccess();
+                }
+            } catch (error) {
+                console.error('UI 권한 업데이트 오류:', error);
+                enableRestrictedMode();
+            }
+        }
+        
+        // 🚫 제한 모드 (로그인 없음)
+        function enableRestrictedMode() {
+            console.log('🚫 제한 모드 활성화');
+            
+            // 물품 추가 버튼 비활성화
+            const addButtons = document.querySelectorAll('[onclick*="addItem"], .add-button, #addItemBtn');
+            addButtons.forEach(btn => {
+                btn.disabled = true;
+                btn.style.opacity = '0.5';
+                btn.style.cursor = 'not-allowed';
+                btn.title = '로그인이 필요합니다';
+            });
+            
+            // 물품 수정/삭제 버튼 비활성화
+            const editButtons = document.querySelectorAll('.edit-button, .delete-button');
+            editButtons.forEach(btn => {
+                btn.disabled = true;
+                btn.style.opacity = '0.5';
+                btn.style.cursor = 'not-allowed';
+                btn.title = '로그인이 필요합니다';
+            });
+            
+            // 채팅 입력 제한
+            const chatInput = document.querySelector('.chat-input, #messageInput');
+            if (chatInput) {
+                chatInput.disabled = true;
+                chatInput.placeholder = '로그인 후 이용 가능합니다';
+                chatInput.style.opacity = '0.6';
+            }
+            
+            // 하단 네비게이션 제한
+            const navButtons = document.querySelectorAll('.nav-item');
+            navButtons.forEach((btn, index) => {
+                if (index > 0) { // 홈 버튼 제외
+                    btn.style.opacity = '0.5';
+                    btn.style.pointerEvents = 'none';
+                }
+            });
+            
+            // 제한 모드 안내 메시지
+            showToast('🔒 일부 기능은 로그인 후 이용 가능합니다');
+        }
+        
+        // ✅ 전체 접근 허용 (관리자)
+        function enableFullAccess() {
+            console.log('✅ 전체 접근 모드 활성화');
+            enableAllFeatures();
+        }
+        
+        // 🔄 제한된 접근 허용 (일반 사용자)
+        function enableLimitedAccess() {
+            console.log('🔄 제한된 접근 모드 활성화');
+            enableAllFeatures();
+        }
+        
+        // 👁️ 읽기 전용 접근 (자녀/게스트)
+        function enableReadOnlyAccess() {
+            console.log('👁️ 읽기 전용 모드 활성화');
+            
+            // 읽기 기능만 허용
+            enableAllFeatures();
+            
+            // 쓰기 기능 비활성화
+            const writeButtons = document.querySelectorAll('[onclick*="addItem"], [onclick*="updateItem"], [onclick*="deleteItem"], .add-button, .edit-button, .delete-button');
+            writeButtons.forEach(btn => {
+                btn.disabled = true;
+                btn.style.opacity = '0.5';
+                btn.style.cursor = 'not-allowed';
+                btn.title = '읽기 전용 권한입니다';
+            });
+        }
+        
+        // 🔓 모든 기능 활성화
+        function enableAllFeatures() {
+            // 모든 버튼 활성화
+            const allButtons = document.querySelectorAll('button, .nav-item');
+            allButtons.forEach(btn => {
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                btn.style.cursor = 'pointer';
+                btn.style.pointerEvents = 'auto';
+                btn.title = '';
+            });
+            
+            // 채팅 입력 활성화
+            const chatInput = document.querySelector('.chat-input, #messageInput');
+            if (chatInput) {
+                chatInput.disabled = false;
+                chatInput.placeholder = '메시지를 입력하세요...';
+                chatInput.style.opacity = '1';
+            }
+        }
+        
+        // 🛡️ 보안된 함수 실행
+        function secureAction(action, requiredPermission = null, callback) {
+            if (!checkPermission(requiredPermission)) {
+                showToast('🚫 권한이 없습니다. 로그인하거나 관리자에게 문의하세요.');
+                return false;
+            }
+            
+            console.log(`✅ ${action} 권한 확인 완료`);
+            if (callback && typeof callback === 'function') {
+                callback();
+            }
+            return true;
+        }
         
         // 🔍 상태 체크 함수 (개발자 콘솔에서 사용)
         window.checkAuthStatus = function() {
