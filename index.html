@@ -2298,6 +2298,11 @@
         
         // 앱 초기화 및 폼 설정
         document.addEventListener('DOMContentLoaded', () => {
+            // 초기화 전 헤더 상태 강제 업데이트
+            setTimeout(() => {
+                updateHeaderAuthState();
+            }, 100);
+            
             init();
             setupFormSubmission();
         });
@@ -2317,6 +2322,11 @@
         // ⭐ Service Worker 등록 및 인증 확인
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
+                // 페이지 로드 완료 후 헤더 상태 재확인
+                setTimeout(() => {
+                    updateHeaderAuthState();
+                }, 500);
+                
                 // 가족 인증 체크 (선택적)
                 if (localStorage.getItem('familyAuthToken')) {
                     checkAuthentication();
@@ -2405,6 +2415,13 @@
             const userInfo = document.getElementById('userInfo');
             const headerTitle = document.getElementById('headerTitle');
             
+            // 디버깅용 로그
+            console.log('🔍 헤더 상태 업데이트:', {
+                hasToken: !!token,
+                tokenPreview: token ? token.substring(0, 20) + '...' : null,
+                currentUser: localStorage.getItem('currentUser')
+            });
+            
             if (token) {
                 // 로그인 상태
                 try {
@@ -2450,6 +2467,30 @@
                 window.location.reload();
             }, 1000);
         }
+        
+        // 🧪 테스트용 로그인 함수 (개발자 콘솔에서 사용)
+        window.testLogin = async function(username = '관리자', password = 'admin123') {
+            try {
+                const response = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    localStorage.setItem('familyAuthToken', data.token);
+                    localStorage.setItem('currentUser', JSON.stringify(data.user));
+                    updateHeaderAuthState();
+                    showToast(`${data.user.username}님 로그인 성공!`);
+                    console.log('✅ 테스트 로그인 성공:', data.user);
+                } else {
+                    console.error('❌ 로그인 실패:', data.error);
+                }
+            } catch (error) {
+                console.error('❌ 로그인 오류:', error);
+            }
+        };
 
         // API 요청에 인증 헤더 추가하는 함수
         function getAuthHeaders() {
