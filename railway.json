@@ -21,8 +21,8 @@
       },
       "variables": {
         "NODE_ENV": "production",
-        "USE_CHATGPT": "true",
-        "CHATGPT_MODEL": "gpt-3.5-turbo"
+        "USE_S3": "false",
+        "USE_CHATGPT": "false"
       },
       "healthcheck": {
         "path": "/api/health"

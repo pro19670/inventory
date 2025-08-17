@@ -3,10 +3,15 @@ services:
     name: family-inventory-backend
     env: node
     plan: free
-    buildCommand: cd backend && npm install
+    buildCommand: cd backend && npm install --production
     startCommand: cd backend && npm start
+    healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
         value: 10000
+      - key: USE_S3
+        value: false
+      - key: USE_CHATGPT
+        value: false

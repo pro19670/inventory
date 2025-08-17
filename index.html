@@ -1193,9 +1193,9 @@
             var hostname = window.location.hostname;
             var protocol = window.location.protocol;
             
-            // GitHub Pages에서 호출 시 -> 현재 E2B sandbox API 사용 (추후 변경 예정)
+            // GitHub Pages에서 호출 시 -> 배포된 백엔드 서버 사용
             if (hostname.endsWith('github.io')) {
-                return 'https://3001-i72krmbsmpnff1c7v14w6-6532622b.e2b.dev/api';
+                return 'https://family-inventory-backend.onrender.com/api';
             }
             
             // 로컬 개발 환경
@@ -1203,13 +1203,28 @@
                 return protocol + '//' + hostname + ':3001/api';
             }
             
-            // E2B Sandbox 환경
+            // E2B Sandbox 환경 (개발용)
             if (hostname.includes('e2b.dev')) {
                 return 'https://3001-i72krmbsmpnff1c7v14w6-6532622b.e2b.dev/api';
             }
             
-            // 기본값
-            return 'https://inventory.onrender.com/api';
+            // Vercel 배포
+            if (hostname.includes('vercel.app')) {
+                return protocol + '//' + hostname + '/api';
+            }
+            
+            // Render.com 배포
+            if (hostname.includes('onrender.com')) {
+                return protocol + '//' + hostname + '/api';
+            }
+            
+            // Railway 배포
+            if (hostname.includes('railway.app')) {
+                return protocol + '//' + hostname + '/api';
+            }
+            
+            // 기본값 (Render.com 백엔드)
+            return 'https://family-inventory-backend.onrender.com/api';
         })();
         
         // 앱 상태 관리
