@@ -2317,8 +2317,10 @@
         // ⭐ Service Worker 등록 및 인증 확인
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                // 로그인 체크
-                checkAuthentication();
+                // 가족 인증 체크 (선택적)
+                if (localStorage.getItem('familyAuthToken')) {
+                    checkAuthentication();
+                }
                 
                 navigator.serviceWorker.register('sw.js')
                     .then(registration => {
@@ -2338,45 +2340,42 @@
                 return; // 이미 로그인 페이지에 있으면 체크하지 않음
             }
 
-            const token = localStorage.getItem('auth_token');
+            const token = localStorage.getItem('familyAuthToken');
             
             if (!token) {
-                console.log('토큰이 없음 - 로그인 페이지로 이동');
-                // 토큰이 없으면 로그인 페이지로 리다이렉트
-                window.location.href = '/login.html';
+                console.log('패밀리 토큰이 없음 - 인증 없이 진행');
+                // 가족 인증 시스템에서는 토큰이 없어도 기본 기능 사용 가능
                 return;
             }
 
             try {
-                console.log('토큰 검증 시작:', token.substring(0, 20) + '...');
-                const response = await fetch(`${API_URL}/auth/verify`, {
+                console.log('가족 토큰 검증 시작:', token.substring(0, 20) + '...');
+                const response = await fetch(`${API_URL}/family-auth/verify`, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ token })
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
                 });
 
                 const data = await response.json();
-                console.log('토큰 검증 결과:', data);
+                console.log('가족 토큰 검증 결과:', data);
                 
                 if (data.success) {
                     // 로그인된 사용자 정보 저장 및 UI 업데이트
-                    localStorage.setItem('user_info', JSON.stringify(data.user));
+                    localStorage.setItem('currentUser', JSON.stringify(data.user));
                     updateUserInterface(data.user);
-                    console.log('인증 성공 - 사용자:', data.user.username);
+                    console.log('가족 인증 성공 - 사용자:', data.user.username);
                 } else {
-                    console.log('토큰 무효 - 로그인 페이지로 이동');
-                    // 토큰이 유효하지 않으면 로그인 페이지로
-                    localStorage.removeItem('auth_token');
-                    localStorage.removeItem('user_info');
-                    window.location.href = '/login.html';
+                    console.log('가족 토큰 무효 - 토큰 제거');
+                    // 토큰이 유효하지 않으면 제거하지만 로그인 페이지로 강제 이동하지 않음
+                    localStorage.removeItem('familyAuthToken');
+                    localStorage.removeItem('currentUser');
                 }
             } catch (error) {
-                console.error('인증 확인 오류:', error);
+                console.error('가족 인증 확인 오류:', error);
                 // 네트워크 오류 등으로 인증 확인 실패 시는 경고만 표시
-                console.warn('인증 서버 연결 실패 - 기존 세션 유지');
-                // window.location.href = '/login.html'; // 네트워크 오류 시 강제 로그아웃 방지
+                console.warn('가족 인증 서버 연결 실패 - 기존 세션 유지');
             }
         }
 
