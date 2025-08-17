@@ -182,6 +182,74 @@
             display: none;
         }
 
+        .existing-user-options {
+            background: #f0f8ff;
+            border: 2px solid #667eea;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            display: none;
+            margin-bottom: 20px;
+        }
+
+        .existing-user-info {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .existing-user-avatar {
+            font-size: 24px;
+        }
+
+        .existing-user-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .user-action-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .continue-btn {
+            background: #667eea;
+            color: white;
+        }
+
+        .continue-btn:hover {
+            background: #5a6fd8;
+        }
+
+        .logout-btn {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .logout-btn:hover {
+            background: #c0392b;
+        }
+
+        .switch-user-btn {
+            background: #f39c12;
+            color: white;
+        }
+
+        .switch-user-btn:hover {
+            background: #d68910;
+        }
+
         @media (max-width: 480px) {
             .login-container {
                 padding: 30px 20px;
@@ -205,6 +273,25 @@
 
         <div id="errorMessage" class="error-message"></div>
         <div id="successMessage" class="success-message"></div>
+        
+        <!-- 기존 사용자 옵션 -->
+        <div id="existingUserOptions" class="existing-user-options">
+            <div class="existing-user-info">
+                <span class="existing-user-avatar" id="existingUserAvatar">👤</span>
+                <span id="existingUserName">사용자</span>님으로 이미 로그인되어 있습니다
+            </div>
+            <div class="existing-user-actions">
+                <button class="user-action-btn continue-btn" onclick="continueAsCurrentUser()">
+                    메인 페이지로 이동
+                </button>
+                <button class="user-action-btn logout-btn" onclick="logoutCurrentUser()">
+                    로그아웃
+                </button>
+                <button class="user-action-btn switch-user-btn" onclick="switchUser()">
+                    다른 계정으로 로그인
+                </button>
+            </div>
+        </div>
 
         <form id="loginForm">
             <div class="form-group">
@@ -345,6 +432,52 @@
         function hideMessages() {
             document.getElementById('errorMessage').style.display = 'none';
             document.getElementById('successMessage').style.display = 'none';
+            document.getElementById('existingUserOptions').style.display = 'none';
+        }
+
+        // 기존 사용자 옵션 표시
+        function showExistingUserOptions(user) {
+            hideMessages();
+            
+            const optionsEl = document.getElementById('existingUserOptions');
+            const avatarEl = document.getElementById('existingUserAvatar');
+            const nameEl = document.getElementById('existingUserName');
+            
+            avatarEl.textContent = user.avatar || '👤';
+            nameEl.textContent = user.username;
+            
+            optionsEl.style.display = 'block';
+            
+            // 로그인 폼 숨기기
+            document.querySelector('.login-form').style.display = 'none';
+            document.querySelector('.demo-accounts').style.display = 'none';
+        }
+
+        // 현재 사용자로 계속
+        function continueAsCurrentUser() {
+            window.location.href = '/';
+        }
+
+        // 현재 사용자 로그아웃
+        function logoutCurrentUser() {
+            console.log('🚪 현재 사용자 로그아웃...');
+            localStorage.removeItem('familyAuthToken');
+            localStorage.removeItem('currentUser');
+            showSuccess('로그아웃되었습니다. 새로운 계정으로 로그인하세요.');
+            
+            // 폼 다시 표시
+            setTimeout(() => {
+                hideMessages();
+                document.querySelector('.login-form').style.display = 'block';
+                document.querySelector('.demo-accounts').style.display = 'block';
+            }, 1500);
+        }
+
+        // 다른 사용자로 전환
+        function switchUser() {
+            hideMessages();
+            document.querySelector('.login-form').style.display = 'block';
+            document.querySelector('.demo-accounts').style.display = 'block';
         }
 
         // 로그인 처리
@@ -434,20 +567,8 @@
                     const data = await response.json();
                     if (data.success) {
                         console.log('✅ 기존 토큰 유효:', data.user.username);
-                        // 자동 리디렉션 대신 사용자에게 선택권 제공
-                        showSuccess(`${data.user.username}님, 이미 로그인되어 있습니다. 메인 페이지로 이동하시겠습니까?`);
-                        
-                        // 3초 후 자동 이동 (사용자가 취소할 수 있도록)
-                        let countdown = 3;
-                        const countdownInterval = setInterval(() => {
-                            document.querySelector('.success-message').textContent = 
-                                `${data.user.username}님, 이미 로그인되어 있습니다. ${countdown}초 후 메인 페이지로 이동합니다...`;
-                            countdown--;
-                            if (countdown < 0) {
-                                clearInterval(countdownInterval);
-                                window.location.replace('/');
-                            }
-                        }, 1000);
+                        // 자동 리디렉션하지 않고 사용자 선택권 제공
+                        showExistingUserOptions(data.user);
                     } else {
                         console.log('❌ 기존 토큰 무효, 토큰 제거');
                         localStorage.removeItem('familyAuthToken');

@@ -887,8 +887,8 @@ const server = http.createServer((req, res) => {
             environment: CONFIG.NODE_ENV
         });
     }
-    // 가족 로그인
-    else if (pathname === '/api/auth/login' && method === 'POST') {
+    // 가족 로그인 (두 경로 모두 지원)
+    else if ((pathname === '/api/auth/login' || pathname === '/api/family-auth/login') && method === 'POST') {
         let body = '';
         req.on('data', chunk => {
             body += chunk.toString();
@@ -919,8 +919,8 @@ const server = http.createServer((req, res) => {
             }
         });
     }
-    // 토큰 검증
-    else if (pathname === '/api/auth/verify' && method === 'POST') {
+    // 토큰 검증 (두 경로 모두 지원)
+    else if ((pathname === '/api/auth/verify' || pathname === '/api/family-auth/verify') && method === 'POST') {
         let body = '';
         req.on('data', chunk => {
             body += chunk.toString();
