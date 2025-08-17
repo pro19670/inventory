@@ -2491,6 +2491,25 @@
                 console.error('❌ 로그인 오류:', error);
             }
         };
+        
+        // 🔧 테스트 페이지에서 메시지 수신
+        window.addEventListener('message', (event) => {
+            if (event.origin !== window.location.origin) return;
+            
+            if (event.data.type === 'LOGIN_SUCCESS') {
+                localStorage.setItem('familyAuthToken', event.data.token);
+                localStorage.setItem('currentUser', JSON.stringify(event.data.user));
+                updateHeaderAuthState();
+                showToast(`${event.data.user.username}님 로그인 성공!`);
+                console.log('📨 메시지로 로그인 완료:', event.data.user);
+            } else if (event.data.type === 'LOGOUT_SUCCESS') {
+                localStorage.removeItem('familyAuthToken');
+                localStorage.removeItem('currentUser');
+                updateHeaderAuthState();
+                showToast('로그아웃되었습니다.');
+                console.log('📨 메시지로 로그아웃 완료');
+            }
+        });
 
         // API 요청에 인증 헤더 추가하는 함수
         function getAuthHeaders() {
