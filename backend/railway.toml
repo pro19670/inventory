@@ -1,0 +1,19 @@
+[build]
+builder = "nixpacks"
+
+[deploy]
+healthcheckPath = "/api/health"
+healthcheckTimeout = 300
+startCommand = "npm start"
+
+[[build.env]]
+NODE_ENV = "production"
+
+[[build.env]]
+USE_S3 = "false"
+
+[[build.env]]
+USE_CHATGPT = "false"
+
+[[build.env]]
+PORT = "3000"

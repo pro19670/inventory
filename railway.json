@@ -1,32 +1,12 @@
 {
-  "name": "가족용 물품관리 시스템",
-  "description": "ChatGPT 하이브리드 AI 물품관리 시스템",
-  "template": {
-    "repo": "https://github.com/pro19670/inventory",
-    "branch": "main"
+  "$schema": "https://railway.app/railway.schema.json",
+  "build": {
+    "builder": "NIXPACKS",
+    "buildCommand": "cd backend && npm install --production"
   },
-  "services": [
-    {
-      "name": "backend",
-      "source": {
-        "repo": "https://github.com/pro19670/inventory",
-        "branch": "main"
-      },
-      "build": {
-        "builder": "NIXPACKS",
-        "buildCommand": "cd backend && npm install"
-      },
-      "deploy": {
-        "startCommand": "cd backend && npm start"
-      },
-      "variables": {
-        "NODE_ENV": "production",
-        "USE_S3": "false",
-        "USE_CHATGPT": "false"
-      },
-      "healthcheck": {
-        "path": "/api/health"
-      }
-    }
-  ]
+  "deploy": {
+    "startCommand": "cd backend && npm start",
+    "healthcheckPath": "/api/health",
+    "healthcheckTimeout": 300
+  }
 }
