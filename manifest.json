@@ -1,7 +1,7 @@
 {
-    "name": "스마트 재물관리 시스템",
-    "short_name": "재물관리",
-    "description": "AI 기반 스마트 재물관리 시스템 - 집안의 모든 물건을 체계적으로 관리하세요",
+    "name": "AI물품관리 시스템",
+    "short_name": "AI물품관리",
+    "description": "AI 기반 스마트 물품관리 시스템 - 집안의 모든 물건을 체계적으로 관리하세요",
     "start_url": "/inventory/",
     "display": "standalone",
     "background_color": "#ffffff",

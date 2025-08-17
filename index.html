@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#667eea">
-    <title>물품관리 - 스마트 재물관리</title>
+    <title>AI물품관리 - 스마트 재물관리</title>
     <style>
         * {
             box-sizing: border-box;
@@ -959,7 +959,7 @@
 <body>
     <div class="mobile-header">
         <div style="width: 80px;"></div> <!-- 왼쪽 공간 유지 -->
-        <h1 id="headerTitle">물품관리</h1>
+        <h1 id="headerTitle">AI물품관리</h1>
         <div class="auth-buttons">
             <div id="userInfo" class="user-info" style="display: none;">
                 <span class="user-avatar" id="userAvatar">👤</span>
@@ -980,7 +980,7 @@
             <div class="chatbot-info">
                 <div class="chatbot-avatar">🤖</div>
                 <div class="chatbot-title">
-                    <h3>물품관리 도우미</h3>
+                    <h3>AI물품관리 도우미</h3>
                     <p class="chatbot-status">온라인 • 언제든 질문하세요</p>
                 </div>
             </div>
@@ -998,7 +998,7 @@
                     <div class="message-avatar">🤖</div>
                     <div class="message-content">
                         <div class="message-bubble">
-                            안녕하세요! 물품관리 도우미입니다. 😊<br>
+                            안녕하세요! AI물품관리 도우미입니다. 😊<br>
                             무엇을 도와드릴까요?<br><br>
                             예시 질문:<br>
                             • "휴지 재고 확인해줘"<br>
@@ -1531,7 +1531,7 @@
             }
             
             if (message.includes('안녕') || message.includes('hi')) {
-                return `안녕하세요! 😊 물품관리 도우미입니다.<br>현재 오프라인 모드로 제한적인 응답만 가능합니다.<br><br>기본적인 질문은 언제든 해주세요!`;
+                return `안녕하세요! 😊 AI물품관리 도우미입니다.<br>현재 오프라인 모드로 제한적인 응답만 가능합니다.<br><br>기본적인 질문은 언제든 해주세요!`;
             }
             
             if (message.includes('도움') || message.includes('help')) {
@@ -1553,7 +1553,7 @@
                         <div class="message-avatar">🤖</div>
                         <div class="message-content">
                             <div class="message-bubble">
-                                안녕하세요! 물품관리 도우미입니다. 😊<br>
+                                안녕하세요! AI물품관리 도우미입니다. 😊<br>
                                 무엇을 도와드릴까요?<br><br>
                                 예시 질문:<br>
                                 • "휴지 재고 확인해줘"<br>
@@ -2495,7 +2495,7 @@
                         document.getElementById('userAvatar').textContent = user.avatar || '👤';
                         document.getElementById('userName').textContent = user.username || '사용자';
                         userInfo.style.display = 'flex';
-                        headerTitle.textContent = `물품관리`;
+                        headerTitle.textContent = `AI물품관리`;
                         console.log('👤 사용자 정보 표시:', user.username);
                     } else {
                         // currentUser가 없어도 기본 로그인 상태로 표시
@@ -2503,7 +2503,7 @@
                         document.getElementById('userAvatar').textContent = '👤';
                         document.getElementById('userName').textContent = '사용자';
                         userInfo.style.display = 'flex';
-                        headerTitle.textContent = `물품관리`;
+                        headerTitle.textContent = `AI물품관리`;
                     }
                 } catch (e) {
                     console.error('사용자 정보 파싱 오류:', e);
@@ -2526,7 +2526,7 @@
                 userInfo.style.display = 'none';
                 loginBtn.style.display = 'block';
                 logoutBtn.style.display = 'none';
-                headerTitle.textContent = '물품관리';
+                headerTitle.textContent = 'AI물품관리';
                 updateUIPermissions(false); // 제한 모드
             }
         }
