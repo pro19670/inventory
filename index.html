@@ -2352,10 +2352,8 @@
                     updateHeaderAuthState();
                 }, 500);
                 
-                // 가족 인증 체크 (선택적)
-                if (localStorage.getItem('familyAuthToken')) {
-                    checkAuthentication();
-                }
+                // 가족 인증 체크 (항상 수행)
+                await checkAuthentication();
                 
                 navigator.serviceWorker.register('sw.js')
                     .then(registration => {
@@ -2376,10 +2374,12 @@
             }
 
             const token = localStorage.getItem('familyAuthToken');
+            console.log('🔍 인증 체크 시작:', !!token);
             
             if (!token) {
-                console.log('패밀리 토큰이 없음 - 인증 없이 진행');
-                // 가족 인증 시스템에서는 토큰이 없어도 기본 기능 사용 가능
+                console.log('패밀리 토큰이 없음 - 로그아웃 상태로 UI 업데이트');
+                updateHeaderAuthState();
+                updateUIPermissions();
                 return;
             }
 
@@ -2400,17 +2400,24 @@
                     // 로그인된 사용자 정보 저장 및 UI 업데이트
                     localStorage.setItem('currentUser', JSON.stringify(data.user));
                     updateUserInterface(data.user);
-                    console.log('가족 인증 성공 - 사용자:', data.user.username);
+                    updateHeaderAuthState();
+                    console.log('✅ 가족 인증 성공 - 사용자:', data.user.username);
                 } else {
-                    console.log('가족 토큰 무효 - 토큰 제거');
+                    console.log('❌ 가족 토큰 무효 - 토큰 제거');
                     // 토큰이 유효하지 않으면 제거하지만 로그인 페이지로 강제 이동하지 않음
                     localStorage.removeItem('familyAuthToken');
                     localStorage.removeItem('currentUser');
+                    updateHeaderAuthState();
+                    updateUIPermissions();
                 }
             } catch (error) {
-                console.error('가족 인증 확인 오류:', error);
-                // 네트워크 오류 등으로 인증 확인 실패 시는 경고만 표시
-                console.warn('가족 인증 서버 연결 실패 - 기존 세션 유지');
+                console.error('❌ 가족 인증 확인 오류:', error);
+                // 네트워크 오류 등으로 인증 확인 실패 시 로그아웃 상태로 처리
+                console.warn('가족 인증 서버 연결 실패 - 로그아웃 상태로 전환');
+                localStorage.removeItem('familyAuthToken');
+                localStorage.removeItem('currentUser');
+                updateHeaderAuthState();
+                updateUIPermissions();
             }
         }
 
