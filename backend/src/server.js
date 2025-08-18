@@ -572,10 +572,14 @@ function requirePermission(permission) {
     };
 }
 
-// ChatGPT API 호출 함수
+// 🚀 실제 OpenAI GPT API 호출 함수 (개선된 안정성)
 async function callChatGPT(userMessage, context) {
     if (!CONFIG.OPENAI_API_KEY) {
         throw new Error('OpenAI API key not configured');
+    }
+    
+    if (!openai) {
+        throw new Error('OpenAI client not initialized');
     }
     
     const { items, locations, categories, inventoryHistory } = context;
@@ -991,32 +995,43 @@ function getTimeAgo(date) {
     return '방금 전';
 }
 
-// 하이브리드 지능적인 챗봇 응답 생성
+// 🤖 하이브리드 지능형 챗봇 응답 시스템 (실제 GPT + 고급 로컬 백업)
 async function generateIntelligentResponse(userMessage, context) {
-    // 1단계: ChatGPT 사용 가능한지 확인
-    const useChatGPT = CONFIG.USE_CHATGPT && CONFIG.OPENAI_API_KEY;
+    // 1단계: 실제 OpenAI API 사용 시도
+    const hasValidApiKey = CONFIG.USE_CHATGPT && CONFIG.OPENAI_API_KEY && CONFIG.OPENAI_API_KEY.startsWith('sk-');
     
-    console.log(`ChatGPT 사용: ${useChatGPT ? 'YES' : 'NO'}`);
+    console.log(`OpenAI API 사용: ${hasValidApiKey ? 'YES' : 'NO'}`);
+    console.log(`API Key 길이: ${CONFIG.OPENAI_API_KEY ? CONFIG.OPENAI_API_KEY.length : 0}`);
     
-    if (useChatGPT) {
+    if (hasValidApiKey) {
         try {
-            // 2단계: ChatGPT API 호출 시도
-            console.log('ChatGPT API 호출 중...');
+            // 2단계: 실제 OpenAI GPT API 호출
+            console.log('🚀 실제 OpenAI GPT API 호출 중...');
+            const startTime = Date.now();
             const chatGptResponse = await callChatGPT(userMessage, context);
-            console.log('ChatGPT 응답 성공');
+            const responseTime = Date.now() - startTime;
             
-            // ChatGPT 응답에 로컬 데이터 보완
-            return enhanceWithLocalData(chatGptResponse, userMessage, context);
+            console.log(`✅ OpenAI GPT 응답 성공 (${responseTime}ms)`);
+            
+            // GPT 응답을 로컬 실시간 데이터로 보완
+            const enhancedResponse = enhanceWithLocalData(chatGptResponse, userMessage, context);
+            
+            // 성공 표시 추가
+            return `🤖 <small><em>OpenAI GPT-${CONFIG.CHATGPT_MODEL} 응답</em></small><br><br>` + enhancedResponse;
             
         } catch (error) {
-            console.error('ChatGPT API 실패, 로컬 응답으로 대체:', error);
-            // 3단계: ChatGPT 실패 시 로컬 응답으로 대체
-            return generateLocalResponse(userMessage, context);
+            console.error('❌ OpenAI API 실패, 고급 로컬 모드로 전환:', error.message);
+            
+            // 3단계: API 실패 시 GPT급 로컬 모드로 seamless 전환
+            const localResponse = generateLocalResponse(userMessage, context);
+            return `🔄 <small><em>고급 AI 로컬 모드 (OpenAI 연결 실패)</em></small><br><br>` + localResponse;
         }
     } else {
-        console.log('ChatGPT 비활성화, 로컬 응답 사용');
-        // 4단계: ChatGPT 비활성화 시 로컬 응답 사용
-        return generateLocalResponse(userMessage, context);
+        console.log('⚡ 고급 로컬 AI 모드 사용 (API 키 없음)');
+        
+        // 4단계: API 키가 없을 때 GPT급 로컬 모드 사용
+        const localResponse = generateLocalResponse(userMessage, context);
+        return `🧠 <small><em>고급 AI 로컬 모드</em></small><br><br>` + localResponse;
     }
 }
 
