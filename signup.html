@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏠 가족 회원가입 - AI물품관리</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .signup-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 40px 30px;
+            max-width: 400px;
+            width: 100%;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo h1 {
+            font-size: 32px;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .signup-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .signup-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .signup-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        .login-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #f56565;
+            font-size: 14px;
+        }
+
+        .success-message {
+            background: #f0fff4;
+            color: #38a169;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #68d391;
+            font-size: 14px;
+        }
+
+        .welcome-section {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+
+        .welcome-section h3 {
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 18px;
+        }
+
+        .welcome-section p {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .feature-list {
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 8px 0;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .feature-icon {
+            margin-right: 10px;
+            font-size: 16px;
+        }
+
+        @media (max-width: 480px) {
+            .signup-container {
+                padding: 30px 20px;
+                margin: 10px;
+            }
+            
+            .logo h1 {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="signup-container">
+        <div class="logo">
+            <h1>🏠 AI물품관리</h1>
+        </div>
+        
+        <div class="welcome-section">
+            <h3>가족 시스템을 시작하세요!</h3>
+            <p>첫 번째 관리자 계정을 생성하여<br>우리 가족만의 물품 관리 시스템을 만들어보세요.</p>
+            
+            <div class="feature-list">
+                <div class="feature-item">
+                    <span class="feature-icon">👨‍👩‍👧‍👦</span>
+                    <span>가족 구성원별 권한 관리</span>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon">📦</span>
+                    <span>AI 기반 스마트 재고 관리</span>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon">📱</span>
+                    <span>모바일 최적화 PWA 앱</span>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon">🔗</span>
+                    <span>간편한 가족 구성원 초대</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="subtitle">관리자 계정으로 회원가입하세요</div>
+        
+        <div id="errorMessage" class="error-message" style="display: none;"></div>
+        <div id="successMessage" class="success-message" style="display: none;"></div>
+
+        <form id="signupForm">
+            <div class="form-group">
+                <label class="form-label" for="familyName">가족 이름</label>
+                <input type="text" class="form-input" id="familyName" name="familyName" 
+                       placeholder="예: 김씨네 가족" required maxlength="20">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="adminUsername">관리자 이름</label>
+                <input type="text" class="form-input" id="adminUsername" name="adminUsername" 
+                       placeholder="예: 김아빠" required maxlength="10">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="adminEmail">이메일 (선택)</label>
+                <input type="email" class="form-input" id="adminEmail" name="adminEmail" 
+                       placeholder="example@email.com">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="adminPassword">비밀번호</label>
+                <input type="password" class="form-input" id="adminPassword" name="adminPassword" 
+                       placeholder="최소 6자 이상" required minlength="6">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="confirmPassword">비밀번호 확인</label>
+                <input type="password" class="form-input" id="confirmPassword" name="confirmPassword" 
+                       placeholder="비밀번호를 다시 입력하세요" required>
+            </div>
+
+            <button type="submit" class="signup-btn" id="signupBtn">
+                🎉 가족 시스템 만들기
+            </button>
+        </form>
+
+        <div class="login-link">
+            이미 가족이 있으신가요? <a href="/login.html">로그인하기</a>
+        </div>
+    </div>
+
+    <script>
+        // API URL 설정 - 환경에 따라 자동 감지
+        const API_BASE = (function() {
+            var hostname = window.location.hostname;
+            var protocol = window.location.protocol;
+            
+            // GitHub Pages에서 호출 시 → 배포된 백엔드 서버 사용
+            if (hostname.endsWith('github.io')) {
+                return 'https://family-inventory-backend.onrender.com';
+            }
+            
+            // 로컬 개발 환경
+            if (hostname === 'localhost' || hostname === '127.0.0.1') {
+                return protocol + '//' + hostname + ':3001';
+            }
+            
+            // E2B Sandbox 환경 (개발용)
+            if (hostname.includes('e2b.dev')) {
+                return 'https://3001-i72krmbsmpnff1c7v14w6-6532622b.e2b.dev';
+            }
+            
+            // 기타 배포 환경
+            return 'https://family-inventory-backend.onrender.com';
+        })();
+
+        document.getElementById('signupForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const signupBtn = document.getElementById('signupBtn');
+            const errorDiv = document.getElementById('errorMessage');
+            const successDiv = document.getElementById('successMessage');
+            
+            // 입력값 수집
+            const formData = new FormData(this);
+            const signupData = {
+                familyName: formData.get('familyName').trim(),
+                adminUsername: formData.get('adminUsername').trim(),
+                adminEmail: formData.get('adminEmail').trim(),
+                adminPassword: formData.get('adminPassword')
+            };
+            
+            const confirmPassword = formData.get('confirmPassword');
+            
+            // 유효성 검사
+            hideMessages();
+            
+            if (!signupData.familyName || signupData.familyName.length < 2) {
+                showError('가족 이름을 2자 이상 입력해주세요.');
+                return;
+            }
+            
+            if (!signupData.adminUsername || signupData.adminUsername.length < 2) {
+                showError('관리자 이름을 2자 이상 입력해주세요.');
+                return;
+            }
+            
+            if (!signupData.adminPassword || signupData.adminPassword.length < 6) {
+                showError('비밀번호를 6자 이상 입력해주세요.');
+                return;
+            }
+            
+            if (signupData.adminPassword !== confirmPassword) {
+                showError('비밀번호가 일치하지 않습니다.');
+                return;
+            }
+            
+            // 회원가입 진행
+            signupBtn.disabled = true;
+            signupBtn.textContent = '가족 시스템을 만드는 중...';
+            
+            try {
+                console.log('회원가입 요청:', signupData);
+                
+                const response = await fetch(`${API_BASE}/api/family-auth/signup-admin`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(signupData)
+                });
+                
+                const result = await response.json();
+                console.log('회원가입 응답:', result);
+                
+                if (result.success) {
+                    showSuccess(`🎉 "${result.family.name}" 가족 시스템이 생성되었습니다!<br>가족 코드: <strong>${result.family.code}</strong>`);
+                    
+                    // 3초 후 로그인 페이지로 이동
+                    setTimeout(() => {
+                        window.location.href = '/login.html?signup=success&family=' + encodeURIComponent(result.family.name);
+                    }, 3000);
+                    
+                } else {
+                    showError(result.error || '회원가입 중 오류가 발생했습니다.');
+                }
+                
+            } catch (error) {
+                console.error('회원가입 오류:', error);
+                showError('서버 연결에 문제가 있습니다. 잠시 후 다시 시도해주세요.');
+            } finally {
+                signupBtn.disabled = false;
+                signupBtn.textContent = '🎉 가족 시스템 만들기';
+            }
+        });
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.innerHTML = message;
+            errorDiv.style.display = 'block';
+            errorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMessage');
+            successDiv.innerHTML = message;
+            successDiv.style.display = 'block';
+            successDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function hideMessages() {
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('successMessage').style.display = 'none';
+        }
+
+        // 실시간 비밀번호 확인
+        document.getElementById('confirmPassword').addEventListener('input', function() {
+            const password = document.getElementById('adminPassword').value;
+            const confirm = this.value;
+            
+            if (confirm && password !== confirm) {
+                this.style.borderColor = '#f56565';
+            } else {
+                this.style.borderColor = '#e9ecef';
+            }
+        });
+
+        // 페이지 로드 시 시스템 상태 확인
+        window.addEventListener('load', async function() {
+            try {
+                const response = await fetch(`${API_BASE}/api/family-auth/status`);
+                const status = await response.json();
+                
+                console.log('시스템 상태:', status);
+                
+                // 이미 가족이 등록된 경우 로그인 페이지로 리디렉션
+                if (status.success && status.hasAnyFamily) {
+                    console.log('이미 등록된 가족이 있음 - 로그인 페이지로 이동');
+                    window.location.href = '/login.html?redirect=signup';
+                    return;
+                }
+                
+            } catch (error) {
+                console.log('시스템 상태 확인 실패:', error);
+                // 네트워크 오류 등의 경우 그냥 회원가입 페이지 표시
+            }
+        });
+    </script>
+</body>
+</html>
