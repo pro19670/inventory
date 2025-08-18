@@ -44,9 +44,16 @@ class FamilyAuthSystem {
         this.users = new Map();    // userId -> User
         this.sessions = new Map(); // sessionId -> Session
         this.activities = [];      // Activity logs
+        this.invitations = new Map(); // inviteCode -> Invitation
         
-        // 초기 데모 데이터 생성
-        this.initializeDemoData();
+        // 데모 모드인지 확인 (환경변수로 제어)
+        if (process.env.DEMO_MODE === 'true') {
+            this.initializeDemoData();
+        }
+        
+        console.log('👨‍👩‍👧‍👦 가족 인증 시스템 초기화 완료');
+        console.log(`📊 현재 등록된 가족 수: ${this.families.size}`);
+        console.log(`👥 현재 등록된 사용자 수: ${this.users.size}`);
     }
 
     // 초기 데모 데이터
@@ -251,7 +258,264 @@ class FamilyAuthSystem {
             }));
     }
 
-    // 새 사용자 등록
+    // 최초 관리자 회원가입 (새 가족 생성)
+    async signupAdmin(signupData) {
+        try {
+            const { familyName, adminUsername, adminPassword, adminEmail } = signupData;
+            
+            // 중복 사용자명 검사
+            const existingUser = Array.from(this.users.values()).find(u => u.username === adminUsername);
+            if (existingUser) {
+                return {
+                    success: false,
+                    error: '이미 존재하는 사용자명입니다.'
+                };
+            }
+
+            // 새 가족 생성
+            const familyId = 'family_' + crypto.randomBytes(8).toString('hex');
+            const familyCode = this.generateFamilyCode();
+            
+            const newFamily = {
+                id: familyId,
+                name: familyName,
+                code: familyCode,
+                createdAt: new Date().toISOString(),
+                settings: {
+                    language: "ko",
+                    timezone: "Asia/Seoul",
+                    currency: "KRW"
+                },
+                adminId: null // 아래에서 설정
+            };
+
+            // 관리자 사용자 생성
+            const adminId = 'user_' + crypto.randomBytes(8).toString('hex');
+            const hashedPassword = await bcrypt.hash(adminPassword, 10);
+            
+            const adminUser = {
+                id: adminId,
+                familyId: familyId,
+                username: adminUsername,
+                password: hashedPassword,
+                role: 'admin',
+                avatar: '👨‍💼',
+                email: adminEmail,
+                preferences: {
+                    notifications: true,
+                    theme: 'light'
+                },
+                createdAt: new Date().toISOString(),
+                isFounder: true // 가족 창립자 표시
+            };
+
+            // 가족에 관리자 ID 설정
+            newFamily.adminId = adminId;
+
+            // 데이터 저장
+            this.families.set(familyId, newFamily);
+            this.users.set(adminId, adminUser);
+
+            // 활동 로그 기록
+            this.logActivity(adminId, 'create_family', familyId, {
+                familyName: familyName,
+                familyCode: familyCode
+            });
+
+            console.log(`🎉 새 가족 생성 완료: ${familyName} (코드: ${familyCode})`);
+
+            return {
+                success: true,
+                family: {
+                    id: familyId,
+                    name: familyName,
+                    code: familyCode
+                },
+                admin: {
+                    id: adminId,
+                    username: adminUsername,
+                    role: 'admin',
+                    avatar: '👨‍💼'
+                }
+            };
+        } catch (error) {
+            console.error('관리자 회원가입 오류:', error);
+            return {
+                success: false,
+                error: error.message || '회원가입 중 오류가 발생했습니다.'
+            };
+        }
+    }
+
+    // 가족 코드 생성
+    generateFamilyCode() {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let result = '';
+        for (let i = 0; i < 6; i++) {
+            result += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return result;
+    }
+
+    // 초대 코드 생성
+    async createInvitation(adminId, inviteData) {
+        try {
+            const admin = this.users.get(adminId);
+            if (!admin || admin.role !== 'admin') {
+                return {
+                    success: false,
+                    error: '관리자 권한이 필요합니다.'
+                };
+            }
+
+            const inviteCode = crypto.randomBytes(16).toString('hex');
+            const invitation = {
+                code: inviteCode,
+                familyId: admin.familyId,
+                createdBy: adminId,
+                targetRole: inviteData.role || 'child',
+                targetUsername: inviteData.username,
+                expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7일 후 만료
+                createdAt: new Date().toISOString(),
+                used: false
+            };
+
+            this.invitations.set(inviteCode, invitation);
+
+            // 활동 로그 기록
+            this.logActivity(adminId, 'create_invitation', null, {
+                targetRole: invitation.targetRole,
+                targetUsername: invitation.targetUsername,
+                inviteCode: inviteCode
+            });
+
+            return {
+                success: true,
+                invitation: {
+                    code: inviteCode,
+                    role: invitation.targetRole,
+                    username: invitation.targetUsername,
+                    expiresAt: invitation.expiresAt
+                }
+            };
+        } catch (error) {
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+    }
+
+    // 초대 코드로 가입
+    async joinFamily(inviteCode, userData) {
+        try {
+            const invitation = this.invitations.get(inviteCode);
+            
+            if (!invitation) {
+                return {
+                    success: false,
+                    error: '유효하지 않은 초대 코드입니다.'
+                };
+            }
+
+            if (invitation.used) {
+                return {
+                    success: false,
+                    error: '이미 사용된 초대 코드입니다.'
+                };
+            }
+
+            if (new Date() > new Date(invitation.expiresAt)) {
+                return {
+                    success: false,
+                    error: '만료된 초대 코드입니다.'
+                };
+            }
+
+            // 중복 사용자명 검사 (같은 가족 내에서)
+            const familyUsers = Array.from(this.users.values()).filter(u => u.familyId === invitation.familyId);
+            const existingUser = familyUsers.find(u => u.username === userData.username);
+            if (existingUser) {
+                return {
+                    success: false,
+                    error: '이미 존재하는 사용자명입니다.'
+                };
+            }
+
+            // 새 사용자 생성
+            const userId = 'user_' + crypto.randomBytes(8).toString('hex');
+            const hashedPassword = await bcrypt.hash(userData.password, 10);
+            
+            const newUser = {
+                id: userId,
+                familyId: invitation.familyId,
+                username: userData.username,
+                password: hashedPassword,
+                role: invitation.targetRole,
+                avatar: this.getDefaultAvatar(invitation.targetRole),
+                email: userData.email,
+                preferences: {
+                    notifications: true,
+                    theme: 'light'
+                },
+                createdAt: new Date().toISOString(),
+                invitedBy: invitation.createdBy
+            };
+
+            this.users.set(userId, newUser);
+
+            // 초대 코드를 사용됨으로 표시
+            invitation.used = true;
+            invitation.usedAt = new Date().toISOString();
+            invitation.usedBy = userId;
+
+            // 활동 로그 기록
+            this.logActivity(userId, 'join_family', invitation.familyId, {
+                inviteCode: inviteCode,
+                invitedBy: invitation.createdBy
+            });
+
+            const family = this.families.get(invitation.familyId);
+
+            return {
+                success: true,
+                user: {
+                    id: newUser.id,
+                    username: newUser.username,
+                    role: newUser.role,
+                    avatar: newUser.avatar
+                },
+                family: {
+                    id: family.id,
+                    name: family.name,
+                    code: family.code
+                }
+            };
+        } catch (error) {
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+    }
+
+    // 역할별 기본 아바타
+    getDefaultAvatar(role) {
+        const avatars = {
+            admin: '👨‍💼',
+            parent: '👨‍👩‍👧‍👦',
+            child: '👶',
+            guest: '👤'
+        };
+        return avatars[role] || '👤';
+    }
+
+    // 시스템에 등록된 가족이 있는지 확인
+    hasAnyFamily() {
+        return this.families.size > 0;
+    }
+
+    // 새 사용자 등록 (기존 메서드 - 호환성 유지)
     async registerUser(userData) {
         try {
             const userId = 'user_' + crypto.randomBytes(8).toString('hex');

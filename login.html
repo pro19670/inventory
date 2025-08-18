@@ -681,6 +681,82 @@
                 userInfo: !!userInfo
             });
         }
+
+        // 페이지 로드 시 시스템 상태 확인
+        window.addEventListener('load', async function() {
+            // URL 파라미터 확인 (회원가입 완료 등)
+            const urlParams = new URLSearchParams(window.location.search);
+            const signupSuccess = urlParams.get('signup');
+            const familyName = urlParams.get('family');
+            
+            if (signupSuccess === 'success' && familyName) {
+                const welcomeMsg = document.createElement('div');
+                welcomeMsg.style.cssText = `
+                    background: #f0fff4;
+                    color: #38a169;
+                    padding: 16px;
+                    border-radius: 8px;
+                    margin-bottom: 20px;
+                    border-left: 4px solid #68d391;
+                    text-align: center;
+                `;
+                welcomeMsg.innerHTML = `🎉 "${decodeURIComponent(familyName)}" 가족 시스템이 생성되었습니다!<br>관리자 계정으로 로그인해주세요.`;
+                
+                document.querySelector('.login-container').insertBefore(welcomeMsg, document.querySelector('.login-form'));
+            }
+
+            try {
+                // 시스템 상태 확인
+                const response = await fetch(`${API_BASE}/api/family-auth/status`);
+                const status = await response.json();
+                
+                console.log('🔍 시스템 상태:', status);
+                
+                // 등록된 가족이 없는 경우 회원가입 안내
+                if (status.success && !status.hasAnyFamily) {
+                    console.log('⚠️ 등록된 가족 없음 - 회원가입 필요');
+                    
+                    // 회원가입 안내 메시지 표시
+                    const signupGuide = document.createElement('div');
+                    signupGuide.style.cssText = `
+                        background: #fff3cd;
+                        color: #856404;
+                        padding: 20px;
+                        border-radius: 12px;
+                        margin-bottom: 20px;
+                        border: 2px solid #ffeaa7;
+                        text-align: center;
+                    `;
+                    signupGuide.innerHTML = `
+                        <h3 style="margin-bottom: 10px;">🏠 가족 시스템을 먼저 만들어주세요!</h3>
+                        <p style="margin-bottom: 15px; line-height: 1.4;">
+                            아직 등록된 가족이 없습니다.<br>
+                            첫 번째 관리자 계정을 만들어 가족 시스템을 시작하세요.
+                        </p>
+                        <a href="/signup.html" style="
+                            background: linear-gradient(135deg, #667eea, #764ba2);
+                            color: white;
+                            padding: 12px 24px;
+                            border-radius: 8px;
+                            text-decoration: none;
+                            font-weight: 600;
+                            display: inline-block;
+                            transition: all 0.3s ease;
+                        ">👥 가족 시스템 만들기</a>
+                    `;
+                    
+                    document.querySelector('.login-container').insertBefore(signupGuide, document.querySelector('.login-form'));
+                    
+                    // 로그인 폼은 흐리게 표시
+                    document.querySelector('.login-form').style.opacity = '0.5';
+                    document.querySelector('.login-form').style.pointerEvents = 'none';
+                }
+                
+            } catch (error) {
+                console.log('시스템 상태 확인 실패:', error);
+                // 네트워크 오류 등의 경우 그냥 로그인 페이지 표시
+            }
+        });
     </script>
 </body>
 </html>

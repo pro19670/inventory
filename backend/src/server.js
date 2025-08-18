@@ -944,6 +944,98 @@ const server = http.createServer((req, res) => {
             }
         });
     }
+    // 시스템 상태 확인 (가족 존재 여부)
+    else if (pathname === '/api/family-auth/status' && method === 'GET') {
+        sendJsonResponse(res, 200, {
+            success: true,
+            hasAnyFamily: familyAuth.hasAnyFamily(),
+            familyCount: familyAuth.families.size,
+            userCount: familyAuth.users.size
+        });
+    }
+    // 관리자 회원가입 (최초 가족 생성)
+    else if (pathname === '/api/family-auth/signup-admin' && method === 'POST') {
+        let body = '';
+        req.on('data', chunk => {
+            body += chunk.toString();
+        });
+        req.on('end', async () => {
+            try {
+                const signupData = JSON.parse(body);
+                console.log('관리자 회원가입 요청:', signupData);
+                
+                const result = await familyAuth.signupAdmin(signupData);
+                
+                if (result.success) {
+                    sendJsonResponse(res, 201, result);
+                } else {
+                    sendErrorResponse(res, 400, result.error);
+                }
+            } catch (error) {
+                console.error('관리자 회원가입 오류:', error);
+                sendErrorResponse(res, 500, '서버 오류가 발생했습니다');
+            }
+        });
+    }
+    // 초대 코드 생성 (관리자 전용)
+    else if (pathname === '/api/family-auth/create-invitation' && method === 'POST') {
+        // 인증 확인
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            sendErrorResponse(res, 401, '인증이 필요합니다');
+            return;
+        }
+
+        const token = authHeader.split(' ')[1];
+        const authResult = familyAuth.verifyToken(token);
+        
+        if (!authResult.success) {
+            sendErrorResponse(res, 401, '유효하지 않은 토큰입니다');
+            return;
+        }
+
+        let body = '';
+        req.on('data', chunk => {
+            body += chunk.toString();
+        });
+        req.on('end', async () => {
+            try {
+                const inviteData = JSON.parse(body);
+                const result = await familyAuth.createInvitation(authResult.user.id, inviteData);
+                
+                if (result.success) {
+                    sendJsonResponse(res, 201, result);
+                } else {
+                    sendErrorResponse(res, 400, result.error);
+                }
+            } catch (error) {
+                console.error('초대 코드 생성 오류:', error);
+                sendErrorResponse(res, 500, '서버 오류가 발생했습니다');
+            }
+        });
+    }
+    // 초대 코드로 가입
+    else if (pathname === '/api/family-auth/join-family' && method === 'POST') {
+        let body = '';
+        req.on('data', chunk => {
+            body += chunk.toString();
+        });
+        req.on('end', async () => {
+            try {
+                const { inviteCode, ...userData } = JSON.parse(body);
+                const result = await familyAuth.joinFamily(inviteCode, userData);
+                
+                if (result.success) {
+                    sendJsonResponse(res, 201, result);
+                } else {
+                    sendErrorResponse(res, 400, result.error);
+                }
+            } catch (error) {
+                console.error('가족 가입 오류:', error);
+                sendErrorResponse(res, 500, '서버 오류가 발생했습니다');
+            }
+        });
+    }
     // 가족 구성원 조회
     else if (pathname === '/api/family/members' && method === 'GET') {
         // 인증 확인

@@ -206,14 +206,163 @@
             }
         }
         
+        /* 설정 메뉴 스타일 */
+        .settings-menu {
+            width: 100%;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin: 25px 0 15px 0;
+            padding-left: 5px;
+        }
+
+        .section-title:first-child {
+            margin-top: 0;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            padding: 16px 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .menu-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+
+        .admin-item {
+            background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+            border-left: 4px solid #667eea;
+        }
+
+        .logout-item {
+            background: #fee;
+            color: #c33;
+        }
+
+        .logout-item:hover {
+            background: #fdd;
+        }
+
+        .menu-icon {
+            font-size: 24px;
+            width: 40px;
+            text-align: center;
+            margin-right: 15px;
+        }
+
+        .menu-content {
+            flex: 1;
+        }
+
+        .menu-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 2px;
+        }
+
+        .menu-desc {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .menu-arrow {
+            font-size: 20px;
+            color: #999;
+            margin-left: 10px;
+        }
+
+        .menu-toggle {
+            position: relative;
+        }
+
+        .menu-toggle input[type="checkbox"] {
+            display: none;
+        }
+
+        .menu-toggle label {
+            display: block;
+            width: 50px;
+            height: 28px;
+            background: #ccc;
+            border-radius: 14px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .menu-toggle label:before {
+            content: '';
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.3s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .menu-toggle input:checked + label {
+            background: #667eea;
+        }
+
+        .menu-toggle input:checked + label:before {
+            transform: translateX(22px);
+        }
+
+        .admin-section {
+            border: 2px solid #667eea;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .back-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
         @media (max-width: 480px) {
             .profile-container {
                 width: 95%;
                 padding: 30px 20px;
             }
             
-            .avatar-selection {
-                grid-template-columns: repeat(3, 1fr);
+            .menu-item {
+                padding: 14px 16px;
+            }
+            
+            .menu-icon {
+                font-size: 22px;
+                width: 35px;
             }
         }
     </style>
@@ -224,48 +373,108 @@
             👤
         </div>
         
-        <h1 class="profile-title" id="welcomeText">프로필 설정</h1>
-        <p class="profile-subtitle">나만의 재물관리 공간을 만들어보세요</p>
+        <h1 class="profile-title" id="welcomeText">설정</h1>
+        <p class="profile-subtitle">AI물품관리 시스템 설정</p>
         
-        <form id="profileForm">
-            <div class="form-group">
-                <label class="form-label" for="userName">사용자 이름</label>
-                <input type="text" 
-                       id="userName" 
-                       class="form-input" 
-                       placeholder="예: 김재물" 
-                       required>
+        <div class="settings-menu">
+            <!-- 관리자 전용 메뉴 -->
+            <div id="adminMenu" class="admin-section" style="display: none;">
+                <h3 class="section-title">👑 관리자 메뉴</h3>
+                <a href="/user-management.html" class="menu-item admin-item">
+                    <div class="menu-icon">👥</div>
+                    <div class="menu-content">
+                        <div class="menu-title">사용자 관리</div>
+                        <div class="menu-desc">가족 구성원 초대 및 권한 관리</div>
+                    </div>
+                    <div class="menu-arrow">›</div>
+                </a>
             </div>
+
+            <!-- 일반 설정 메뉴 -->
+            <h3 class="section-title">⚙️ 앱 설정</h3>
             
-            <div class="form-group">
-                <label class="form-label" for="houseName">집/공간 이름</label>
-                <input type="text" 
-                       id="houseName" 
-                       class="form-input" 
-                       placeholder="예: 우리집, 사무실" 
-                       required>
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">아바타 선택</label>
-                <div class="avatar-selection">
-                    <button type="button" class="avatar-btn selected" onclick="selectAvatar('👤', this)">👤</button>
-                    <button type="button" class="avatar-btn" onclick="selectAvatar('👨', this)">👨</button>
-                    <button type="button" class="avatar-btn" onclick="selectAvatar('👩', this)">👩</button>
-                    <button type="button" class="avatar-btn" onclick="selectAvatar('🏠', this)">🏠</button>
-                    <button type="button" class="avatar-btn" onclick="selectAvatar('📦', this)">📦</button>
-                    <button type="button" class="avatar-btn" onclick="selectAvatar('⭐', this)">⭐</button>
-                    <button type="button" class="avatar-btn" onclick="selectAvatar('🎯', this)">🎯</button>
-                    <button type="button" class="avatar-btn" onclick="selectAvatar('💎', this)">💎</button>
-                    <button type="button" class="avatar-btn" onclick="selectAvatar('🌟', this)">🌟</button>
-                    <button type="button" class="avatar-btn" onclick="selectAvatar('🔥', this)">🔥</button>
-                    <button type="button" class="avatar-btn" onclick="selectAvatar('🚀', this)">🚀</button>
-                    <button type="button" class="avatar-btn" onclick="selectAvatar('💫', this)">💫</button>
+            <div class="menu-item" onclick="toggleNotifications()">
+                <div class="menu-icon">🔔</div>
+                <div class="menu-content">
+                    <div class="menu-title">알림</div>
+                    <div class="menu-desc">푸시 알림 및 소리 설정</div>
+                </div>
+                <div class="menu-toggle">
+                    <input type="checkbox" id="notificationToggle" checked>
+                    <label for="notificationToggle"></label>
                 </div>
             </div>
+
+            <div class="menu-item" onclick="showThemeOptions()">
+                <div class="menu-icon">🎨</div>
+                <div class="menu-content">
+                    <div class="menu-title">테마</div>
+                    <div class="menu-desc">라이트 모드</div>
+                </div>
+                <div class="menu-arrow">›</div>
+            </div>
+
+            <div class="menu-item" onclick="showLanguageOptions()">
+                <div class="menu-icon">🌐</div>
+                <div class="menu-content">
+                    <div class="menu-title">언어</div>
+                    <div class="menu-desc">한국어</div>
+                </div>
+                <div class="menu-arrow">›</div>
+            </div>
+
+            <!-- 계정 관리 -->
+            <h3 class="section-title">👤 계정</h3>
             
-            <button type="submit" class="save-btn">프로필 저장</button>
-        </form>
+            <div class="menu-item" onclick="showProfileEdit()">
+                <div class="menu-icon">📝</div>
+                <div class="menu-content">
+                    <div class="menu-title">프로필 편집</div>
+                    <div class="menu-desc">이름, 아바타 변경</div>
+                </div>
+                <div class="menu-arrow">›</div>
+            </div>
+
+            <div class="menu-item" onclick="showPrivacySettings()">
+                <div class="menu-icon">🔒</div>
+                <div class="menu-content">
+                    <div class="menu-title">개인정보 보호</div>
+                    <div class="menu-desc">보안 및 개인정보 설정</div>
+                </div>
+                <div class="menu-arrow">›</div>
+            </div>
+
+            <!-- 앱 정보 -->
+            <h3 class="section-title">ℹ️ 정보</h3>
+            
+            <div class="menu-item" onclick="showAppInfo()">
+                <div class="menu-icon">📱</div>
+                <div class="menu-content">
+                    <div class="menu-title">앱 정보</div>
+                    <div class="menu-desc">버전 1.0.0</div>
+                </div>
+                <div class="menu-arrow">›</div>
+            </div>
+
+            <div class="menu-item" onclick="showHelp()">
+                <div class="menu-icon">❓</div>
+                <div class="menu-content">
+                    <div class="menu-title">도움말</div>
+                    <div class="menu-desc">사용법 및 FAQ</div>
+                </div>
+                <div class="menu-arrow">›</div>
+            </div>
+
+            <!-- 로그아웃 -->
+            <div class="menu-item logout-item" onclick="logout()">
+                <div class="menu-icon">🚪</div>
+                <div class="menu-content">
+                    <div class="menu-title">로그아웃</div>
+                    <div class="menu-desc">계정에서 로그아웃</div>
+                </div>
+                <div class="menu-arrow">›</div>
+            </div>
+        </div>
         
         <div class="user-stats" id="userStats" style="display: none;">
             <div class="stat-item">
@@ -285,104 +494,152 @@
         <a href="index.html" class="back-link">← 메인으로 돌아가기</a>
     </div>
 
+    <button class="back-btn" onclick="goBack()">← 뒤로</button>
+
     <script>
-        let selectedAvatar = '👤';
-        
-        // 사용자 프로필 관리 클래스
-        class UserProfileManager {
-            constructor() {
-                this.currentUser = this.loadUserProfile();
-                this.init();
-            }
-            
-            init() {
-                if (this.currentUser) {
-                    this.displayExistingProfile();
+        // 페이지 로드 시 사용자 정보 확인
+        window.addEventListener('load', function() {
+            loadUserInfo();
+            checkAdminStatus();
+        });
+
+        // 사용자 정보 로드
+        function loadUserInfo() {
+            try {
+                const userStr = localStorage.getItem('currentUser');
+                if (userStr) {
+                    const user = JSON.parse(userStr);
+                    document.getElementById('profileAvatar').textContent = user.avatar || '👤';
+                    document.getElementById('welcomeText').textContent = `${user.username}님의 설정`;
+                    document.querySelector('.profile-subtitle').textContent = `${getRoleName(user.role)} • AI물품관리 시스템`;
                 }
-                this.setupEventListeners();
+            } catch (error) {
+                console.error('사용자 정보 로드 오류:', error);
             }
-            
-            setupEventListeners() {
-                document.getElementById('profileForm').addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    this.saveProfile();
-                });
-            }
-            
-            loadUserProfile() {
-                const profile = localStorage.getItem('userProfile');
-                return profile ? JSON.parse(profile) : null;
-            }
-            
-            saveProfile() {
-                const userName = document.getElementById('userName').value.trim();
-                const houseName = document.getElementById('houseName').value.trim();
-                
-                if (!userName || !houseName) {
-                    alert('모든 필드를 입력해주세요.');
-                    return;
-                }
-                
-                const profile = {
-                    id: this.currentUser?.id || 'user_' + Date.now(),
-                    name: userName,
-                    houseName: houseName,
-                    avatar: selectedAvatar,
-                    createdAt: this.currentUser?.createdAt || new Date().toISOString(),
-                    updatedAt: new Date().toISOString(),
-                    stats: {
-                        totalItems: 0,
-                        totalCategories: 0,
-                        totalLocations: 0,
-                        lastActivity: new Date().toISOString()
+        }
+
+        // 관리자 메뉴 표시 여부 확인
+        function checkAdminStatus() {
+            try {
+                const userStr = localStorage.getItem('currentUser');
+                if (userStr) {
+                    const user = JSON.parse(userStr);
+                    if (user.role === 'admin') {
+                        document.getElementById('adminMenu').style.display = 'block';
                     }
-                };
+                }
+            } catch (error) {
+                console.error('관리자 상태 확인 오류:', error);
+            }
+        }
+
+        // 역할 이름 반환
+        function getRoleName(role) {
+            const roleNames = {
+                admin: '관리자',
+                parent: '부모',
+                child: '자녀',
+                guest: '손님'
+            };
+            return roleNames[role] || role;
+        }
+
+        // 설정 기능들
+        function toggleNotifications() {
+            const toggle = document.getElementById('notificationToggle');
+            const enabled = toggle.checked;
+            
+            // 알림 설정 저장
+            localStorage.setItem('notificationsEnabled', enabled);
+            
+            showToast(enabled ? '알림이 활성화되었습니다' : '알림이 비활성화되었습니다');
+        }
+
+        function showThemeOptions() {
+            showToast('테마 설정 기능은 준비 중입니다');
+        }
+
+        function showLanguageOptions() {
+            showToast('언어 설정 기능은 준비 중입니다');
+        }
+
+        function showProfileEdit() {
+            showToast('프로필 편집 기능은 준비 중입니다');
+        }
+
+        function showPrivacySettings() {
+            showToast('개인정보 설정 기능은 준비 중입니다');
+        }
+
+        function showAppInfo() {
+            alert(`AI물품관리 앱\n\n버전: 1.0.0\n개발: GenSpark AI\n업데이트: ${new Date().toLocaleDateString()}`);
+        }
+
+        function showHelp() {
+            const helpText = `AI물품관리 도움말\n\n주요 기능:\n• 📸 사진으로 물품 등록\n• 👨‍👩‍👧‍👦 가족 구성원 관리\n• 📦 스마트 재고 추적\n• 🤖 AI 도우미 챗봇\n\n문의사항이 있으시면 관리자에게 문의해주세요.`;
+            alert(helpText);
+        }
+
+        function logout() {
+            if (confirm('정말 로그아웃하시겠습니까?')) {
+                // 로그아웃 처리
+                localStorage.removeItem('familyAuthToken');
+                localStorage.removeItem('currentUser');
                 
-                localStorage.setItem('userProfile', JSON.stringify(profile));
-                this.currentUser = profile;
-                
-                this.showSuccess();
+                showToast('로그아웃되었습니다');
                 
                 setTimeout(() => {
-                    window.location.href = 'index.html';
-                }, 2000);
+                    window.location.href = '/login.html';
+                }, 1000);
             }
-            
-            displayExistingProfile() {
-                document.getElementById('userName').value = this.currentUser.name;
-                document.getElementById('houseName').value = this.currentUser.houseName;
-                
-                selectedAvatar = this.currentUser.avatar;
-                document.getElementById('profileAvatar').textContent = selectedAvatar;
-                
-                // 선택된 아바타 버튼 표시
-                document.querySelectorAll('.avatar-btn').forEach(btn => {
-                    btn.classList.remove('selected');
-                    if (btn.textContent === selectedAvatar) {
-                        btn.classList.add('selected');
-                    }
-                });
-                
-                document.getElementById('welcomeText').textContent = `안녕하세요, ${this.currentUser.name}님!`;
-                document.querySelector('.profile-subtitle').textContent = `${this.currentUser.houseName} 프로필 수정`;
-                
-                this.updateStats();
-                document.getElementById('userStats').style.display = 'grid';
-                
-                document.querySelector('.save-btn').textContent = '프로필 업데이트';
+        }
+
+        // 뒤로가기
+        function goBack() {
+            window.location.href = '/';
+        }
+
+        // 토스트 메시지 표시
+        function showToast(message) {
+            // 기존 토스트 제거
+            const existingToast = document.querySelector('.toast');
+            if (existingToast) {
+                existingToast.remove();
             }
-            
-            updateStats() {
-                if (!this.currentUser) return;
-                
-                // 사용자별 데이터 가져오기
-                const userPrefix = `user_${this.currentUser.id}_`;
-                const items = JSON.parse(localStorage.getItem(userPrefix + 'items') || '[]');
-                const categories = JSON.parse(localStorage.getItem(userPrefix + 'categories') || '[]');
-                const locations = JSON.parse(localStorage.getItem(userPrefix + 'locations') || '[]');
-                
-                const createdDate = new Date(this.currentUser.createdAt);
-                const daysDiff = Math.floor((Date.now() - createdDate.getTime()) / (1000 * 60 * 60 * 24));
+
+            // 새 토스트 생성
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            toast.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(0, 0, 0, 0.8);
+                color: white;
+                padding: 12px 20px;
+                border-radius: 25px;
+                font-size: 14px;
+                z-index: 10000;
+                animation: slideUp 0.3s ease-out;
+            `;
+
+            document.body.appendChild(toast);
+
+            // 3초 후 자동 제거
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        // 페이지 로드 시 알림 설정 상태 복원
+        window.addEventListener('load', function() {
+            const notificationsEnabled = localStorage.getItem('notificationsEnabled');
+            if (notificationsEnabled !== null) {
+                document.getElementById('notificationToggle').checked = notificationsEnabled === 'true';
+            }
+        });
                 
                 document.getElementById('userTotalItems').textContent = items.length;
                 document.getElementById('userDaysUsed').textContent = daysDiff || 0;

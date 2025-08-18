@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>👥 사용자 관리 - AI물품관리</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            padding-bottom: 70px;
+        }
+
+        .mobile-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 15px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .mobile-header h1 {
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .back-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .back-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .family-info {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .family-code {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            margin-top: 15px;
+            border: 2px dashed #dee2e6;
+        }
+
+        .family-code strong {
+            font-size: 18px;
+            color: #667eea;
+            font-family: monospace;
+        }
+
+        .section {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .invite-form {
+            display: grid;
+            gap: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #555;
+            font-size: 14px;
+        }
+
+        .form-input, .form-select {
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .invite-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .invite-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .invite-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .user-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .user-item {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            transition: all 0.3s;
+        }
+
+        .user-avatar {
+            font-size: 32px;
+            margin-right: 15px;
+        }
+
+        .user-info {
+            flex: 1;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .user-role {
+            font-size: 14px;
+            color: #666;
+            margin-top: 2px;
+        }
+
+        .role-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .role-admin {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .role-parent {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .role-child {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .invite-link-section {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .invite-link {
+            font-family: monospace;
+            font-size: 12px;
+            color: #667eea;
+            word-break: break-all;
+            background: white;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #dee2e6;
+            margin: 10px 0;
+        }
+
+        .copy-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        .message {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .mobile-header {
+                padding: 15px 10px;
+            }
+            
+            .mobile-header h1 {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="mobile-header">
+        <button class="back-btn" onclick="goBack()">← 뒤로</button>
+        <h1>👥 사용자 관리</h1>
+        <div style="width: 60px;"></div>
+    </div>
+
+    <div class="container">
+        <div class="family-info">
+            <h3>🏠 가족 정보</h3>
+            <div id="familyInfo">
+                <div style="margin-top: 10px;">
+                    <strong id="familyName">로딩 중...</strong>
+                </div>
+                <div class="family-code">
+                    <div>가족 코드: <strong id="familyCode">------</strong></div>
+                    <div style="font-size: 12px; color: #666; margin-top: 5px;">
+                        새 구성원이 가입할 때 필요한 코드입니다
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">
+                <span>👨‍👩‍👧‍👦</span>
+                <span>가족 구성원</span>
+            </div>
+            
+            <div id="userList" class="user-list">
+                <div class="empty-state">
+                    <div class="empty-icon">⏳</div>
+                    <p>구성원 목록을 불러오는 중...</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">
+                <span>✉️</span>
+                <span>새 구성원 초대</span>
+            </div>
+            
+            <div id="messageContainer"></div>
+            
+            <form id="inviteForm" class="invite-form">
+                <div class="form-group">
+                    <label class="form-label">초대할 사람 이름</label>
+                    <input type="text" class="form-input" id="targetUsername" 
+                           placeholder="예: 김엄마, 김아들" required maxlength="10">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">권한 역할</label>
+                    <select class="form-select" id="targetRole" required>
+                        <option value="">역할을 선택하세요</option>
+                        <option value="parent">부모 - 전체 관리 권한</option>
+                        <option value="child">자녀 - 기본 사용 권한</option>
+                        <option value="guest">손님 - 읽기 전용</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="invite-btn" id="inviteBtn">
+                    📨 초대 링크 생성
+                </button>
+            </form>
+            
+            <div id="inviteLinkSection" class="invite-link-section" style="display: none;">
+                <h4>📎 생성된 초대 링크</h4>
+                <div class="invite-link" id="inviteLink"></div>
+                <button class="copy-btn" onclick="copyInviteLink()">📋 복사</button>
+                <div style="margin-top: 10px; font-size: 12px; color: #666;">
+                    이 링크를 초대할 사람에게 보내주세요. (7일간 유효)
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API URL 설정
+        const API_BASE = (function() {
+            var hostname = window.location.hostname;
+            var protocol = window.location.protocol;
+            
+            if (hostname.endsWith('github.io')) {
+                return 'https://family-inventory-backend.onrender.com';
+            }
+            
+            if (hostname === 'localhost' || hostname === '127.0.0.1') {
+                return protocol + '//' + hostname + ':3001';
+            }
+            
+            if (hostname.includes('e2b.dev')) {
+                return 'https://3001-i72krmbsmpnff1c7v14w6-6532622b.e2b.dev';
+            }
+            
+            return 'https://family-inventory-backend.onrender.com';
+        })();
+
+        let currentUser = null;
+        let currentFamily = null;
+
+        // 페이지 로드 시 초기화
+        window.addEventListener('load', async function() {
+            await loadUserInfo();
+            await loadFamilyInfo();
+            await loadFamilyMembers();
+        });
+
+        // 사용자 정보 로드
+        async function loadUserInfo() {
+            const token = localStorage.getItem('familyAuthToken');
+            if (!token) {
+                alert('로그인이 필요합니다.');
+                window.location.href = '/login.html';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/api/family-auth/verify`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    currentUser = result.user;
+                    
+                    // 관리자 권한 확인
+                    if (currentUser.role !== 'admin') {
+                        alert('관리자 권한이 필요합니다.');
+                        window.location.href = '/';
+                        return;
+                    }
+                } else {
+                    throw new Error('인증 실패');
+                }
+            } catch (error) {
+                console.error('사용자 정보 로드 실패:', error);
+                alert('로그인 정보를 확인할 수 없습니다.');
+                window.location.href = '/login.html';
+            }
+        }
+
+        // 가족 정보 로드
+        async function loadFamilyInfo() {
+            if (!currentUser) return;
+
+            try {
+                // 백엔드에서 가족 정보를 가져오는 API가 필요하지만
+                // 임시로 사용자 정보에서 가져옴
+                document.getElementById('familyName').textContent = currentUser.familyName || '우리 가족';
+                document.getElementById('familyCode').textContent = currentUser.familyCode || 'FAMILY01';
+            } catch (error) {
+                console.error('가족 정보 로드 실패:', error);
+            }
+        }
+
+        // 가족 구성원 목록 로드
+        async function loadFamilyMembers() {
+            const token = localStorage.getItem('familyAuthToken');
+            if (!token) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/api/family/members`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    displayFamilyMembers(result.members);
+                } else {
+                    throw new Error(result.error);
+                }
+            } catch (error) {
+                console.error('구성원 목록 로드 실패:', error);
+                document.getElementById('userList').innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">❌</div>
+                        <p>구성원 목록을 불러올 수 없습니다.</p>
+                    </div>
+                `;
+            }
+        }
+
+        // 가족 구성원 표시
+        function displayFamilyMembers(members) {
+            const userList = document.getElementById('userList');
+            
+            if (!members || members.length === 0) {
+                userList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">👥</div>
+                        <p>아직 구성원이 없습니다.<br>첫 번째 구성원을 초대해보세요!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            userList.innerHTML = members.map(member => `
+                <div class="user-item">
+                    <div class="user-avatar">${member.avatar || '👤'}</div>
+                    <div class="user-info">
+                        <div class="user-name">${member.username}</div>
+                        <div class="user-role">
+                            <span class="role-badge role-${member.role}">${getRoleName(member.role)}</span>
+                            ${member.isFounder ? ' • 가족 창립자' : ''}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 역할 이름 반환
+        function getRoleName(role) {
+            const roleNames = {
+                admin: '관리자',
+                parent: '부모',
+                child: '자녀',
+                guest: '손님'
+            };
+            return roleNames[role] || role;
+        }
+
+        // 초대 폼 제출
+        document.getElementById('inviteForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const inviteBtn = document.getElementById('inviteBtn');
+            const targetUsername = document.getElementById('targetUsername').value.trim();
+            const targetRole = document.getElementById('targetRole').value;
+            
+            if (!targetUsername || !targetRole) {
+                showMessage('모든 필드를 입력해주세요.', 'error');
+                return;
+            }
+            
+            inviteBtn.disabled = true;
+            inviteBtn.textContent = '초대 링크 생성 중...';
+            
+            try {
+                const token = localStorage.getItem('familyAuthToken');
+                const response = await fetch(`${API_BASE}/api/family-auth/create-invitation`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: targetUsername,
+                        role: targetRole
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showMessage(`"${targetUsername}"님의 초대 링크가 생성되었습니다!`, 'success');
+                    showInviteLink(result.invitation.code);
+                    document.getElementById('inviteForm').reset();
+                } else {
+                    showMessage(result.error || '초대 링크 생성에 실패했습니다.', 'error');
+                }
+                
+            } catch (error) {
+                console.error('초대 링크 생성 오류:', error);
+                showMessage('서버 연결에 문제가 있습니다.', 'error');
+            } finally {
+                inviteBtn.disabled = false;
+                inviteBtn.textContent = '📨 초대 링크 생성';
+            }
+        });
+
+        // 초대 링크 표시
+        function showInviteLink(inviteCode) {
+            const currentUrl = window.location.origin;
+            const inviteUrl = `${currentUrl}/join.html?code=${inviteCode}`;
+            
+            document.getElementById('inviteLink').textContent = inviteUrl;
+            document.getElementById('inviteLinkSection').style.display = 'block';
+        }
+
+        // 초대 링크 복사
+        function copyInviteLink() {
+            const inviteLink = document.getElementById('inviteLink').textContent;
+            
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(inviteLink).then(() => {
+                    showMessage('초대 링크가 복사되었습니다!', 'success');
+                });
+            } else {
+                // 구형 브라우저 지원
+                const textArea = document.createElement('textarea');
+                textArea.value = inviteLink;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showMessage('초대 링크가 복사되었습니다!', 'success');
+            }
+        }
+
+        // 메시지 표시
+        function showMessage(text, type = 'success') {
+            const messageContainer = document.getElementById('messageContainer');
+            messageContainer.innerHTML = `
+                <div class="message ${type}">
+                    ${text}
+                </div>
+            `;
+            
+            // 3초 후 메시지 자동 제거
+            setTimeout(() => {
+                messageContainer.innerHTML = '';
+            }, 3000);
+        }
+
+        // 뒤로가기
+        function goBack() {
+            window.location.href = '/';
+        }
+    </script>
+</body>
+</html>

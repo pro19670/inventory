@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🤝 가족 가입 - AI물품관리</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .join-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 40px 30px;
+            max-width: 400px;
+            width: 100%;
+            animation: fadeInUp 0.6s ease-out;
+            text-align: center;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .welcome-section {
+            margin-bottom: 30px;
+        }
+
+        .welcome-icon {
+            font-size: 64px;
+            margin-bottom: 15px;
+        }
+
+        .welcome-title {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .family-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+
+        .family-name {
+            font-size: 20px;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .role-info {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .role-badge {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin: 5px 0;
+            display: inline-block;
+        }
+
+        .join-form {
+            text-align: left;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .join-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .join-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .join-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #f56565;
+            font-size: 14px;
+            text-align: left;
+        }
+
+        .success-message {
+            background: #f0fff4;
+            color: #38a169;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #68d391;
+            font-size: 14px;
+            text-align: left;
+        }
+
+        .loading-state {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .loading-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+
+        .invalid-invite {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .invalid-icon {
+            font-size: 64px;
+            margin-bottom: 15px;
+            color: #f56565;
+        }
+
+        .home-link {
+            background: #f8f9fa;
+            color: #667eea;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-block;
+            margin-top: 20px;
+            transition: all 0.3s;
+        }
+
+        .home-link:hover {
+            background: #e9ecef;
+        }
+
+        @media (max-width: 480px) {
+            .join-container {
+                padding: 30px 20px;
+                margin: 10px;
+            }
+            
+            .welcome-title {
+                font-size: 22px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="join-container">
+        <div id="loadingState" class="loading-state">
+            <div class="loading-icon">⏳</div>
+            <h3>초대 정보를 확인하는 중...</h3>
+            <p style="color: #666; margin-top: 10px;">잠시만 기다려주세요.</p>
+        </div>
+
+        <div id="invalidInvite" class="invalid-invite" style="display: none;">
+            <div class="invalid-icon">❌</div>
+            <h3>유효하지 않은 초대 링크</h3>
+            <p style="color: #666; margin: 15px 0; line-height: 1.4;">
+                이 초대 링크는 만료되었거나 이미 사용되었습니다.<br>
+                가족 관리자에게 새로운 초대 링크를 요청해주세요.
+            </p>
+            <a href="/" class="home-link">🏠 홈으로 가기</a>
+        </div>
+
+        <div id="joinForm" class="join-form" style="display: none;">
+            <div class="welcome-section">
+                <div class="welcome-icon">👋</div>
+                <div class="welcome-title">가족에 초대되었습니다!</div>
+            </div>
+
+            <div class="family-info">
+                <div class="family-name" id="familyName">-</div>
+                <div class="role-info">
+                    <span id="targetUsername">-</span>님으로
+                    <div class="role-badge" id="roleDisplay">-</div>
+                    권한으로 초대되었습니다
+                </div>
+            </div>
+
+            <div id="errorMessage" class="error-message" style="display: none;"></div>
+            <div id="successMessage" class="success-message" style="display: none;"></div>
+
+            <form id="signupForm">
+                <div class="form-group">
+                    <label class="form-label" for="username">사용자 이름</label>
+                    <input type="text" class="form-input" id="username" name="username" 
+                           required maxlength="10" readonly>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="email">이메일 (선택)</label>
+                    <input type="email" class="form-input" id="email" name="email" 
+                           placeholder="example@email.com">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="password">비밀번호</label>
+                    <input type="password" class="form-input" id="password" name="password" 
+                           placeholder="최소 6자 이상" required minlength="6">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="confirmPassword">비밀번호 확인</label>
+                    <input type="password" class="form-input" id="confirmPassword" name="confirmPassword" 
+                           placeholder="비밀번호를 다시 입력하세요" required>
+                </div>
+
+                <button type="submit" class="join-btn" id="joinBtn">
+                    🎉 가족에 가입하기
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // API URL 설정
+        const API_BASE = (function() {
+            var hostname = window.location.hostname;
+            var protocol = window.location.protocol;
+            
+            if (hostname.endsWith('github.io')) {
+                return 'https://family-inventory-backend.onrender.com';
+            }
+            
+            if (hostname === 'localhost' || hostname === '127.0.0.1') {
+                return protocol + '//' + hostname + ':3001';
+            }
+            
+            if (hostname.includes('e2b.dev')) {
+                return 'https://3001-i72krmbsmpnff1c7v14w6-6532622b.e2b.dev';
+            }
+            
+            return 'https://family-inventory-backend.onrender.com';
+        })();
+
+        let inviteCode = null;
+        let inviteInfo = null;
+
+        // 페이지 로드 시 초대 코드 확인
+        window.addEventListener('load', async function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            inviteCode = urlParams.get('code');
+            
+            if (!inviteCode) {
+                showInvalidInvite('초대 코드가 없습니다.');
+                return;
+            }
+            
+            await validateInvite();
+        });
+
+        // 초대 코드 유효성 확인
+        async function validateInvite() {
+            try {
+                // 실제로는 백엔드에 초대 코드 유효성 확인 API가 필요하지만
+                // 임시로 join-family API를 테스트용으로 사용
+                // 여기서는 UI만 구성하고 실제 검증은 가입 시 수행
+                
+                // 임시 초대 정보 (실제로는 백엔드에서 받아야 함)
+                inviteInfo = {
+                    familyName: '데모 가족',
+                    targetUsername: '새구성원',
+                    targetRole: 'child',
+                    valid: true
+                };
+                
+                if (inviteInfo.valid) {
+                    showJoinForm();
+                } else {
+                    showInvalidInvite('만료되었거나 유효하지 않은 초대 코드입니다.');
+                }
+                
+            } catch (error) {
+                console.error('초대 코드 확인 오류:', error);
+                showInvalidInvite('초대 코드를 확인할 수 없습니다.');
+            }
+        }
+
+        // 가입 폼 표시
+        function showJoinForm() {
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('joinForm').style.display = 'block';
+            
+            // 초대 정보 표시
+            document.getElementById('familyName').textContent = inviteInfo.familyName;
+            document.getElementById('targetUsername').textContent = inviteInfo.targetUsername;
+            document.getElementById('roleDisplay').textContent = getRoleDisplayName(inviteInfo.targetRole);
+            document.getElementById('username').value = inviteInfo.targetUsername;
+        }
+
+        // 유효하지 않은 초대 표시
+        function showInvalidInvite(message) {
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('invalidInvite').style.display = 'block';
+            
+            const messageElement = document.querySelector('#invalidInvite p');
+            if (messageElement) {
+                messageElement.textContent = message;
+            }
+        }
+
+        // 역할 표시 이름
+        function getRoleDisplayName(role) {
+            const roleNames = {
+                admin: '관리자',
+                parent: '부모',
+                child: '자녀',
+                guest: '손님'
+            };
+            return roleNames[role] || role;
+        }
+
+        // 가입 폼 제출
+        document.getElementById('signupForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const joinBtn = document.getElementById('joinBtn');
+            const errorDiv = document.getElementById('errorMessage');
+            const successDiv = document.getElementById('successMessage');
+            
+            // 입력값 수집
+            const formData = new FormData(this);
+            const userData = {
+                username: formData.get('username').trim(),
+                email: formData.get('email').trim(),
+                password: formData.get('password')
+            };
+            
+            const confirmPassword = formData.get('confirmPassword');
+            
+            // 유효성 검사
+            hideMessages();
+            
+            if (!userData.username || userData.username.length < 2) {
+                showError('사용자 이름을 2자 이상 입력해주세요.');
+                return;
+            }
+            
+            if (!userData.password || userData.password.length < 6) {
+                showError('비밀번호를 6자 이상 입력해주세요.');
+                return;
+            }
+            
+            if (userData.password !== confirmPassword) {
+                showError('비밀번호가 일치하지 않습니다.');
+                return;
+            }
+            
+            // 가입 진행
+            joinBtn.disabled = true;
+            joinBtn.textContent = '가족에 가입하는 중...';
+            
+            try {
+                console.log('가족 가입 요청:', userData);
+                
+                const response = await fetch(`${API_BASE}/api/family-auth/join-family`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        inviteCode: inviteCode,
+                        ...userData
+                    })
+                });
+                
+                const result = await response.json();
+                console.log('가족 가입 응답:', result);
+                
+                if (result.success) {
+                    showSuccess(`🎉 "${result.family.name}" 가족에 성공적으로 가입되었습니다!`);
+                    
+                    // 3초 후 로그인 페이지로 이동
+                    setTimeout(() => {
+                        window.location.href = '/login.html?join=success&family=' + encodeURIComponent(result.family.name);
+                    }, 3000);
+                    
+                } else {
+                    showError(result.error || '가족 가입 중 오류가 발생했습니다.');
+                }
+                
+            } catch (error) {
+                console.error('가족 가입 오류:', error);
+                showError('서버 연결에 문제가 있습니다. 잠시 후 다시 시도해주세요.');
+            } finally {
+                joinBtn.disabled = false;
+                joinBtn.textContent = '🎉 가족에 가입하기';
+            }
+        });
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            errorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMessage');
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+            successDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function hideMessages() {
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('successMessage').style.display = 'none';
+        }
+
+        // 실시간 비밀번호 확인
+        document.getElementById('confirmPassword').addEventListener('input', function() {
+            const password = document.getElementById('password').value;
+            const confirm = this.value;
+            
+            if (confirm && password !== confirm) {
+                this.style.borderColor = '#f56565';
+            } else {
+                this.style.borderColor = '#e9ecef';
+            }
+        });
+    </script>
+</body>
+</html>
