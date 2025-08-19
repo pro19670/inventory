@@ -1,0 +1,29 @@
+# GitHub Pages Jekyll 설정
+title: "AI물품관리 - 스마트 재물관리"
+description: "가족 중심의 지능형 물품 관리 시스템"
+url: "https://pro19670.github.io"
+baseurl: "/inventory"
+
+# Jekyll 설정
+markdown: kramdown
+highlighter: rouge
+theme: minima
+
+# 포함/제외 설정
+include:
+  - _headers
+  - _redirects
+  
+exclude:
+  - backend/
+  - node_modules/
+  - package*.json
+  - "*.md"
+  - .github/
+  - Gemfile*
+  - vendor/
+  
+# 플러그인
+plugins:
+  - jekyll-sitemap
+  - jekyll-feed

@@ -1,8 +1,8 @@
 {
-  "generated": "2025-08-18T08:56:01.665Z",
+  "generated": "2025-08-19T04:43:02.050Z",
   "keys": {
-    "master": "51c14a6765065dbe91d5e35b4456ff441bffca8087b24cf0012821c6bd58ed27",
-    "readonly": "8d7e3869510538e37d3880e8f38893a29c2446c64f25f8eef2d8383a024fbb48"
+    "master": "052ace73b830d24764149cc3fb056d61c2b2c88ad00c22730eea67082d24c831",
+    "readonly": "301930844d812067fbb91d6aef0dd0199f58826e7c9bad397f2fca1f54a99c88"
   },
   "warning": "이 파일을 안전하게 보관하고 절대 공유하지 마세요!"
 }
