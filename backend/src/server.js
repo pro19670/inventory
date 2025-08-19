@@ -1208,7 +1208,14 @@ async function analyzeReceiptWithGPT(base64Image) {
         
         // JSON 파싱 시도
         try {
-            const analysis = JSON.parse(content);
+            // 마크다운 코드 블록에서 JSON 추출
+            let jsonContent = content;
+            const jsonMatch = content.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
+            if (jsonMatch) {
+                jsonContent = jsonMatch[1];
+            }
+            
+            const analysis = JSON.parse(jsonContent);
             console.log('✅ 영수증 분석 성공:', analysis);
             return analysis;
         } catch (parseError) {
@@ -3020,7 +3027,7 @@ const server = http.createServer((req, res) => {
                     try {
                         // 기본값 설정
                         const item = {
-                            id: generateId(),
+                            id: nextId++,
                             name: itemData.name || '알 수 없는 물건',
                             category: itemData.category || '기타',
                             location: itemData.location || '미분류',
@@ -3041,7 +3048,7 @@ const server = http.createServer((req, res) => {
                         
                         // 재고 이력 추가
                         inventoryHistory.push({
-                            id: generateId(),
+                            id: nextInventoryHistoryId++,
                             itemId: item.id,
                             action: 'stock_in',
                             quantity: item.quantity,
