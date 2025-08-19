@@ -261,7 +261,7 @@ class FamilyAuthSystem {
     // 최초 관리자 회원가입 (새 가족 생성)
     async signupAdmin(signupData) {
         try {
-            const { familyName, adminUsername, adminPassword, adminEmail } = signupData;
+            const { familyName, username: adminUsername, password: adminPassword, email: adminEmail } = signupData;
             
             // 중복 사용자명 검사
             const existingUser = Array.from(this.users.values()).find(u => u.username === adminUsername);
