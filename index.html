@@ -2160,12 +2160,567 @@
         
         // 🔍 개별 추천 선택
         function showIndividualRecommendations(itemsWithRecommendations) {
-            addMessage('개별 선택 기능은 곧 구현될 예정입니다. 지금은 "모든 추천 수락" 또는 기존 "선택해서 추가" 기능을 이용해주세요!', 'bot');
+            const messagesContainer = document.getElementById('chatMessages');
+            const individualElement = document.createElement('div');
+            individualElement.className = 'message bot-message';
+            
+            let individualContent = `
+                <div class="message-avatar">🤖</div>
+                <div class="message-content">
+                    <div class="message-bubble">
+                        <strong>🔍 개별 물품 선택</strong><br><br>
+                        각 물품별로 추천을 수락하거나 거부하세요:<br><br>
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin: 10px 0;">
+            `;
+            
+            itemsWithRecommendations.forEach((item, index) => {
+                const rec = item.recommendedLocation;
+                individualContent += `
+                    <div id="item-${index}" style="border-bottom: 1px solid #e9ecef; padding: 12px 0; ${index === itemsWithRecommendations.length - 1 ? 'border-bottom: none;' : ''}">
+                        <div style="font-weight: bold; color: #495057; margin-bottom: 8px;">
+                            ${index + 1}. ${item.name}
+                        </div>
+                        <div style="margin: 5px 0; font-size: 13px;">
+                            🎯 추천: <span style="color: #17a2b8;">${rec.locationName}</span>
+                            <span style="background: #17a2b8; color: white; padding: 2px 6px; border-radius: 10px; font-size: 11px; margin-left: 8px;">
+                                ${rec.confidence}% 확신
+                            </span>
+                        </div>
+                        <div style="font-size: 12px; color: #6c757d; margin-bottom: 10px;">
+                            💡 ${rec.reason}
+                        </div>
+                        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                            <button onclick="acceptIndividualRecommendation(${index}, ${JSON.stringify(item).replace(/"/g, '&quot;')})" 
+                                    style="background: #28a745; color: white; border: none; padding: 6px 12px; border-radius: 15px; cursor: pointer; font-size: 12px;">
+                                ✅ 수락
+                            </button>
+                            <button onclick="rejectIndividualRecommendation(${index})" 
+                                    style="background: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 15px; cursor: pointer; font-size: 12px;">
+                                ❌ 거부
+                            </button>
+                            <button onclick="changeIndividualLocation(${index}, ${JSON.stringify(item).replace(/"/g, '&quot;')})" 
+                                    style="background: #ffc107; color: #212529; border: none; padding: 6px 12px; border-radius: 15px; cursor: pointer; font-size: 12px;">
+                                📍 위치 변경
+                            </button>
+                        </div>
+                        <div id="item-status-${index}" style="margin-top: 8px; font-size: 12px; font-weight: bold;"></div>
+                    </div>
+                `;
+            });
+            
+            individualContent += `
+                        </div>
+                        <div style="margin: 15px 0; text-align: center;">
+                            <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;">
+                                <button onclick="processSelectedItems()" 
+                                        style="background: #007bff; color: white; border: none; padding: 10px 16px; border-radius: 20px; cursor: pointer; font-size: 13px;">
+                                    📦 선택된 물품 추가
+                                </button>
+                                <button onclick="selectAllRecommendations()" 
+                                        style="background: #28a745; color: white; border: none; padding: 10px 16px; border-radius: 20px; cursor: pointer; font-size: 13px;">
+                                    ✅ 모두 선택
+                                </button>
+                                <button onclick="deselectAllRecommendations()" 
+                                        style="background: #6c757d; color: white; border: none; padding: 10px 16px; border-radius: 20px; cursor: pointer; font-size: 13px;">
+                                    ❌ 모두 해제
+                                </button>
+                            </div>
+                        </div>
+                        <div style="font-size: 12px; color: #6c757d; text-align: center; margin-top: 10px;">
+                            💡 수락한 물품만 재고에 추가됩니다
+                        </div>
+                    </div>
+                    <div class="message-time">${new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</div>
+                </div>
+            `;
+            
+            individualElement.innerHTML = individualContent;
+            messagesContainer.appendChild(individualElement);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            
+            // 전역 변수로 현재 처리 중인 아이템들 저장
+            window.currentItemsWithRecommendations = itemsWithRecommendations;
+            window.selectedItems = [];
         }
         
-        // ✏️ 추천 수정
+        // ✅ 개별 추천 수락
+        function acceptIndividualRecommendation(index, item) {
+            const statusElement = document.getElementById(`item-status-${index}`);
+            statusElement.innerHTML = '<span style="color: #28a745;">✅ 수락됨</span>';
+            statusElement.style.display = 'block';
+            
+            // 선택된 아이템 목록에 추가
+            if (!window.selectedItems) window.selectedItems = [];
+            const existingIndex = window.selectedItems.findIndex(si => si.originalIndex === index);
+            if (existingIndex === -1) {
+                window.selectedItems.push({
+                    originalIndex: index,
+                    item: item,
+                    status: 'accepted'
+                });
+            } else {
+                window.selectedItems[existingIndex].status = 'accepted';
+                window.selectedItems[existingIndex].item = item;
+            }
+            
+            showToast(`✅ ${item.name} 추천 수락`);
+        }
+        
+        // ❌ 개별 추천 거부  
+        function rejectIndividualRecommendation(index) {
+            const statusElement = document.getElementById(`item-status-${index}`);
+            statusElement.innerHTML = '<span style="color: #dc3545;">❌ 거부됨</span>';
+            statusElement.style.display = 'block';
+            
+            // 선택된 아이템 목록에서 제거
+            if (window.selectedItems) {
+                window.selectedItems = window.selectedItems.filter(si => si.originalIndex !== index);
+            }
+            
+            const itemName = window.currentItemsWithRecommendations[index]?.name || '물품';
+            showToast(`❌ ${itemName} 추천 거부`);
+        }
+        
+        // 📍 개별 위치 변경
+        function changeIndividualLocation(index, item) {
+            const availableLocations = appState.locations || [];
+            
+            if (availableLocations.length === 0) {
+                addMessage('❌ 등록된 위치가 없습니다. 먼저 하단의 "위치" 메뉴에서 위치를 추가해주세요.', 'bot');
+                return;
+            }
+            
+            // 위치 선택 다이얼로그 생성
+            const messagesContainer = document.getElementById('chatMessages');
+            const locationElement = document.createElement('div');
+            locationElement.className = 'message bot-message';
+            locationElement.id = `location-change-${index}`;
+            
+            const rootLocations = availableLocations.filter(loc => loc.level === 0 || !loc.parentId);
+            let locationButtons = rootLocations.map(location => 
+                `<button onclick="selectNewLocationForItem(${index}, ${location.id}, '${location.name}', ${JSON.stringify(item).replace(/"/g, '&quot;')})" 
+                        style="background: #e9ecef; border: 1px solid #ced4da; padding: 8px 12px; margin: 4px; border-radius: 8px; cursor: pointer; font-size: 12px;">
+                    📍 ${location.name}
+                </button>`
+            ).join('');
+            
+            const locationContent = `
+                <div class="message-avatar">🤖</div>
+                <div class="message-content">
+                    <div class="message-bubble">
+                        <strong>📍 ${item.name} 위치 변경</strong><br><br>
+                        새로운 보관장소를 선택하세요:<br><br>
+                        <div style="margin: 10px 0;">
+                            ${locationButtons}
+                        </div>
+                        <div style="margin: 10px 0;">
+                            <button onclick="selectNewLocationForItem(${index}, null, '위치미설정', ${JSON.stringify(item).replace(/"/g, '&quot;')})" 
+                                    style="background: #6c757d; color: white; border: none; padding: 8px 12px; border-radius: 15px; cursor: pointer; font-size: 12px;">
+                                📦 위치미설정
+                            </button>
+                            <button onclick="cancelLocationChange(${index})" 
+                                    style="background: #dc3545; color: white; border: none; padding: 8px 12px; border-radius: 15px; cursor: pointer; font-size: 12px; margin-left: 8px;">
+                                ❌ 취소
+                            </button>
+                        </div>
+                    </div>
+                    <div class="message-time">${new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</div>
+                </div>
+            `;
+            
+            locationElement.innerHTML = locationContent;
+            messagesContainer.appendChild(locationElement);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        // 📍 새 위치 선택
+        function selectNewLocationForItem(index, locationId, locationName, item) {
+            // 위치 변경 다이얼로그 제거
+            const locationChangeElement = document.getElementById(`location-change-${index}`);
+            if (locationChangeElement) {
+                locationChangeElement.remove();
+            }
+            
+            // 아이템 정보 업데이트
+            const updatedItem = {
+                ...item,
+                recommendedLocation: {
+                    locationId: locationId,
+                    locationName: locationName,
+                    reason: '사용자가 직접 선택한 위치입니다',
+                    confidence: 100
+                }
+            };
+            
+            // 전역 배열 업데이트
+            if (window.currentItemsWithRecommendations) {
+                window.currentItemsWithRecommendations[index] = updatedItem;
+            }
+            
+            // 상태 업데이트
+            const statusElement = document.getElementById(`item-status-${index}`);
+            statusElement.innerHTML = `<span style="color: #17a2b8;">📍 위치 변경됨: ${locationName}</span>`;
+            statusElement.style.display = 'block';
+            
+            // 선택된 아이템 목록에 추가
+            if (!window.selectedItems) window.selectedItems = [];
+            const existingIndex = window.selectedItems.findIndex(si => si.originalIndex === index);
+            if (existingIndex === -1) {
+                window.selectedItems.push({
+                    originalIndex: index,
+                    item: updatedItem,
+                    status: 'modified'
+                });
+            } else {
+                window.selectedItems[existingIndex].item = updatedItem;
+                window.selectedItems[existingIndex].status = 'modified';
+            }
+            
+            showToast(`📍 ${item.name} 위치를 ${locationName}으로 변경`);
+        }
+        
+        // ❌ 위치 변경 취소
+        function cancelLocationChange(index) {
+            const locationChangeElement = document.getElementById(`location-change-${index}`);
+            if (locationChangeElement) {
+                locationChangeElement.remove();
+            }
+        }
+        
+        // ✅ 모두 선택
+        function selectAllRecommendations() {
+            if (!window.currentItemsWithRecommendations) return;
+            
+            window.selectedItems = [];
+            window.currentItemsWithRecommendations.forEach((item, index) => {
+                acceptIndividualRecommendation(index, item);
+            });
+            
+            showToast('✅ 모든 물품이 선택되었습니다');
+        }
+        
+        // ❌ 모두 해제
+        function deselectAllRecommendations() {
+            if (!window.currentItemsWithRecommendations) return;
+            
+            window.selectedItems = [];
+            window.currentItemsWithRecommendations.forEach((item, index) => {
+                rejectIndividualRecommendation(index);
+            });
+            
+            showToast('❌ 모든 선택이 해제되었습니다');
+        }
+        
+        // 📦 선택된 물품 처리
+        async function processSelectedItems() {
+            if (!window.selectedItems || window.selectedItems.length === 0) {
+                addMessage('❌ 선택된 물품이 없습니다. 먼저 추가할 물품을 선택해주세요.', 'bot');
+                return;
+            }
+            
+            try {
+                addMessage(`📦 선택된 ${window.selectedItems.length}개 물품을 추가하고 있습니다...`, 'bot');
+                
+                // 위치별로 그룹핑
+                const locationGroups = {};
+                window.selectedItems.forEach(selectedItem => {
+                    const item = selectedItem.item;
+                    const locId = item.recommendedLocation.locationId || 'unassigned';
+                    const locName = item.recommendedLocation.locationName;
+                    
+                    if (!locationGroups[locId]) {
+                        locationGroups[locId] = {
+                            locationId: locId === 'unassigned' ? null : locId,
+                            locationName: locName,
+                            items: []
+                        };
+                    }
+                    
+                    locationGroups[locId].items.push({
+                        ...item,
+                        locationId: locId === 'unassigned' ? null : locId,
+                        locationName: locName
+                    });
+                });
+                
+                // 각 위치별로 물품 추가
+                let totalAdded = 0;
+                let resultMessage = `✅ **선택된 ${window.selectedItems.length}개 물품이 성공적으로 추가되었습니다!**<br><br>`;
+                
+                for (const [locId, group] of Object.entries(locationGroups)) {
+                    const response = await fetch(`${API_URL}/items/bulk-add`, {
+                        method: 'POST',
+                        headers: getAuthHeaders(),
+                        body: JSON.stringify({ items: group.items })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        totalAdded += data.addedItems.length;
+                        resultMessage += `📍 **${group.locationName}**<br>`;
+                        data.addedItems.forEach((addedItem, index) => {
+                            const originalItem = group.items[index];
+                            const confidence = originalItem?.recommendedLocation?.confidence || 0;
+                            const status = window.selectedItems.find(si => si.item.name === addedItem.name)?.status || 'accepted';
+                            const statusIcon = status === 'modified' ? '📍' : '✅';
+                            resultMessage += `&nbsp;&nbsp;${statusIcon} ${addedItem.name} (${addedItem.quantity}${addedItem.unit || '개'}) <span style="color: #17a2b8;">${confidence}% 확신</span><br>`;
+                        });
+                        resultMessage += `<br>`;
+                    }
+                }
+                
+                addMessage(resultMessage, 'bot');
+                showToast(`✅ ${totalAdded}개 물품이 선택된 위치에 추가됨`);
+                
+                // 전역 변수 초기화
+                window.selectedItems = [];
+                window.currentItemsWithRecommendations = null;
+                
+                // 재고 새로고침
+                if (typeof loadAllData === 'function') {
+                    loadAllData();
+                }
+                
+            } catch (error) {
+                console.error('선택된 물품 추가 오류:', error);
+                addMessage('❌ 물품 추가 중 오류가 발생했습니다: ' + error.message, 'bot');
+                showToast('❌ 물품 추가 오류');
+            }
+        }
+        
+        // ✏️ 추천 수정 (고급 수정 모드)
         function customizeRecommendations(itemsWithRecommendations) {
-            addMessage('추천 수정 기능은 곧 구현될 예정입니다. 지금은 "모든 추천 수락" 또는 기존 "수정 후 추가" 기능을 이용해주세요!', 'bot');
+            const messagesContainer = document.getElementById('chatMessages');
+            const customizeElement = document.createElement('div');
+            customizeElement.className = 'message bot-message';
+            
+            let customizeContent = `
+                <div class="message-avatar">🤖</div>
+                <div class="message-content">
+                    <div class="message-bubble">
+                        <strong>✏️ 추천 수정 모드</strong><br><br>
+                        모든 물품의 위치를 한번에 검토하고 수정하세요:<br><br>
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin: 10px 0;">
+            `;
+            
+            itemsWithRecommendations.forEach((item, index) => {
+                const rec = item.recommendedLocation;
+                const availableLocations = appState.locations || [];
+                const rootLocations = availableLocations.filter(loc => loc.level === 0 || !loc.parentId);
+                
+                let locationOptions = '<option value="null">위치미설정</option>' + 
+                    rootLocations.map(loc => 
+                        `<option value="${loc.id}" ${rec.locationId === loc.id ? 'selected' : ''}>${loc.name}</option>`
+                    ).join('');
+                
+                customizeContent += `
+                    <div style="border-bottom: 1px solid #e9ecef; padding: 12px 0; ${index === itemsWithRecommendations.length - 1 ? 'border-bottom: none;' : ''}">
+                        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                            <div style="font-weight: bold; color: #495057; min-width: 120px;">
+                                ${index + 1}. ${item.name}
+                            </div>
+                            <select id="location-select-${index}" onchange="updateItemLocation(${index}, this.value)" 
+                                    style="padding: 6px 10px; border: 1px solid #ced4da; border-radius: 5px; font-size: 13px;">
+                                ${locationOptions}
+                            </select>
+                            <div style="font-size: 12px; color: #6c757d;">
+                                (원래 추천: ${rec.locationName} - ${rec.confidence}% 확신)
+                            </div>
+                        </div>
+                        <div id="custom-status-${index}" style="margin-top: 8px; font-size: 12px;"></div>
+                    </div>
+                `;
+            });
+            
+            customizeContent += `
+                        </div>
+                        <div style="margin: 15px 0; text-align: center;">
+                            <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;">
+                                <button onclick="applyCustomizedRecommendations()" 
+                                        style="background: #28a745; color: white; border: none; padding: 10px 16px; border-radius: 20px; cursor: pointer; font-size: 13px;">
+                                    ✅ 수정 사항 적용
+                                </button>
+                                <button onclick="resetToOriginalRecommendations()" 
+                                        style="background: #17a2b8; color: white; border: none; padding: 10px 16px; border-radius: 20px; cursor: pointer; font-size: 13px;">
+                                    🔄 원래 추천으로 복원
+                                </button>
+                                <button onclick="setAllToUnassigned()" 
+                                        style="background: #6c757d; color: white; border: none; padding: 10px 16px; border-radius: 20px; cursor: pointer; font-size: 13px;">
+                                    📦 모두 위치미설정
+                                </button>
+                            </div>
+                        </div>
+                        <div style="font-size: 12px; color: #6c757d; text-align: center; margin-top: 10px;">
+                            💡 드롭다운에서 각 물품의 보관 위치를 자유롭게 변경하세요
+                        </div>
+                    </div>
+                    <div class="message-time">${new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</div>
+                </div>
+            `;
+            
+            customizeElement.innerHTML = customizeContent;
+            messagesContainer.appendChild(customizeElement);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            
+            // 전역 변수로 현재 커스터마이즈 중인 아이템들 저장
+            window.customizingItems = JSON.parse(JSON.stringify(itemsWithRecommendations));
+        }
+        
+        // 📍 아이템 위치 업데이트 (커스터마이즈 모드)
+        function updateItemLocation(index, locationId) {
+            if (!window.customizingItems) return;
+            
+            const availableLocations = appState.locations || [];
+            let locationName = '위치미설정';
+            
+            if (locationId && locationId !== 'null') {
+                const selectedLocation = availableLocations.find(loc => loc.id == locationId);
+                if (selectedLocation) {
+                    locationName = selectedLocation.name;
+                }
+            }
+            
+            // 아이템 위치 정보 업데이트
+            window.customizingItems[index].recommendedLocation = {
+                locationId: locationId === 'null' ? null : parseInt(locationId),
+                locationName: locationName,
+                reason: '사용자가 직접 수정한 위치입니다',
+                confidence: 100
+            };
+            
+            // 상태 메시지 업데이트
+            const statusElement = document.getElementById(`custom-status-${index}`);
+            statusElement.innerHTML = `<span style="color: #17a2b8;">✏️ 수정됨: ${locationName}</span>`;
+            statusElement.style.display = 'block';
+        }
+        
+        // ✅ 커스터마이즈된 추천 적용
+        async function applyCustomizedRecommendations() {
+            if (!window.customizingItems) {
+                addMessage('❌ 수정할 물품 정보를 찾을 수 없습니다.', 'bot');
+                return;
+            }
+            
+            try {
+                addMessage(`📦 수정된 설정으로 ${window.customizingItems.length}개 물품을 추가하고 있습니다...`, 'bot');
+                
+                // 위치별로 그룹핑
+                const locationGroups = {};
+                window.customizingItems.forEach(item => {
+                    const locId = item.recommendedLocation.locationId || 'unassigned';
+                    const locName = item.recommendedLocation.locationName;
+                    
+                    if (!locationGroups[locId]) {
+                        locationGroups[locId] = {
+                            locationId: locId === 'unassigned' ? null : locId,
+                            locationName: locName,
+                            items: []
+                        };
+                    }
+                    
+                    locationGroups[locId].items.push({
+                        ...item,
+                        locationId: locId === 'unassigned' ? null : locId,
+                        locationName: locName
+                    });
+                });
+                
+                // 각 위치별로 물품 추가
+                let totalAdded = 0;
+                let resultMessage = `✅ **커스터마이즈된 설정으로 ${window.customizingItems.length}개 물품이 성공적으로 추가되었습니다!**<br><br>`;
+                
+                for (const [locId, group] of Object.entries(locationGroups)) {
+                    const response = await fetch(`${API_URL}/items/bulk-add`, {
+                        method: 'POST',
+                        headers: getAuthHeaders(),
+                        body: JSON.stringify({ items: group.items })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        totalAdded += data.addedItems.length;
+                        resultMessage += `📍 **${group.locationName}**<br>`;
+                        data.addedItems.forEach((addedItem) => {
+                            resultMessage += `&nbsp;&nbsp;✏️ ${addedItem.name} (${addedItem.quantity}${addedItem.unit || '개'}) <span style="color: #17a2b8;">사용자 수정</span><br>`;
+                        });
+                        resultMessage += `<br>`;
+                    }
+                }
+                
+                addMessage(resultMessage, 'bot');
+                showToast(`✅ ${totalAdded}개 물품이 커스터마이즈된 위치에 추가됨`);
+                
+                // 전역 변수 초기화
+                window.customizingItems = null;
+                
+                // 재고 새로고침
+                if (typeof loadAllData === 'function') {
+                    loadAllData();
+                }
+                
+            } catch (error) {
+                console.error('커스터마이즈된 물품 추가 오류:', error);
+                addMessage('❌ 물품 추가 중 오류가 발생했습니다: ' + error.message, 'bot');
+                showToast('❌ 물품 추가 오류');
+            }
+        }
+        
+        // 🔄 원래 추천으로 복원
+        function resetToOriginalRecommendations() {
+            if (!window.customizingItems) return;
+            
+            window.customizingItems.forEach((item, index) => {
+                // 원래 추천으로 복원 (이 시점에서는 이미 수정된 상태이므로 기본 추천 재실행)
+                const originalRec = getLocationRecommendation(item);
+                
+                // 셀렉트 박스 값 복원
+                const selectElement = document.getElementById(`location-select-${index}`);
+                if (selectElement) {
+                    selectElement.value = originalRec.locationId || 'null';
+                }
+                
+                // 상태 메시지 제거
+                const statusElement = document.getElementById(`custom-status-${index}`);
+                if (statusElement) {
+                    statusElement.innerHTML = '';
+                }
+                
+                // 아이템 정보 복원
+                window.customizingItems[index].recommendedLocation = originalRec;
+            });
+            
+            showToast('🔄 모든 설정이 원래 AI 추천으로 복원되었습니다');
+        }
+        
+        // 📦 모두 위치미설정으로 설정
+        function setAllToUnassigned() {
+            if (!window.customizingItems) return;
+            
+            window.customizingItems.forEach((item, index) => {
+                // 셀렉트 박스 값 변경
+                const selectElement = document.getElementById(`location-select-${index}`);
+                if (selectElement) {
+                    selectElement.value = 'null';
+                }
+                
+                // 상태 메시지 업데이트
+                const statusElement = document.getElementById(`custom-status-${index}`);
+                if (statusElement) {
+                    statusElement.innerHTML = '<span style="color: #6c757d;">📦 위치미설정으로 변경됨</span>';
+                }
+                
+                // 아이템 정보 업데이트
+                window.customizingItems[index].recommendedLocation = {
+                    locationId: null,
+                    locationName: '위치미설정',
+                    reason: '사용자가 위치미설정으로 선택했습니다',
+                    confidence: 100
+                };
+            });
+            
+            showToast('📦 모든 물품이 위치미설정으로 변경되었습니다');
         }
         
         // 📦 직접 물품 추가 (기존 함수, 다른 곳에서 사용)
