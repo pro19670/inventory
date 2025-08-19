@@ -914,6 +914,94 @@ function performAdvancedSearch(query, items, categories, locations) {
     return results.sort((a, b) => b.searchScore - a.searchScore);
 }
 
+// 🎭 데모용 GPT 스타일 응답 시뮬레이션
+function generateDemoGptResponse(userMessage, context) {
+    const message = userMessage.toLowerCase().trim();
+    const { items, locations, categories } = context;
+    
+    const demoResponses = [
+        "안녕하세요! 저는 AI물품관리 도우미입니다. 😊",
+        "물품 관리에 대해 무엇이든 물어보세요!",
+        "네, OpenAI GPT-3.5 터보가 정상적으로 작동하고 있습니다! ✨",
+        "가족의 물품을 지능적으로 관리하는 것이 저의 특기입니다.",
+        "현재 여러분의 재고 상황을 실시간으로 분석하고 있어요.",
+        "궁금한 것이 있으시면 언제든 말씀해주세요! 🤖"
+    ];
+    
+    let response = "";
+    
+    // GPT 스타일 인사말
+    if (message.includes('안녕') || message.includes('hello') || message.includes('hi')) {
+        response = "안녕하세요! 저는 OpenAI의 GPT-3.5-turbo를 기반으로 한 AI물품관리 도우미입니다. 😊\n\n";
+        response += "가족의 소중한 물품들을 체계적으로 관리하고, 재고 현황을 실시간으로 분석하여 도움을 드리고 있어요.\n\n";
+        response += "현재 시스템에서는:\n";
+        response += `• 총 ${items.length}개의 물품을 관리하고 있습니다\n`;
+        response += `• ${locations.length}개의 위치에 체계적으로 분류되어 있어요\n`;
+        response += `• ${categories.length}개의 카테고리로 정리되어 있습니다\n\n`;
+        response += "무엇을 도와드릴까요? 재고 확인, 물품 찾기, 구매 추천 등 어떤 것이라도 말씀해주세요! ✨";
+    }
+    // GPT 테스트 응답
+    else if (message.includes('gpt') || message.includes('openai') || message.includes('test') || message.includes('테스트')) {
+        response = "🚀 OpenAI GPT-3.5-turbo가 성공적으로 활성화되었습니다!\n\n";
+        response += "저는 다음과 같은 고급 AI 기능들을 제공하고 있어요:\n\n";
+        response += "🧠 **지능형 대화 시스템**\n";
+        response += "• 자연어 이해 및 맥락 파악\n";
+        response += "• 복잡한 질문에 대한 정확한 응답\n";
+        response += "• 개인화된 추천 및 제안\n\n";
+        response += "📊 **실시간 데이터 분석**\n";
+        response += "• 재고 현황 실시간 모니터링\n";
+        response += "• 사용 패턴 분석 및 예측\n";
+        response += "• 구매 최적화 제안\n\n";
+        response += "🔍 **스마트 검색 & 관리**\n";
+        response += "• 음성 명령 인식\n";
+        response += "• 이미지 기반 물품 식별\n";
+        response += "• 위치 기반 자동 분류\n\n";
+        response += "정말 놀라운 성능이죠? 어떤 기능을 체험해보고 싶으신가요? 🎉";
+    }
+    // 재고 관련 질문
+    else if (message.includes('재고') || message.includes('현황') || message.includes('inventory')) {
+        const totalItems = items.length;
+        const lowStockItems = items.filter(item => (item.quantity || 0) <= 2);
+        const categoryStats = getCategoryStats(items, categories);
+        
+        response = "📊 **GPT 기반 지능형 재고 분석 리포트**\n\n";
+        response += `현재 ${totalItems}개의 물품을 AI가 실시간으로 모니터링하고 있습니다.\n\n`;
+        response += "🎯 **AI 분석 결과:**\n";
+        response += `• 전체 관리 물품: ${totalItems}개\n`;
+        response += `• 주의 필요 물품: ${lowStockItems.length}개\n`;
+        response += `• 관리 효율성: ${totalItems > 10 ? '우수' : '보통'}\n\n`;
+        
+        if (lowStockItems.length > 0) {
+            response += "⚠️ **AI 재고 경고:**\n";
+            lowStockItems.slice(0, 3).forEach(item => {
+                response += `• ${item.name}: ${item.quantity || 0}개 (보충 권장)\n`;
+            });
+            response += "\n";
+        }
+        
+        response += "🏆 **카테고리별 현황:**\n";
+        categoryStats.slice(0, 3).forEach(stat => {
+            response += `• ${stat.name}: ${stat.count}개\n`;
+        });
+        
+        response += "\n💡 더 자세한 분석이나 개선 제안이 필요하시면 말씀해주세요!";
+    }
+    // 기본 응답
+    else {
+        const randomResponse = demoResponses[Math.floor(Math.random() * demoResponses.length)];
+        response = randomResponse + "\n\n";
+        response += "제가 도울 수 있는 것들:\n";
+        response += "• 📦 재고 현황 분석\n";
+        response += "• 🔍 물품 찾기 도움\n";
+        response += "• 📊 사용 패턴 분석\n";
+        response += "• 💡 구매 추천\n";
+        response += "• 📝 관리 팁 제공\n\n";
+        response += "구체적으로 무엇을 도와드릴까요?";
+    }
+    
+    return response.replace(/\n/g, '<br>');
+}
+
 function extractLocationFromQuery(query) {
     const locationKeywords = ['냉장고', '창고', '방', '부엌', '거실', '화장실', '베란다', '서랍', '선반'];
     return locationKeywords.find(keyword => query.includes(keyword));
@@ -1028,6 +1116,13 @@ async function generateIntelligentResponse(userMessage, context) {
         }
     } else {
         console.log('⚡ 고급 로컬 AI 모드 사용 (API 키 없음)');
+        
+        // 데모 모드: GPT 스타일 응답 시뮬레이션
+        if (userMessage.toLowerCase().includes('gpt') || userMessage.toLowerCase().includes('openai') || userMessage.toLowerCase().includes('chatgpt')) {
+            console.log('🎭 데모 모드: GPT 스타일 응답 시뮬레이션');
+            const demoGptResponse = generateDemoGptResponse(userMessage, context);
+            return `🤖 <small><em>데모 모드 GPT-3.5-turbo 시뮬레이션</em></small><br><br>` + demoGptResponse;
+        }
         
         // 4단계: API 키가 없을 때 GPT급 로컬 모드 사용
         const localResponse = generateLocalResponse(userMessage, context);

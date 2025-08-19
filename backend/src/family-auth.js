@@ -47,8 +47,12 @@ class FamilyAuthSystem {
         this.invitations = new Map(); // inviteCode -> Invitation
         
         // 데모 모드인지 확인 (환경변수로 제어)
+        console.log('🔍 DEMO_MODE 환경변수:', process.env.DEMO_MODE);
         if (process.env.DEMO_MODE === 'true') {
+            console.log('🚀 데모 모드 활성화, 초기화 시작...');
             this.initializeDemoData();
+        } else {
+            console.log('⚠️ 데모 모드가 비활성화되어 있습니다.');
         }
         
         console.log('👨‍👩‍👧‍👦 가족 인증 시스템 초기화 완료');
