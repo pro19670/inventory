@@ -1504,13 +1504,15 @@
                         <strong>🚚 빠른 출고 메뉴</strong><br><br>
                         출고할 물품을 선택하거나 직접 말해보세요:<br><br>
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; margin: 10px 0;">
-                            ${availableItems.map(item => 
-                                `<button onclick="selectItemForStockOut('${item.name}', ${item.quantity})" 
+                            ${availableItems.map(item => {
+                                const location = item.locationName || '위치미설정';
+                                return `<button onclick="selectItemForStockOut('${item.name}', ${item.quantity})" 
                                         style="background: #f8f9fa; border: 1px solid #dee2e6; padding: 8px; border-radius: 8px; cursor: pointer; font-size: 12px; text-align: center;">
                                     <div style="font-weight: bold;">${item.name}</div>
                                     <div style="color: #6c757d; font-size: 11px;">재고: ${item.quantity}${item.unit || '개'}</div>
-                                </button>`
-                            ).join('')}
+                                    <div style="color: #28a745; font-size: 10px;">📍 ${location}</div>
+                                </button>`;
+                            }).join('')}
                         </div>
                         <hr style="margin: 15px 0; border: none; border-top: 1px solid #eee;">
                         <div style="font-size: 13px; color: #666;">
@@ -2005,7 +2007,8 @@
                     const result = performStockOut(itemName, quantity, unit);
                     
                     if (result.success) {
-                        const successMessage = `✅ 출고 완료! ${itemName} ${quantity}${unit} (남은재고: ${result.remainingStock}${unit})`;
+                        const location = result.location || '위치미설정';
+                        const successMessage = `✅ 출고 완료! ${itemName} ${quantity}${unit}<br>📍 위치: ${location}<br>📦 남은재고: ${result.remainingStock}${unit}`;
                         processedContent = processedContent.replace(match[0], successMessage);
                         
                         // 재고 현황 업데이트
@@ -2074,7 +2077,8 @@
                         return { 
                             success: true, 
                             remainingStock: newStock,
-                            message: result.message 
+                            message: result.message,
+                            location: item.locationName || '위치미설정'
                         };
                     }
                 }
@@ -2091,7 +2095,8 @@
                 return { 
                     success: true, 
                     remainingStock: newStock,
-                    message: '로컬에서 출고 처리됨' 
+                    message: '로컬에서 출고 처리됨',
+                    location: item.locationName || '위치미설정'
                 };
                 
             } catch (error) {

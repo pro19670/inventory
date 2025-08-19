@@ -613,7 +613,11 @@ ${recentHistory.map(h => `- ${new Date(h.createdAt).toLocaleDateString('ko-KR')}
 - 예시 응답: "STOCK_OUT_REQUEST: 우유 2개<br>알겠습니다! 우유 2개를 출고 처리하겠습니다."
 
 현재 재고가 있는 물품들:
-${items.filter(item => (item.quantity || 0) > 0).slice(0, 10).map(item => `- ${item.name}: ${item.quantity}${item.unit || '개'}`).join('\\n')}
+${items.filter(item => (item.quantity || 0) > 0).slice(0, 10).map(item => {
+    const locationPath = getLocationPath(item.locationId);
+    const location = locationPath.join(' > ') || '위치 미설정';
+    return `- ${item.name}: ${item.quantity}${item.unit || '개'} (${location})`;
+}).join('\\n')}
 
 주요 기능:
 1. 물품 등록: ➕ 버튼 > 새 물건 등록
