@@ -1700,7 +1700,7 @@
                     }
                     
                     // 물품 추가 버튼
-                    resultMessage += `\n💡 아래 버튼을 클릭하여 물품을 재고에 추가하세요!`;
+                    resultMessage += `\n💡 **아래 버튼을 클릭하여 물품을 재고에 추가하세요!**\n⚠️ "모든 물품 추가" 시 보관장소를 선택할 수 있습니다.`;
                     
                     addMessage(resultMessage, 'bot');
                     
@@ -1797,8 +1797,123 @@
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
         
-        // 📦 모든 물품을 재고에 추가
+        // 📦 모든 물품을 재고에 추가 (보관장소 선택 안내 포함)
         async function addAllItemsToInventory(items) {
+            // 보관장소 선택 안내
+            showLocationSelectionForItems(items);
+        }
+        
+        // 📍 보관장소 선택 안내
+        function showLocationSelectionForItems(items) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const locationElement = document.createElement('div');
+            locationElement.className = 'message bot-message';
+            
+            // 사용 가능한 위치들 가져오기
+            const availableLocations = appState.locations || [];
+            const rootLocations = availableLocations.filter(loc => loc.level === 0 || !loc.parentId);
+            
+            let locationButtons = '';
+            
+            if (rootLocations.length > 0) {
+                locationButtons = rootLocations.slice(0, 6).map(location => 
+                    `<button onclick="selectLocationAndAddItems(${location.id}, '${location.name}', ${JSON.stringify(items).replace(/"/g, '&quot;')})" 
+                            style="background: #e9ecef; border: 1px solid #ced4da; padding: 10px; margin: 4px; border-radius: 8px; cursor: pointer; font-size: 13px; text-align: center; min-width: 120px;">
+                        <div style="font-weight: bold;">📍 ${location.name}</div>
+                        <div style="color: #6c757d; font-size: 11px;">${location.type || '위치'}</div>
+                    </button>`
+                ).join('');
+                
+                if (rootLocations.length > 6) {
+                    locationButtons += `<br><small style="color: #6c757d;">그 외 ${rootLocations.length - 6}개 위치 더 있음</small>`;
+                }
+            }
+            
+            const locationContent = `
+                <div class="message-avatar">🤖</div>
+                <div class="message-content">
+                    <div class="message-bubble">
+                        <strong>📍 보관장소를 선택해주세요</strong><br><br>
+                        ${items.length}개 물품을 어디에 보관하시겠어요?<br><br>
+                        ${locationButtons || '<div style="color: #6c757d;">등록된 위치가 없습니다.</div>'}
+                        <hr style="margin: 15px 0; border: none; border-top: 1px solid #eee;">
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;">
+                            <button onclick="selectLocationAndAddItems(null, '위치미설정', ${JSON.stringify(items).replace(/"/g, '&quot;')})" 
+                                    style="background: #6c757d; color: white; border: none; padding: 8px 16px; border-radius: 15px; cursor: pointer; font-size: 12px;">
+                                📦 위치미설정으로 추가
+                            </button>
+                            <button onclick="showNewLocationForm(${JSON.stringify(items).replace(/"/g, '&quot;')})" 
+                                    style="background: #28a745; color: white; border: none; padding: 8px 16px; border-radius: 15px; cursor: pointer; font-size: 12px;">
+                                ➕ 새 위치 만들기
+                            </button>
+                        </div>
+                        <div style="margin-top: 10px; font-size: 12px; color: #666; text-align: center;">
+                            💡 물품별로 다른 위치에 보관하려면 "🔍 선택해서 추가" 버튼을 이용하세요
+                        </div>
+                    </div>
+                    <div class="message-time">${new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</div>
+                </div>
+            `;
+            
+            locationElement.innerHTML = locationContent;
+            messagesContainer.appendChild(locationElement);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        // 📍 위치 선택 후 물품 추가
+        async function selectLocationAndAddItems(locationId, locationName, items) {
+            try {
+                addMessage(`📍 "${locationName}"에 ${items.length}개 물품을 추가하고 있습니다...`, 'bot');
+                
+                // 모든 물품에 선택된 위치 설정
+                const itemsWithLocation = items.map(item => ({
+                    ...item,
+                    locationId: locationId,
+                    locationName: locationName
+                }));
+                
+                const response = await fetch(`${API_URL}/items/bulk-add`, {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ items: itemsWithLocation })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    addMessage(`✅ **${data.addedItems.length}개 물품이 성공적으로 추가되었습니다!**<br><br>` +
+                             `📍 **보관장소**: ${locationName}<br><br>` +
+                             `**추가된 물품:**<br>` +
+                             data.addedItems.map((item, index) => 
+                                 `${index + 1}. ${item.name} (${item.quantity}${item.unit || '개'})`
+                             ).join('<br>'), 'bot');
+                    
+                    // 재고 새로고침
+                    if (typeof loadAllData === 'function') {
+                        loadAllData();
+                    }
+                    
+                    showToast(`✅ ${data.addedItems.length}개 물품이 ${locationName}에 추가됨`);
+                } else {
+                    addMessage('❌ 물품 추가 중 오류가 발생했습니다.', 'bot');
+                    showToast('❌ 물품 추가 실패');
+                }
+                
+            } catch (error) {
+                console.error('물품 추가 오류:', error);
+                addMessage('❌ 물품 추가 중 오류가 발생했습니다: ' + error.message, 'bot');
+                showToast('❌ 물품 추가 오류');
+            }
+        }
+        
+        // ➕ 새 위치 생성 폼 표시
+        function showNewLocationForm(items) {
+            addMessage('새 보관장소를 만들어보세요! 하단의 "위치" 메뉴에서 위치를 추가한 후 다시 시도해주세요.<br><br>' +
+                     '또는 "📦 위치미설정으로 추가" 버튼을 클릭하여 일단 추가하고 나중에 위치를 설정할 수도 있습니다.', 'bot');
+        }
+        
+        // 📦 직접 물품 추가 (기존 함수, 다른 곳에서 사용)
+        async function addItemsDirectly(items) {
             try {
                 addMessage('📦 물품을 재고에 추가하고 있습니다...', 'bot');
                 
