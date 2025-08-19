@@ -607,11 +607,20 @@ async function callChatGPT(userMessage, context) {
 최근 활동:
 ${recentHistory.map(h => `- ${new Date(h.createdAt).toLocaleDateString('ko-KR')} ${h.type === 'stock-in' ? '입고' : '출고'}: ${h.quantity}${h.unit || '개'}`).join('\\n')}
 
+🚨 중요: 출고 처리 기능
+사용자가 다음과 같은 출고 관련 요청을 하면, 반드시 "STOCK_OUT_REQUEST: [물품명] [수량]" 형식으로 응답에 포함해주세요:
+- "우유 2개 사용했어", "라면 1개 먹었어", "토마토 3개 출고해줘" 등
+- 예시 응답: "STOCK_OUT_REQUEST: 우유 2개<br>알겠습니다! 우유 2개를 출고 처리하겠습니다."
+
+현재 재고가 있는 물품들:
+${items.filter(item => (item.quantity || 0) > 0).slice(0, 10).map(item => `- ${item.name}: ${item.quantity}${item.unit || '개'}`).join('\\n')}
+
 주요 기능:
 1. 물품 등록: ➕ 버튼 > 새 물건 등록
 2. 재고 관리: 하단 '재고관리' 메뉴
 3. 위치 관리: 하단 '위치' 메뉴 (계층형 구조)
 4. 카테고리 관리: 하단 '카테고리' 메뉴
+5. 🚚 출고 처리: 자연어로 출고 요청 가능
 
 사용자의 질문에 친근하고 도움이 되는 답변을 한국어로 제공해주세요. HTML 태그(<br>, <strong> 등)를 사용해서 보기 좋게 포맷팅해주세요.`;
 
@@ -636,7 +645,25 @@ ${recentHistory.map(h => `- ${new Date(h.createdAt).toLocaleDateString('ko-KR')}
             temperature: 0.7
         });
         
-        return completion.choices[0]?.message?.content || 'ChatGPT 응답을 받을 수 없습니다.';
+        const response = completion.choices[0]?.message?.content || 'ChatGPT 응답을 받을 수 없습니다.';
+        
+        // 🚚 출고 요청 처리
+        const stockOutMatch = response.match(/STOCK_OUT_REQUEST:\s*([^\s<]+)\s*(\d+)/);
+        if (stockOutMatch) {
+            const [_, itemName, quantity] = stockOutMatch;
+            console.log(`🚚 ChatGPT에서 출고 요청 감지: ${itemName} ${quantity}개`);
+            
+            try {
+                const stockOutResult = handleStockOutFromChatGPT(itemName, parseInt(quantity), context);
+                // STOCK_OUT_REQUEST 라인을 실제 출고 결과로 교체
+                return response.replace(/STOCK_OUT_REQUEST:[^<]*/g, stockOutResult);
+            } catch (error) {
+                console.error('ChatGPT 출고 처리 실패:', error);
+                return response.replace(/STOCK_OUT_REQUEST:[^<]*/g, `❌ 출고 처리 실패: ${error.message}`);
+            }
+        }
+        
+        return response;
         
     } catch (error) {
         console.error('ChatGPT API 호출 실패:', error);
@@ -666,7 +693,10 @@ function generateLocalResponse(userMessage, context) {
         add: /추가|등록|넣기|입력|저장|만들기|create/,
         location: /냉장고|창고|방|부엌|거실|화장실|베란다|서랍|선반|위치/,
         quantity: /수량|개수|얼마|많이|적어|부족|충분/,
-        recent: /최근|새로|요즘|오늘|어제|최신|활동/
+        recent: /최근|새로|요즘|오늘|어제|최신|활동/,
+        // 🚚 출고 관련 패턴 추가
+        stockOut: /출고|사용|소비|사용했|썼|먹었|빼기|빼줘|감소|제거|삭제|없애/,
+        stockOutRequest: /출고.*해줘|빼.*줘|사용.*했.*어|소비.*했.*어|먹.*었.*어/
     };
 
     // 📊 스마트 데이터 분석
@@ -988,6 +1018,10 @@ function generateDemoGptResponse(userMessage, context) {
         
         response += "\n💡 더 자세한 분석이나 개선 제안이 필요하시면 말씀해주세요!";
     }
+    // 🚚 출고 처리 로직
+    else if (patterns.stockOut.test(message) || patterns.stockOutRequest.test(message)) {
+        return handleStockOutRequest(userMessage, context);
+    }
     // 기본 응답
     else {
         const randomResponse = demoResponses[Math.floor(Math.random() * demoResponses.length)];
@@ -997,11 +1031,233 @@ function generateDemoGptResponse(userMessage, context) {
         response += "• 🔍 물품 찾기 도움\n";
         response += "• 📊 사용 패턴 분석\n";
         response += "• 💡 구매 추천\n";
-        response += "• 📝 관리 팁 제공\n\n";
+        response += "• 📝 관리 팁 제공\n";
+        response += "• 🚚 출고 처리 (예: '우유 2개 사용했어')\n\n";
         response += "구체적으로 무엇을 도와드릴까요?";
     }
     
     return response.replace(/\n/g, '<br>');
+}
+
+// 🚚 ChatGPT에서 출고 요청 처리
+function handleStockOutFromChatGPT(itemName, quantity, context) {
+    const { items } = context;
+    
+    // 물품 찾기
+    const item = items.find(item => 
+        item.name.toLowerCase().includes(itemName.toLowerCase()) || 
+        itemName.toLowerCase().includes(item.name.toLowerCase())
+    );
+    
+    if (!item) {
+        return `❌ "${itemName}" 물품을 찾을 수 없습니다.`;
+    }
+    
+    if ((item.quantity || 0) < quantity) {
+        return `⚠️ 재고 부족! ${item.name} 현재재고: ${item.quantity || 0}${item.unit || '개'}, 요청: ${quantity}${item.unit || '개'}`;
+    }
+    
+    // 실제 출고 처리
+    const result = processStockOut(item.id, quantity, 'ChatGPT를 통한 출고');
+    
+    if (result.success) {
+        const newStock = (item.quantity || 0) - quantity;
+        let response = `✅ 출고 완료! ${item.name} ${quantity}${item.unit || '개'} (남은재고: ${newStock}${item.unit || '개'})`;
+        
+        if (newStock <= 2) {
+            response += `<br>⚠️ 재고 부족 알림! 보충이 필요합니다.`;
+        }
+        
+        return response;
+    } else {
+        return `❌ 출고 실패: ${result.error}`;
+    }
+}
+
+// 🚚 출고 요청 처리 함수
+function handleStockOutRequest(userMessage, context) {
+    const { items } = context;
+    
+    try {
+        // 자연어에서 물품명과 수량 추출
+        const extractionResult = extractItemAndQuantityFromMessage(userMessage, items);
+        
+        if (!extractionResult.success) {
+            return `❌ ${extractionResult.message}\n\n💡 출고 사용법:\n• "우유 2개 사용했어"\n• "라면 1개 먹었어"\n• "토마토 3개 출고해줘"\n\n현재 보유 물품을 확인하려면 "재고 현황"이라고 말해보세요!`;
+        }
+        
+        const { item, quantity, confidence } = extractionResult;
+        
+        // 재고 확인
+        const currentStock = item.quantity || 0;
+        if (currentStock < quantity) {
+            return `⚠️ 재고가 부족합니다!\n\n📦 ${item.name}\n• 요청 출고량: ${quantity}${item.unit || '개'}\n• 현재 재고: ${currentStock}${item.unit || '개'}\n• 부족량: ${quantity - currentStock}${item.unit || '개'}\n\n✅ 현재 재고 내에서 ${currentStock}${item.unit || '개'}까지만 출고 가능합니다.`;
+        }
+        
+        // 실제 출고 처리
+        const stockOutResult = processStockOut(item.id, quantity, '대화를 통한 출고');
+        
+        if (stockOutResult.success) {
+            const newStock = currentStock - quantity;
+            let response = `✅ 출고 완료!\n\n📦 ${item.name}\n• 출고량: ${quantity}${item.unit || '개'}\n• 이전 재고: ${currentStock}${item.unit || '개'}\n• 현재 재고: ${newStock}${item.unit || '개'}`;
+            
+            // 재고 부족 경고
+            if (newStock <= 2) {
+                response += `\n\n⚠️ 재고 부족 알림!\n현재 재고가 ${newStock}${item.unit || '개'}로 부족합니다. 구매를 고려해보세요.`;
+            } else if (newStock <= 5) {
+                response += `\n\n💡 재고가 ${newStock}${item.unit || '개'}입니다. 조만간 보충이 필요할 것 같아요.`;
+            }
+            
+            // 신뢰도가 낮은 경우 확인 메시지
+            if (confidence < 0.8) {
+                response += `\n\n🤔 인식 정확도: ${Math.round(confidence * 100)}%\n혹시 다른 물품이었다면 '재고 현황'을 확인하고 다시 말씀해주세요.`;
+            }
+            
+            return response;
+        } else {
+            return `❌ 출고 처리 실패: ${stockOutResult.error}`;
+        }
+        
+    } catch (error) {
+        console.error('출고 요청 처리 오류:', error);
+        return `❌ 출고 처리 중 오류가 발생했습니다. 다시 시도해주세요.\n\n💡 예시: "우유 2개 사용했어", "라면 1개 먹었어"`;
+    }
+}
+
+// 📝 메시지에서 물품명과 수량 추출
+function extractItemAndQuantityFromMessage(message, items) {
+    const normalizedMessage = message.toLowerCase().replace(/[^\w\s가-힣]/g, ' ');
+    
+    // 수량 추출 패턴
+    const quantityPatterns = [
+        /(\d+)\s*개/g,
+        /(\d+)\s*병/g,
+        /(\d+)\s*봉/g,
+        /(\d+)\s*팩/g,
+        /(\d+)\s*상자/g,
+        /(\d+)/g
+    ];
+    
+    let extractedQuantity = 1; // 기본값
+    let quantityFound = false;
+    
+    for (const pattern of quantityPatterns) {
+        const match = normalizedMessage.match(pattern);
+        if (match) {
+            extractedQuantity = parseInt(match[0].match(/\d+/)[0]);
+            quantityFound = true;
+            break;
+        }
+    }
+    
+    // 물품 검색 및 매칭
+    let bestMatch = null;
+    let bestScore = 0;
+    
+    for (const item of items) {
+        if ((item.quantity || 0) <= 0) continue; // 재고 없는 아이템 제외
+        
+        const itemName = item.name.toLowerCase();
+        const score = calculateItemMatchScore(itemName, normalizedMessage);
+        
+        if (score > bestScore && score > 0.3) { // 최소 30% 유사도
+            bestMatch = item;
+            bestScore = score;
+        }
+    }
+    
+    if (!bestMatch) {
+        return {
+            success: false,
+            message: "출고할 물품을 찾을 수 없습니다.\n\n현재 재고가 있는 물품들:\n" + 
+                    items.filter(item => (item.quantity || 0) > 0)
+                         .slice(0, 5)
+                         .map(item => `• ${item.name} (${item.quantity || 0}${item.unit || '개'})`)
+                         .join('\n')
+        };
+    }
+    
+    return {
+        success: true,
+        item: bestMatch,
+        quantity: extractedQuantity,
+        confidence: bestScore
+    };
+}
+
+// 📊 물품 매칭 점수 계산
+function calculateItemMatchScore(itemName, message) {
+    let score = 0;
+    
+    // 완전 일치
+    if (message.includes(itemName)) {
+        score = 1.0;
+    }
+    // 부분 일치
+    else {
+        const itemWords = itemName.split(' ');
+        const messageWords = message.split(' ');
+        
+        for (const itemWord of itemWords) {
+            if (itemWord.length >= 2) {
+                for (const messageWord of messageWords) {
+                    if (messageWord.includes(itemWord) || itemWord.includes(messageWord)) {
+                        score += 0.3;
+                    }
+                }
+            }
+        }
+    }
+    
+    return Math.min(score, 1.0);
+}
+
+// ⚙️ 실제 출고 처리 함수
+function processStockOut(itemId, quantity, reason) {
+    try {
+        const itemIndex = items.findIndex(item => item.id === parseInt(itemId));
+        if (itemIndex === -1) {
+            return { success: false, error: '상품을 찾을 수 없습니다.' };
+        }
+        
+        const item = items[itemIndex];
+        const oldQuantity = item.quantity || 0;
+        const requestedQuantity = parseInt(quantity);
+        
+        if (oldQuantity < requestedQuantity) {
+            return { success: false, error: `재고 부족: 현재 ${oldQuantity}${item.unit || '개'}, 요청 ${requestedQuantity}${item.unit || '개'}` };
+        }
+        
+        const newQuantity = oldQuantity - requestedQuantity;
+        
+        // 수량 업데이트
+        items[itemIndex].quantity = newQuantity;
+        items[itemIndex].updatedAt = new Date().toISOString();
+        
+        // 재고 이력 추가
+        const historyEntry = {
+            id: nextInventoryHistoryId++,
+            itemId: item.id,
+            type: 'stock_out',
+            quantity: requestedQuantity,
+            previousQuantity: oldQuantity,
+            currentQuantity: newQuantity,
+            note: reason || '대화를 통한 출고',
+            reason: reason || '일반 출고',
+            createdAt: new Date().toISOString()
+        };
+        
+        inventoryHistory.push(historyEntry);
+        
+        // 데이터 저장
+        scheduleSave();
+        
+        return { success: true, item: items[itemIndex], history: historyEntry };
+        
+    } catch (error) {
+        console.error('출고 처리 실패:', error);
+        return { success: false, error: error.message };
+    }
 }
 
 function extractLocationFromQuery(query) {
