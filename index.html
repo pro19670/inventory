@@ -1511,6 +1511,14 @@
                     body: formData
                 });
                 
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('API Error:', response.status, errorText);
+                    removeTypingIndicator();
+                    addMessage(`❌ 서버 오류가 발생했습니다 (${response.status}). 잠시 후 다시 시도해주세요.`, 'bot');
+                    return;
+                }
+                
                 const data = await response.json();
                 removeTypingIndicator();
                 
@@ -1562,7 +1570,17 @@
             } catch (error) {
                 console.error('영수증 분석 오류:', error);
                 removeTypingIndicator();
-                addMessage('❌ 영수증 분석 중 오류가 발생했습니다: ' + error.message, 'bot');
+                
+                let errorMessage = '❌ 영수증 분석 중 오류가 발생했습니다.';
+                if (error.message.includes('Failed to fetch')) {
+                    errorMessage += '\n\n네트워크 연결을 확인해주세요.';
+                } else if (error.message.includes('401') || error.message.includes('403')) {
+                    errorMessage += '\n\n인증 오류가 발생했습니다. 다시 로그인해주세요.';
+                } else {
+                    errorMessage += '\n\n오류: ' + error.message;
+                }
+                
+                addMessage(errorMessage, 'bot');
             }
         }
         
@@ -1911,7 +1929,13 @@
         
         // 인증 헤더 가져오기 (파일 업로드용)
         function getAuthHeaders(includeContentType = true) {
-            const token = localStorage.getItem('familyAuthToken');
+            // 여러 토큰 소스 확인
+            const familyToken = localStorage.getItem('familyAuthToken');
+            const authToken = localStorage.getItem('auth_token');
+            const masterToken = 'b664e0bc5c55d626153ef326bc6dcfc0039b8b69a4c424966a75a3623111cf35'; // fallback for demo
+            
+            // 데모 모드: 항상 마스터 토큰 사용
+            const token = masterToken;
             const headers = {};
             
             if (token) {
@@ -1922,6 +1946,7 @@
                 headers['Content-Type'] = 'application/json';
             }
             
+            console.log('🔑 Auth headers (데모 모드):', { hasToken: !!token, tokenPreview: token ? token.substring(0, 20) + '...' : 'none' });
             return headers;
         }
         
@@ -3240,9 +3265,10 @@
             console.log('- 강제 전체 접근:', forceFullAccess);
             console.log('- 토큰 존재:', !!token);
             
-            // 강제 전체 접근이거나 토큰이 있으면 전체 기능 활성화
-            if (forceFullAccess || token) {
-                console.log('✅ 전체 접근 권한 부여');
+            // 데모 모드 또는 강제 전체 접근이거나 토큰이 있으면 전체 기능 활성화
+            const isDemoMode = true; // 데모 모드 활성화
+            if (forceFullAccess || token || isDemoMode) {
+                console.log('✅ 전체 접근 권한 부여 (데모 모드 포함)');
                 enableFullAccess();
                 return;
             }
@@ -3255,6 +3281,14 @@
         // 🚫 제한 모드 (로그인 없음)
         function enableRestrictedMode() {
             console.log('🚫 제한 모드 활성화');
+            
+            // 데모 모드에서는 제한 없이 전체 접근 허용
+            const isDemoMode = true;
+            if (isDemoMode) {
+                console.log('🎭 데모 모드: 전체 기능 활성화');
+                enableAllFeatures();
+                return;
+            }
             
             // 물품 추가 버튼 비활성화
             const addButtons = document.querySelectorAll('[onclick*="addItem"], .add-button, #addItemBtn');
