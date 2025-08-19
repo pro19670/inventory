@@ -1015,9 +1015,13 @@
             <div class="chat-input-area">
                 <div class="chat-input-container">
                     <input type="text" id="chatInput" class="chat-input" placeholder="메시지를 입력하세요..." onkeypress="handleChatKeyPress(event)">
+                    <button class="chat-send-btn" onclick="document.getElementById('receiptInput').click()" title="영수증 분석">
+                        <span class="send-icon">🧾</span>
+                    </button>
                     <button class="chat-send-btn" onclick="sendMessage()">
                         <span class="send-icon">📤</span>
                     </button>
+                    <input type="file" id="receiptInput" accept="image/*" style="display: none;" onchange="analyzeReceipt(this.files[0])">
                 </div>
                 
                 <!-- 빠른 응답 버튼들 -->
@@ -1393,6 +1397,20 @@
             
             if (!message) return;
             
+            // 물품 선택 모드 처리
+            if (window.awaitingSelection && window.pendingItems) {
+                handleItemSelection(message);
+                input.value = '';
+                return;
+            }
+            
+            // 물품 수정 모드 처리
+            if (window.awaitingEdit && window.editingItems) {
+                handleItemEditing(message);
+                input.value = '';
+                return;
+            }
+            
             // 사용자 메시지 추가
             addMessage(message, 'user');
             input.value = '';
@@ -1459,6 +1477,276 @@
         function sendQuickMessage(message) {
             document.getElementById('chatInput').value = message;
             sendMessage();
+        }
+        
+        // 🧾 영수증 분석 함수
+        async function analyzeReceipt(file) {
+            if (!file) return;
+            
+            // 이미지 파일 검증
+            if (!file.type.startsWith('image/')) {
+                showToast('❌ 이미지 파일만 업로드 가능합니다.');
+                return;
+            }
+            
+            // 파일 크기 검증 (10MB)
+            if (file.size > 10 * 1024 * 1024) {
+                showToast('❌ 파일 크기는 10MB 이하여야 합니다.');
+                return;
+            }
+            
+            try {
+                // 로딩 메시지 추가
+                addMessage('🧾 영수증을 분석하고 있습니다...', 'bot');
+                addTypingIndicator();
+                
+                // FormData 생성
+                const formData = new FormData();
+                formData.append('receipt', file);
+                
+                // 백엔드 API 호출
+                const response = await fetch(`${API_URL}/analyze-receipt`, {
+                    method: 'POST',
+                    headers: getAuthHeaders(false), // Content-Type 제외
+                    body: formData
+                });
+                
+                const data = await response.json();
+                removeTypingIndicator();
+                
+                if (data.success && data.analysis) {
+                    const analysis = data.analysis;
+                    
+                    // 분석 결과 메시지 생성
+                    let resultMessage = `📋 **영수증 분석 결과**\n\n`;
+                    
+                    if (analysis.store) {
+                        resultMessage += `🏪 **상점**: ${analysis.store}\n`;
+                    }
+                    if (analysis.date) {
+                        resultMessage += `📅 **날짜**: ${analysis.date}\n`;
+                    }
+                    if (analysis.total) {
+                        resultMessage += `💰 **총액**: ${analysis.total.toLocaleString()}원\n`;
+                    }
+                    
+                    resultMessage += `\n📦 **발견된 물품 (${analysis.items.length}개)**:\n`;
+                    
+                    analysis.items.forEach((item, index) => {
+                        resultMessage += `${index + 1}. **${item.name}**\n`;
+                        resultMessage += `   - 수량: ${item.quantity}개\n`;
+                        resultMessage += `   - 가격: ${item.price.toLocaleString()}원\n`;
+                        resultMessage += `   - 카테고리: ${item.category}\n`;
+                        if (item.description) {
+                            resultMessage += `   - 설명: ${item.description}\n`;
+                        }
+                        resultMessage += `\n`;
+                    });
+                    
+                    if (analysis.confidence) {
+                        resultMessage += `🎯 **분석 신뢰도**: ${Math.round(analysis.confidence * 100)}%\n`;
+                    }
+                    
+                    // 물품 추가 버튼
+                    resultMessage += `\n💡 아래 버튼을 클릭하여 물품을 재고에 추가하세요!`;
+                    
+                    addMessage(resultMessage, 'bot');
+                    
+                    // 물품 추가 버튼 메시지
+                    addAnalysisActions(analysis.items);
+                    
+                } else {
+                    addMessage('❌ 영수증 분석에 실패했습니다. 다시 시도해주세요.', 'bot');
+                }
+                
+            } catch (error) {
+                console.error('영수증 분석 오류:', error);
+                removeTypingIndicator();
+                addMessage('❌ 영수증 분석 중 오류가 발생했습니다: ' + error.message, 'bot');
+            }
+        }
+        
+        // 🛒 분석된 물품 추가 액션 버튼
+        function addAnalysisActions(items) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const actionElement = document.createElement('div');
+            actionElement.className = 'message bot-message';
+            
+            const actionContent = `
+                <div class="message-avatar">🤖</div>
+                <div class="message-content">
+                    <div class="message-bubble">
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;">
+                            <button onclick="addAllItemsToInventory(${JSON.stringify(items).replace(/"/g, '&quot;')})" 
+                                    style="background: #28a745; color: white; border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-size: 14px;">
+                                ✅ 모든 물품 추가
+                            </button>
+                            <button onclick="showItemSelection(${JSON.stringify(items).replace(/"/g, '&quot;')})" 
+                                    style="background: #007bff; color: white; border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-size: 14px;">
+                                🔍 선택해서 추가
+                            </button>
+                            <button onclick="editItemsBeforeAdd(${JSON.stringify(items).replace(/"/g, '&quot;')})" 
+                                    style="background: #ffc107; color: #212529; border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-size: 14px;">
+                                ✏️ 수정 후 추가
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            actionElement.innerHTML = actionContent;
+            messagesContainer.appendChild(actionElement);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        // 📦 모든 물품을 재고에 추가
+        async function addAllItemsToInventory(items) {
+            try {
+                addMessage('📦 물품을 재고에 추가하고 있습니다...', 'bot');
+                
+                const response = await fetch(`${API_URL}/items/bulk-add`, {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ items })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    addMessage(`✅ **${data.addedItems.length}개 물품이 성공적으로 추가되었습니다!**\n\n` +
+                             `추가된 물품:\n` +
+                             data.addedItems.map((item, index) => 
+                                 `${index + 1}. ${item.name} (${item.quantity}개)`
+                             ).join('\n'), 'bot');
+                    
+                    // 재고 새로고침
+                    if (typeof loadAllData === 'function') {
+                        loadAllData();
+                    }
+                } else {
+                    addMessage('❌ 물품 추가 중 오류가 발생했습니다.', 'bot');
+                }
+                
+            } catch (error) {
+                console.error('물품 추가 오류:', error);
+                addMessage('❌ 물품 추가 중 오류가 발생했습니다: ' + error.message, 'bot');
+            }
+        }
+        
+        // 🔍 물품 선택 다이얼로그 (간단 버전)
+        function showItemSelection(items) {
+            let selectionHtml = '📋 **추가할 물품을 선택하세요:**\n\n';
+            
+            items.forEach((item, index) => {
+                selectionHtml += `${index + 1}. ${item.name} (${item.quantity}개, ${item.price.toLocaleString()}원)\n`;
+            });
+            
+            selectionHtml += '\n💡 번호를 입력하세요 (예: 1,3,5 또는 모든 물품은 "전체")';
+            
+            addMessage(selectionHtml, 'bot');
+            
+            // 선택 상태 저장
+            window.pendingItems = items;
+            window.awaitingSelection = true;
+        }
+        
+        // ✏️ 물품 수정 후 추가 (간단 버전)
+        function editItemsBeforeAdd(items) {
+            addMessage('✏️ **물품 정보 수정**\n\n' +
+                     '각 물품의 정보를 수정하려면 다음과 같이 입력하세요:\n' +
+                     '예: "1번 물품 수량 5개로 변경", "2번 물품 이름 우유로 변경"\n\n' +
+                     '수정이 완료되면 "수정 완료"라고 입력하세요.', 'bot');
+            
+            // 수정 상태 저장
+            window.editingItems = JSON.parse(JSON.stringify(items));
+            window.awaitingEdit = true;
+        }
+        
+        // 🔍 물품 선택 처리
+        function handleItemSelection(message) {
+            const items = window.pendingItems;
+            let selectedItems = [];
+            
+            if (message === '전체' || message.toLowerCase() === 'all') {
+                selectedItems = items;
+            } else {
+                // 번호 파싱 (1,3,5 또는 1 3 5)
+                const numbers = message.match(/\d+/g);
+                if (numbers) {
+                    numbers.forEach(num => {
+                        const index = parseInt(num) - 1;
+                        if (index >= 0 && index < items.length) {
+                            selectedItems.push(items[index]);
+                        }
+                    });
+                }
+            }
+            
+            if (selectedItems.length > 0) {
+                addMessage(`✅ ${selectedItems.length}개 물품을 선택했습니다.`, 'user');
+                addAllItemsToInventory(selectedItems);
+            } else {
+                addMessage('❌ 올바른 번호를 입력해주세요.', 'bot');
+                return;
+            }
+            
+            // 선택 모드 종료
+            window.awaitingSelection = false;
+            window.pendingItems = null;
+        }
+        
+        // ✏️ 물품 수정 처리
+        function handleItemEditing(message) {
+            if (message === '수정 완료') {
+                addMessage('✅ 수정이 완료되었습니다. 물품을 추가합니다.', 'user');
+                addAllItemsToInventory(window.editingItems);
+                
+                // 수정 모드 종료
+                window.awaitingEdit = false;
+                window.editingItems = null;
+                return;
+            }
+            
+            // 수정 명령 파싱 (예: "1번 물품 수량 5개로 변경")
+            const editMatch = message.match(/(\d+)번.*?(수량|이름|가격|카테고리).*?(\d+|[가-힣a-zA-Z]+)/);
+            
+            if (editMatch) {
+                const [, itemNum, field, value] = editMatch;
+                const index = parseInt(itemNum) - 1;
+                
+                if (index >= 0 && index < window.editingItems.length) {
+                    const item = window.editingItems[index];
+                    
+                    switch (field) {
+                        case '수량':
+                            const qty = parseInt(value);
+                            if (qty > 0) {
+                                item.quantity = qty;
+                                addMessage(`✅ ${item.name}의 수량을 ${qty}개로 변경했습니다.`, 'bot');
+                            }
+                            break;
+                        case '이름':
+                            item.name = value;
+                            addMessage(`✅ ${index + 1}번 물품 이름을 "${value}"로 변경했습니다.`, 'bot');
+                            break;
+                        case '가격':
+                            const price = parseInt(value);
+                            if (price >= 0) {
+                                item.price = price;
+                                addMessage(`✅ ${item.name}의 가격을 ${price}원으로 변경했습니다.`, 'bot');
+                            }
+                            break;
+                        case '카테고리':
+                            item.category = value;
+                            addMessage(`✅ ${item.name}의 카테고리를 "${value}"로 변경했습니다.`, 'bot');
+                            break;
+                    }
+                } else {
+                    addMessage('❌ 올바른 물품 번호를 입력해주세요.', 'bot');
+                }
+            } else {
+                addMessage('❌ 올바른 수정 형식으로 입력해주세요.\n예: "1번 물품 수량 5개로 변경"', 'bot');
+            }
         }
         
         // 메시지 추가
@@ -1587,6 +1875,54 @@
                 event.preventDefault();
                 sendMessage();
             }
+        }
+        
+        // 타이핑 인디케이터 추가
+        function addTypingIndicator() {
+            const messagesContainer = document.getElementById('chatMessages');
+            const typingElement = document.createElement('div');
+            typingElement.className = 'message bot-message typing-indicator';
+            typingElement.id = 'typingIndicator';
+            
+            typingElement.innerHTML = `
+                <div class="message-avatar">🤖</div>
+                <div class="message-content">
+                    <div class="message-bubble">
+                        <div class="typing-dots">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            messagesContainer.appendChild(typingElement);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        // 타이핑 인디케이터 제거
+        function removeTypingIndicator() {
+            const typingElement = document.getElementById('typingIndicator');
+            if (typingElement) {
+                typingElement.remove();
+            }
+        }
+        
+        // 인증 헤더 가져오기 (파일 업로드용)
+        function getAuthHeaders(includeContentType = true) {
+            const token = localStorage.getItem('familyAuthToken');
+            const headers = {};
+            
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+            
+            if (includeContentType) {
+                headers['Content-Type'] = 'application/json';
+            }
+            
+            return headers;
         }
         
         // 채팅 히스토리 로드

@@ -11,6 +11,7 @@ const Tesseract = require('tesseract.js');
 const sharp = require('sharp');
 const { v4: uuidv4 } = require('uuid');
 const OpenAI = require('openai');
+const formidable = require('formidable');
 const { FamilyAuthSystem, ROLES } = require('./family-auth');
 
 // 미들웨어 및 유틸리티 모듈 (옵셔널)
@@ -39,6 +40,7 @@ const INVENTORY_HISTORY_FILE = path.join(DATA_DIR, 'inventory_history.json');
 const IMAGES_DIR = path.join(DATA_DIR, 'images');
 const THUMBNAILS_DIR = path.join(DATA_DIR, 'thumbnails');
 const TEMP_DIR = path.join(__dirname, 'temp');
+const UPLOAD_DIR = path.join(__dirname, 'uploads');
 
 // 간단한 메모리 저장소
 let items = [];
@@ -1127,6 +1129,145 @@ async function generateIntelligentResponse(userMessage, context) {
         // 4단계: API 키가 없을 때 GPT급 로컬 모드 사용
         const localResponse = generateLocalResponse(userMessage, context);
         return `🧠 <small><em>고급 AI 로컬 모드</em></small><br><br>` + localResponse;
+    }
+}
+
+// 🧾 GPT-4o Vision을 사용한 영수증 분석
+async function analyzeReceiptWithGPT(base64Image) {
+    const hasValidApiKey = CONFIG.USE_CHATGPT && CONFIG.OPENAI_API_KEY && CONFIG.OPENAI_API_KEY.startsWith('sk-');
+    
+    if (!hasValidApiKey) {
+        // API 키가 없을 때 더미 분석 결과 반환
+        return {
+            items: [
+                {
+                    name: "샘플 상품",
+                    category: "기타",
+                    quantity: 1,
+                    price: 1000,
+                    description: "영수증 분석 기능을 사용하려면 OpenAI API 키가 필요합니다."
+                }
+            ],
+            summary: "OpenAI API 키가 설정되지 않아 영수증 분석을 수행할 수 없습니다.",
+            confidence: 0
+        };
+    }
+
+    try {
+        console.log('🧾 GPT-4o Vision으로 영수증 분석 중...');
+        
+        const response = await openai.chat.completions.create({
+            model: CONFIG.CHATGPT_MODEL.includes('gpt-4') ? CONFIG.CHATGPT_MODEL : 'gpt-4o',
+            messages: [
+                {
+                    role: "user",
+                    content: [
+                        {
+                            type: "text",
+                            text: `다음 영수증 이미지를 분석하여 구매한 물품들을 추출해주세요. 
+                            
+                            다음 JSON 형식으로 응답해주세요:
+                            {
+                                "items": [
+                                    {
+                                        "name": "물품명",
+                                        "category": "카테고리 (식품, 생활용품, 의류, 전자제품, 도서, 기타 중 하나)",
+                                        "quantity": 수량(숫자),
+                                        "price": 가격(숫자),
+                                        "description": "추가 설명 (브랜드, 용량 등)"
+                                    }
+                                ],
+                                "store": "상점명",
+                                "date": "구매날짜 (YYYY-MM-DD 형식)",
+                                "total": 총액(숫자),
+                                "summary": "영수증 분석 요약",
+                                "confidence": 분석_신뢰도(0~1)
+                            }
+                            
+                            주의사항:
+                            - 물품명은 한국어로 명확하게 작성
+                            - 카테고리는 반드시 지정된 6개 중 하나 선택
+                            - 수량과 가격은 숫자만 입력
+                            - 읽기 어려운 경우 가장 가능성 높은 값으로 추정`
+                        },
+                        {
+                            type: "image_url",
+                            image_url: {
+                                url: `data:image/jpeg;base64,${base64Image}`
+                            }
+                        }
+                    ]
+                }
+            ],
+            max_tokens: 1500,
+            temperature: 0.1
+        });
+
+        const content = response.choices[0].message.content;
+        console.log('GPT-4o 원본 응답:', content);
+        
+        // JSON 파싱 시도
+        try {
+            const analysis = JSON.parse(content);
+            console.log('✅ 영수증 분석 성공:', analysis);
+            return analysis;
+        } catch (parseError) {
+            console.log('JSON 파싱 실패, 텍스트 분석 시도...');
+            
+            // JSON 파싱 실패 시 텍스트에서 정보 추출
+            return parseReceiptFromText(content);
+        }
+        
+    } catch (error) {
+        console.error('GPT-4o 영수증 분석 실패:', error);
+        
+        // 오류 시 기본 응답
+        return {
+            items: [],
+            summary: `영수증 분석 중 오류가 발생했습니다: ${error.message}`,
+            confidence: 0,
+            error: true
+        };
+    }
+}
+
+// 텍스트에서 영수증 정보 파싱 (JSON 파싱 실패 시 백업)
+function parseReceiptFromText(text) {
+    try {
+        // 간단한 패턴 매칭으로 정보 추출
+        const items = [];
+        const lines = text.split('\n');
+        
+        lines.forEach(line => {
+            // 물품 정보 패턴 찾기 (예: "사과 1개 3000원")
+            const itemMatch = line.match(/(.+?)\s*(\d+).*?(\d{1,8})/);
+            if (itemMatch) {
+                const [, name, quantity, price] = itemMatch;
+                if (name && name.length > 1 && name.length < 50) {
+                    items.push({
+                        name: name.trim(),
+                        category: "기타",
+                        quantity: parseInt(quantity) || 1,
+                        price: parseInt(price) || 0,
+                        description: ""
+                    });
+                }
+            }
+        });
+        
+        return {
+            items: items.slice(0, 20), // 최대 20개
+            summary: "텍스트 분석을 통해 영수증 정보를 추출했습니다.",
+            confidence: 0.6
+        };
+        
+    } catch (error) {
+        console.error('텍스트 파싱 실패:', error);
+        return {
+            items: [],
+            summary: "영수증 분석에 실패했습니다.",
+            confidence: 0
+        };
     }
 }
 
@@ -2811,6 +2952,128 @@ const server = http.createServer((req, res) => {
             } catch (error) {
                 console.error('챗봇 API 오류:', error);
                 sendErrorResponse(res, 500, 'Failed to process chatbot request');
+            }
+        });
+    }
+    // 영수증 분석 API
+    else if (pathname === '/api/analyze-receipt' && method === 'POST') {
+        const form = new formidable.IncomingForm();
+        form.uploadDir = UPLOAD_DIR;
+        form.keepExtensions = true;
+        form.maxFileSize = 10 * 1024 * 1024; // 10MB
+
+        form.parse(req, async (err, fields, files) => {
+            if (err) {
+                console.error('파일 업로드 오류:', err);
+                sendErrorResponse(res, 400, 'File upload error');
+                return;
+            }
+
+            try {
+                const imageFile = files.receipt || files.image;
+                if (!imageFile) {
+                    sendErrorResponse(res, 400, 'No receipt image provided');
+                    return;
+                }
+
+                const imagePath = Array.isArray(imageFile) ? imageFile[0].filepath : imageFile.filepath;
+                
+                // 이미지를 base64로 인코딩
+                const imageBuffer = fs.readFileSync(imagePath);
+                const base64Image = imageBuffer.toString('base64');
+                
+                // GPT-4o Vision으로 영수증 분석
+                const analysisResult = await analyzeReceiptWithGPT(base64Image);
+                
+                // 임시 파일 삭제
+                fs.unlinkSync(imagePath);
+                
+                sendJsonResponse(res, 200, {
+                    success: true,
+                    analysis: analysisResult,
+                    timestamp: new Date().toISOString()
+                });
+                
+            } catch (error) {
+                console.error('영수증 분석 오류:', error);
+                sendErrorResponse(res, 500, 'Failed to analyze receipt');
+            }
+        });
+    }
+    // 분석된 아이템 일괄 추가 API
+    else if (pathname === '/api/items/bulk-add' && method === 'POST') {
+        let body = '';
+        req.on('data', chunk => body += chunk);
+        req.on('end', async () => {
+            try {
+                const { items: newItems } = JSON.parse(body);
+                
+                if (!Array.isArray(newItems) || newItems.length === 0) {
+                    sendErrorResponse(res, 400, 'Items array is required');
+                    return;
+                }
+                
+                const addedItems = [];
+                const errors = [];
+                
+                for (const itemData of newItems) {
+                    try {
+                        // 기본값 설정
+                        const item = {
+                            id: generateId(),
+                            name: itemData.name || '알 수 없는 물건',
+                            category: itemData.category || '기타',
+                            location: itemData.location || '미분류',
+                            quantity: parseInt(itemData.quantity) || 1,
+                            price: parseFloat(itemData.price) || 0,
+                            purchaseDate: itemData.purchaseDate || new Date().toISOString().split('T')[0],
+                            expiryDate: itemData.expiryDate || null,
+                            description: itemData.description || '',
+                            imageUrl: itemData.imageUrl || null,
+                            thumbnailUrl: itemData.thumbnailUrl || null,
+                            createdAt: new Date().toISOString(),
+                            updatedAt: new Date().toISOString(),
+                            source: 'receipt_analysis'
+                        };
+                        
+                        items.push(item);
+                        addedItems.push(item);
+                        
+                        // 재고 이력 추가
+                        inventoryHistory.push({
+                            id: generateId(),
+                            itemId: item.id,
+                            action: 'stock_in',
+                            quantity: item.quantity,
+                            previousQuantity: 0,
+                            newQuantity: item.quantity,
+                            reason: '영수증 분석으로 추가',
+                            timestamp: new Date().toISOString()
+                        });
+                        
+                    } catch (itemError) {
+                        console.error('아이템 추가 오류:', itemError);
+                        errors.push({
+                            item: itemData,
+                            error: itemError.message
+                        });
+                    }
+                }
+                
+                // 데이터 저장
+                saveData();
+                
+                sendJsonResponse(res, 200, {
+                    success: true,
+                    message: `${addedItems.length}개 아이템이 추가되었습니다`,
+                    addedItems,
+                    errors: errors.length > 0 ? errors : undefined,
+                    timestamp: new Date().toISOString()
+                });
+                
+            } catch (error) {
+                console.error('일괄 아이템 추가 오류:', error);
+                sendErrorResponse(res, 500, 'Failed to add items');
             }
         });
     }
