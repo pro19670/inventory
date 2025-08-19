@@ -252,7 +252,7 @@
         }
         
         .mobile-content {
-            padding: 15px;
+            padding: 10px;
         }
         
         .stats-grid {
@@ -752,18 +752,19 @@
             border-radius: 16px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.08);
             overflow: hidden;
-            height: 400px;
+            height: calc(100vh - 200px);
+            min-height: 500px;
             display: flex;
             flex-direction: column;
         }
         
         .chat-messages {
             flex: 1;
-            padding: 20px;
+            padding: 15px 10px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 12px;
         }
         
         .message {
