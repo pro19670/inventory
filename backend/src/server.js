@@ -2964,15 +2964,34 @@ const server = http.createServer((req, res) => {
     }
     // 영수증 분석 API
     else if (pathname === '/api/analyze-receipt' && method === 'POST') {
-        const form = new formidable.IncomingForm();
-        form.uploadDir = UPLOAD_DIR;
-        form.keepExtensions = true;
-        form.maxFileSize = 10 * 1024 * 1024; // 10MB
+        try {
+            const form = new formidable.IncomingForm();
+            form.uploadDir = UPLOAD_DIR;
+            form.keepExtensions = true;
+            form.maxFileSize = 10 * 1024 * 1024; // 10MB
+            form.multiples = false;
+            form.allowEmptyFiles = false;
+            
+            // Content-Type 관련 설정 추가
+            form.filter = ({ name, originalFilename, mimetype }) => {
+                // 이미지 파일만 허용
+                return mimetype && mimetype.startsWith('image/');
+            };
 
-        form.parse(req, async (err, fields, files) => {
+            form.parse(req, async (err, fields, files) => {
             if (err) {
                 console.error('파일 업로드 오류:', err);
-                sendErrorResponse(res, 400, 'File upload error');
+                let errorMessage = 'File upload error';
+                
+                if (err.message && err.message.includes('JSON')) {
+                    errorMessage = 'Invalid request format. Please ensure you are uploading a valid image file.';
+                } else if (err.message && err.message.includes('boundary')) {
+                    errorMessage = 'Invalid multipart boundary. Please try uploading the image again.';
+                } else if (err.code === 1013) {
+                    errorMessage = 'Invalid file format. Please upload a valid image file (PNG, JPG, GIF, WebP).';
+                }
+                
+                sendErrorResponse(res, 400, errorMessage);
                 return;
             }
 
@@ -3006,6 +3025,10 @@ const server = http.createServer((req, res) => {
                 sendErrorResponse(res, 500, 'Failed to analyze receipt');
             }
         });
+        } catch (formError) {
+            console.error('Formidable 설정 오류:', formError);
+            sendErrorResponse(res, 400, 'File upload configuration error');
+        }
     }
     // 분석된 아이템 일괄 추가 API
     else if (pathname === '/api/items/bulk-add' && method === 'POST') {

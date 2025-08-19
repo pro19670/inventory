@@ -1495,6 +1495,16 @@
                 return;
             }
             
+            // 큰 이미지 압축 (2MB 이상)
+            if (file.size > 2 * 1024 * 1024) {
+                addMessage('🔄 큰 이미지를 압축하고 있습니다...', 'bot');
+                file = await compressImage(file);
+                console.log('📦 이미지 압축 완료:', {
+                    originalSize: Math.round(file.size / 1024) + 'KB',
+                    newSize: Math.round(file.size / 1024) + 'KB'
+                });
+            }
+            
             try {
                 // 로딩 메시지 추가
                 addMessage('🧾 영수증을 분석하고 있습니다...', 'bot');
@@ -1504,12 +1514,30 @@
                 const formData = new FormData();
                 formData.append('receipt', file);
                 
-                // 백엔드 API 호출
+                console.log('📤 업로드 파일 정보:', {
+                    name: file.name,
+                    size: file.size,
+                    type: file.type,
+                    lastModified: file.lastModified
+                });
+                
+                // 백엔드 API 호출 (Content-Type을 명시적으로 제외)
+                const headers = getAuthHeaders(false);
+                // FormData 사용 시 Content-Type은 브라우저가 자동 설정
+                delete headers['Content-Type'];
+                
+                // 타임아웃 설정 (60초)
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 60000);
+                
                 const response = await fetch(`${API_URL}/analyze-receipt`, {
                     method: 'POST',
-                    headers: getAuthHeaders(false), // Content-Type 제외
-                    body: formData
+                    headers: headers,
+                    body: formData,
+                    signal: controller.signal
                 });
+                
+                clearTimeout(timeoutId);
                 
                 if (!response.ok) {
                     const errorText = await response.text();
@@ -1572,16 +1600,52 @@
                 removeTypingIndicator();
                 
                 let errorMessage = '❌ 영수증 분석 중 오류가 발생했습니다.';
-                if (error.message.includes('Failed to fetch')) {
+                
+                if (error.name === 'AbortError') {
+                    errorMessage = '⏱️ 분석 시간이 초과되었습니다.\n\n다시 시도하거나 더 작은 이미지를 사용해보세요.';
+                } else if (error.message.includes('Failed to fetch')) {
                     errorMessage += '\n\n네트워크 연결을 확인해주세요.';
                 } else if (error.message.includes('401') || error.message.includes('403')) {
                     errorMessage += '\n\n인증 오류가 발생했습니다. 다시 로그인해주세요.';
+                } else if (error.message.includes('timeout')) {
+                    errorMessage = '⏱️ 처리 시간이 너무 오래 걸립니다.\n\n이미지 크기를 줄이거나 다른 이미지를 시도해보세요.';
                 } else {
                     errorMessage += '\n\n오류: ' + error.message;
                 }
                 
                 addMessage(errorMessage, 'bot');
             }
+        }
+        
+        // 📦 이미지 압축 함수
+        async function compressImage(file, maxWidth = 1200, quality = 0.8) {
+            return new Promise((resolve) => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                const img = new Image();
+                
+                img.onload = function() {
+                    // 비율 유지하며 크기 조정
+                    const ratio = Math.min(maxWidth / img.width, maxWidth / img.height);
+                    canvas.width = img.width * ratio;
+                    canvas.height = img.height * ratio;
+                    
+                    // 이미지 그리기
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    
+                    // Blob으로 변환
+                    canvas.toBlob((blob) => {
+                        // File 객체로 변환
+                        const compressedFile = new File([blob], file.name, {
+                            type: 'image/jpeg',
+                            lastModified: Date.now()
+                        });
+                        resolve(compressedFile);
+                    }, 'image/jpeg', quality);
+                };
+                
+                img.src = URL.createObjectURL(file);
+            });
         }
         
         // 🛒 분석된 물품 추가 액션 버튼
