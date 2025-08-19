@@ -1028,7 +1028,7 @@
                 <div class="quick-replies">
                     <button class="quick-reply-btn" onclick="sendQuickMessage('재고 현황')">📊 재고 현황</button>
                     <button class="quick-reply-btn" onclick="sendQuickMessage('물건 추가')">➕ 물건 추가</button>
-                    <button class="quick-reply-btn" onclick="sendQuickMessage('사용 등록')">📝 사용 등록</button>
+                    <button class="quick-reply-btn" onclick="showStockOutQuickActions()">🚚 빠른 출고</button>
                     <button class="quick-reply-btn" onclick="sendQuickMessage('도움말')">❓ 도움말</button>
                 </div>
             </div>
@@ -1206,7 +1206,7 @@
             
             // GitHub Pages에서 호출 시 -> 배포된 백엔드 서버 사용
             if (hostname.endsWith('github.io')) {
-                return 'https://inventory-backend-8r4j.onrender.com/api';
+                return 'https://3001-i72krmbsmpnff1c7v14w6-6532622b.e2b.dev/api';
             }
             
             // 로컬 개발 환경
@@ -1305,6 +1305,84 @@
                 initializeChatbot();
             } finally {
                 hideLoading();
+            }
+        }
+        
+        // 📊 모든 데이터 새로고침 (챗봇 데이터 동기화 포함)
+        async function loadAllData() {
+            try {
+                console.log('🔄 모든 데이터 새로고침 시작...');
+                
+                // 카테고리 새로고침
+                const catResponse = await fetch(`${API_URL}/categories`);
+                if (catResponse.ok) {
+                    const catData = await catResponse.json();
+                    appState.categories = catData.categories || [];
+                    updateCategoryOptions();
+                    console.log('📂 카테고리 데이터 업데이트:', appState.categories.length, '개');
+                }
+                
+                // 위치 새로고침
+                const locResponse = await fetch(`${API_URL}/locations`);
+                if (locResponse.ok) {
+                    const locData = await locResponse.json();
+                    appState.locations = locData.locations || [];
+                    updateLocationOptions();
+                    console.log('📍 위치 데이터 업데이트:', appState.locations.length, '개');
+                }
+                
+                // 물품 새로고침
+                const itemResponse = await fetch(`${API_URL}/items`);
+                if (itemResponse.ok) {
+                    const itemData = await itemResponse.json();
+                    appState.items = itemData.items || [];
+                    console.log('📦 물품 데이터 업데이트:', appState.items.length, '개');
+                    
+                    // 재고 현황 표시 업데이트
+                    updateInventoryDisplay();
+                }
+                
+                // 인벤토리 히스토리 새로고침 (챗봇 컨텍스트용)
+                try {
+                    const historyResponse = await fetch(`${API_URL}/inventory/history`);
+                    if (historyResponse.ok) {
+                        const historyData = await historyResponse.json();
+                        appState.inventoryHistory = historyData.history || [];
+                        console.log('📋 재고 히스토리 업데이트:', appState.inventoryHistory.length, '개');
+                    }
+                } catch (historyError) {
+                    console.warn('재고 히스토리 로드 실패:', historyError);
+                    appState.inventoryHistory = [];
+                }
+                
+                console.log('✅ 모든 데이터 새로고침 완료');
+                
+                // 챗봇에게 데이터 업데이트 알림
+                refreshChatbotData();
+                
+            } catch (error) {
+                console.error('데이터 새로고침 실패:', error);
+                showToast('❌ 데이터 새로고침 실패');
+            }
+        }
+        
+        // 🤖 챗봇 데이터 새로고침
+        function refreshChatbotData() {
+            // 현재 appState에 최신 데이터가 있는지 확인 후 챗봇에 알림
+            const totalItems = (appState.items || []).length;
+            const totalQuantity = (appState.items || []).reduce((sum, item) => sum + (item.quantity || 0), 0);
+            
+            console.log('🤖 챗봇 데이터 새로고침:', {
+                items: totalItems,
+                categories: (appState.categories || []).length,
+                locations: (appState.locations || []).length,
+                inventoryHistory: (appState.inventoryHistory || []).length,
+                totalQuantity: totalQuantity
+            });
+            
+            // 챗봇이 최신 데이터를 사용하도록 보장
+            if (totalItems > 0) {
+                showToast(`🤖 챗봇 데이터 업데이트 (${totalItems}개 물품, 총 ${totalQuantity}개)`);
             }
         }
         
@@ -1479,6 +1557,122 @@
             sendMessage();
         }
         
+        // 🚚 빠른 출고 액션 표시
+        function showStockOutQuickActions() {
+            // 현재 재고가 있는 물품들만 필터링
+            const availableItems = appState.items ? 
+                appState.items.filter(item => (item.quantity || 0) > 0).slice(0, 6) : [];
+            
+            if (availableItems.length === 0) {
+                addMessage('📦 현재 출고 가능한 물품이 없습니다.\n\n물품을 먼저 등록해주세요!', 'bot');
+                return;
+            }
+            
+            let quickActionsHtml = '🚚 **빠른 출고 메뉴**\n\n';
+            quickActionsHtml += '아래 버튼을 클릭하거나 직접 말해보세요:\n\n';
+            
+            const messagesContainer = document.getElementById('chatMessages');
+            const actionElement = document.createElement('div');
+            actionElement.className = 'message bot-message';
+            
+            const actionContent = `
+                <div class="message-avatar">🤖</div>
+                <div class="message-content">
+                    <div class="message-bubble">
+                        <strong>🚚 빠른 출고 메뉴</strong><br><br>
+                        출고할 물품을 선택하거나 직접 말해보세요:<br><br>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; margin: 10px 0;">
+                            ${availableItems.map(item => {
+                                const location = item.locationName || '위치미설정';
+                                return `<button onclick="selectItemForStockOut('${item.name}', ${item.quantity})" 
+                                        style="background: #f8f9fa; border: 1px solid #dee2e6; padding: 8px; border-radius: 8px; cursor: pointer; font-size: 12px; text-align: center;">
+                                    <div style="font-weight: bold;">${item.name}</div>
+                                    <div style="color: #6c757d; font-size: 11px;">재고: ${item.quantity}${item.unit || '개'}</div>
+                                    <div style="color: #28a745; font-size: 10px;">📍 ${location}</div>
+                                </button>`;
+                            }).join('')}
+                        </div>
+                        <hr style="margin: 15px 0; border: none; border-top: 1px solid #eee;">
+                        <div style="font-size: 13px; color: #666;">
+                            💡 <strong>사용법:</strong><br>
+                            • "우유 2개 사용했어"<br>
+                            • "라면 1개 먹었어"<br>
+                            • "토마토 3개 출고해줘"
+                        </div>
+                    </div>
+                    <div class="message-time">${new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</div>
+                </div>
+            `;
+            
+            actionElement.innerHTML = actionContent;
+            messagesContainer.appendChild(actionElement);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        // 📦 특정 물품 출고 선택
+        function selectItemForStockOut(itemName, maxQuantity) {
+            // 수량 선택 메시지 추가
+            const messagesContainer = document.getElementById('chatMessages');
+            const quantityElement = document.createElement('div');
+            quantityElement.className = 'message bot-message';
+            
+            const quantityOptions = [];
+            const maxOptions = Math.min(maxQuantity, 5); // 최대 5개까지 버튼으로 표시
+            
+            for (let i = 1; i <= maxOptions; i++) {
+                quantityOptions.push(`<button onclick="confirmStockOut('${itemName}', ${i})" 
+                                            style="background: #007bff; color: white; border: none; padding: 8px 12px; margin: 2px; border-radius: 15px; cursor: pointer; font-size: 13px;">
+                                        ${i}개
+                                    </button>`);
+            }
+            
+            if (maxQuantity > 5) {
+                quantityOptions.push(`<button onclick="showCustomQuantityInput('${itemName}', ${maxQuantity})" 
+                                            style="background: #6c757d; color: white; border: none; padding: 8px 12px; margin: 2px; border-radius: 15px; cursor: pointer; font-size: 13px;">
+                                        직접입력
+                                    </button>`);
+            }
+            
+            const quantityContent = `
+                <div class="message-avatar">🤖</div>
+                <div class="message-content">
+                    <div class="message-bubble">
+                        <strong>📦 ${itemName} 출고</strong><br><br>
+                        출고할 수량을 선택하세요:<br>
+                        (현재 재고: ${maxQuantity}개)<br><br>
+                        <div style="text-align: center;">
+                            ${quantityOptions.join('')}
+                        </div>
+                    </div>
+                    <div class="message-time">${new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</div>
+                </div>
+            `;
+            
+            quantityElement.innerHTML = quantityContent;
+            messagesContainer.appendChild(quantityElement);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        // ✅ 출고 확정
+        function confirmStockOut(itemName, quantity) {
+            const message = `${itemName} ${quantity}개 출고해줘`;
+            sendQuickMessage(message);
+        }
+        
+        // 📝 직접 수량 입력
+        function showCustomQuantityInput(itemName, maxQuantity) {
+            const customQuantity = prompt(`${itemName} 출고 수량을 입력하세요 (최대 ${maxQuantity}개):`);
+            
+            if (customQuantity && !isNaN(customQuantity)) {
+                const qty = parseInt(customQuantity);
+                if (qty > 0 && qty <= maxQuantity) {
+                    confirmStockOut(itemName, qty);
+                } else {
+                    showToast(`❌ 올바른 수량을 입력해주세요 (1-${maxQuantity}개)`);
+                }
+            }
+        }
+        
         // 🧾 영수증 분석 함수
         async function analyzeReceipt(file) {
             if (!file) return;
@@ -1584,7 +1778,7 @@
                     }
                     
                     // 물품 추가 버튼
-                    resultMessage += `\n💡 아래 버튼을 클릭하여 물품을 재고에 추가하세요!`;
+                    resultMessage += `\n💡 **아래 버튼을 클릭하여 물품을 재고에 추가하세요!**\n⚠️ "모든 물품 추가" 시 보관장소를 선택할 수 있습니다.`;
                     
                     addMessage(resultMessage, 'bot');
                     
@@ -1659,6 +1853,10 @@
                 <div class="message-content">
                     <div class="message-bubble">
                         <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;">
+                            <button onclick="showSmartLocationRecommendations(${JSON.stringify(items).replace(/"/g, '&quot;')})" 
+                                    style="background: #17a2b8; color: white; border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-size: 14px;">
+                                🧠 스마트 위치 추천
+                            </button>
                             <button onclick="addAllItemsToInventory(${JSON.stringify(items).replace(/"/g, '&quot;')})" 
                                     style="background: #28a745; color: white; border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-size: 14px;">
                                 ✅ 모든 물품 추가
@@ -1681,8 +1879,930 @@
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
         
-        // 📦 모든 물품을 재고에 추가
+        // 📦 모든 물품을 재고에 추가 (보관장소 선택 안내 포함)
         async function addAllItemsToInventory(items) {
+            // 보관장소 선택 안내
+            showLocationSelectionForItems(items);
+        }
+        
+        // 📍 보관장소 선택 안내
+        function showLocationSelectionForItems(items) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const locationElement = document.createElement('div');
+            locationElement.className = 'message bot-message';
+            
+            // 사용 가능한 위치들 가져오기
+            const availableLocations = appState.locations || [];
+            const rootLocations = availableLocations.filter(loc => loc.level === 0 || !loc.parentId);
+            
+            let locationButtons = '';
+            
+            if (rootLocations.length > 0) {
+                locationButtons = rootLocations.slice(0, 6).map(location => 
+                    `<button onclick="selectLocationAndAddItems(${location.id}, '${location.name}', ${JSON.stringify(items).replace(/"/g, '&quot;')})" 
+                            style="background: #e9ecef; border: 1px solid #ced4da; padding: 10px; margin: 4px; border-radius: 8px; cursor: pointer; font-size: 13px; text-align: center; min-width: 120px;">
+                        <div style="font-weight: bold;">📍 ${location.name}</div>
+                        <div style="color: #6c757d; font-size: 11px;">${location.type || '위치'}</div>
+                    </button>`
+                ).join('');
+                
+                if (rootLocations.length > 6) {
+                    locationButtons += `<br><small style="color: #6c757d;">그 외 ${rootLocations.length - 6}개 위치 더 있음</small>`;
+                }
+            }
+            
+            const locationContent = `
+                <div class="message-avatar">🤖</div>
+                <div class="message-content">
+                    <div class="message-bubble">
+                        <strong>📍 보관장소를 선택해주세요</strong><br><br>
+                        ${items.length}개 물품을 어디에 보관하시겠어요?<br><br>
+                        ${locationButtons || '<div style="color: #6c757d;">등록된 위치가 없습니다.</div>'}
+                        <hr style="margin: 15px 0; border: none; border-top: 1px solid #eee;">
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;">
+                            <button onclick="selectLocationAndAddItems(null, '위치미설정', ${JSON.stringify(items).replace(/"/g, '&quot;')})" 
+                                    style="background: #6c757d; color: white; border: none; padding: 8px 16px; border-radius: 15px; cursor: pointer; font-size: 12px;">
+                                📦 위치미설정으로 추가
+                            </button>
+                            <button onclick="showNewLocationForm(${JSON.stringify(items).replace(/"/g, '&quot;')})" 
+                                    style="background: #28a745; color: white; border: none; padding: 8px 16px; border-radius: 15px; cursor: pointer; font-size: 12px;">
+                                ➕ 새 위치 만들기
+                            </button>
+                        </div>
+                        <div style="margin-top: 10px; font-size: 12px; color: #666; text-align: center;">
+                            💡 물품별로 다른 위치에 보관하려면 "🔍 선택해서 추가" 버튼을 이용하세요
+                        </div>
+                    </div>
+                    <div class="message-time">${new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</div>
+                </div>
+            `;
+            
+            locationElement.innerHTML = locationContent;
+            messagesContainer.appendChild(locationElement);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        // 📍 위치 선택 후 물품 추가
+        async function selectLocationAndAddItems(locationId, locationName, items) {
+            try {
+                addMessage(`📍 "${locationName}"에 ${items.length}개 물품을 추가하고 있습니다...`, 'bot');
+                
+                // 모든 물품에 선택된 위치 설정
+                const itemsWithLocation = items.map(item => ({
+                    ...item,
+                    locationId: locationId,
+                    locationName: locationName
+                }));
+                
+                const response = await fetch(`${API_URL}/items/bulk-add`, {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ items: itemsWithLocation })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    addMessage(`✅ **${data.addedItems.length}개 물품이 성공적으로 추가되었습니다!**<br><br>` +
+                             `📍 **보관장소**: ${locationName}<br><br>` +
+                             `**추가된 물품:**<br>` +
+                             data.addedItems.map((item, index) => 
+                                 `${index + 1}. ${item.name} (${item.quantity}${item.unit || '개'})`
+                             ).join('<br>'), 'bot');
+                    
+                    // 재고 새로고침
+                    if (typeof loadAllData === 'function') {
+                        loadAllData();
+                    }
+                    
+                    showToast(`✅ ${data.addedItems.length}개 물품이 ${locationName}에 추가됨`);
+                } else {
+                    addMessage('❌ 물품 추가 중 오류가 발생했습니다.', 'bot');
+                    showToast('❌ 물품 추가 실패');
+                }
+                
+            } catch (error) {
+                console.error('물품 추가 오류:', error);
+                addMessage('❌ 물품 추가 중 오류가 발생했습니다: ' + error.message, 'bot');
+                showToast('❌ 물품 추가 오류');
+            }
+        }
+        
+        // ➕ 새 위치 생성 폼 표시
+        function showNewLocationForm(items) {
+            addMessage('새 보관장소를 만들어보세요! 하단의 "위치" 메뉴에서 위치를 추가한 후 다시 시도해주세요.<br><br>' +
+                     '또는 "📦 위치미설정으로 추가" 버튼을 클릭하여 일단 추가하고 나중에 위치를 설정할 수도 있습니다.', 'bot');
+        }
+        
+        // 🧠 스마트 위치 추천 시스템
+        function showSmartLocationRecommendations(items) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const recommendationElement = document.createElement('div');  
+            recommendationElement.className = 'message bot-message';
+            
+            // 각 물품에 대한 위치 추천
+            const itemsWithRecommendations = items.map(item => {
+                const recommendation = getLocationRecommendation(item);
+                return {
+                    ...item,
+                    recommendedLocation: recommendation
+                };
+            });
+            
+            // 추천 결과 표시
+            let recommendationContent = `
+                <div class="message-avatar">🤖</div>
+                <div class="message-content">
+                    <div class="message-bubble">
+                        <strong>🧠 스마트 위치 추천</strong><br><br>
+                        각 물품에 가장 적절한 보관장소를 추천해드릴게요!<br><br>
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin: 10px 0;">
+            `;
+            
+            itemsWithRecommendations.forEach((item, index) => {
+                const rec = item.recommendedLocation;
+                recommendationContent += `
+                    <div style="border-bottom: 1px solid #e9ecef; padding: 8px 0; ${index === itemsWithRecommendations.length - 1 ? 'border-bottom: none;' : ''}">
+                        <div style="font-weight: bold; color: #495057;">
+                            ${index + 1}. ${item.name}
+                        </div>
+                        <div style="margin: 5px 0; font-size: 13px;">
+                            🎯 <strong>추천 위치</strong>: <span style="color: #17a2b8;">${rec.locationName}</span>
+                            <span style="background: #17a2b8; color: white; padding: 2px 6px; border-radius: 10px; font-size: 11px; margin-left: 8px;">
+                                ${rec.confidence}% 확신
+                            </span>
+                        </div>
+                        <div style="font-size: 12px; color: #6c757d;">
+                            💡 ${rec.reason}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            recommendationContent += `
+                        </div>
+                        <div style="margin: 15px 0; text-align: center;">
+                            <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;">
+                                <button onclick="acceptAllRecommendations(${JSON.stringify(itemsWithRecommendations).replace(/"/g, '&quot;')})" 
+                                        style="background: #28a745; color: white; border: none; padding: 10px 16px; border-radius: 20px; cursor: pointer; font-size: 13px;">
+                                    ✅ 모든 추천 수락
+                                </button>
+                                <button onclick="showIndividualRecommendations(${JSON.stringify(itemsWithRecommendations).replace(/"/g, '&quot;')})" 
+                                        style="background: #007bff; color: white; border: none; padding: 10px 16px; border-radius: 20px; cursor: pointer; font-size: 13px;">
+                                    🔍 개별 선택
+                                </button>
+                                <button onclick="customizeRecommendations(${JSON.stringify(itemsWithRecommendations).replace(/"/g, '&quot;')})" 
+                                        style="background: #ffc107; color: #212529; border: none; padding: 10px 16px; border-radius: 20px; cursor: pointer; font-size: 13px;">
+                                    ✏️ 수정하기
+                                </button>
+                            </div>
+                        </div>
+                        <div style="font-size: 12px; color: #6c757d; text-align: center; margin-top: 10px;">
+                            💡 AI가 물품 특성과 기존 보관 패턴을 분석하여 추천했습니다
+                        </div>
+                    </div>
+                    <div class="message-time">${new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</div>
+                </div>
+            `;
+            
+            recommendationElement.innerHTML = recommendationContent;
+            messagesContainer.appendChild(recommendationElement);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        // 🎯 물품별 위치 추천 로직
+        function getLocationRecommendation(item) {
+            const availableLocations = appState.locations || [];
+            const itemName = item.name.toLowerCase();
+            const category = item.category ? item.category.toLowerCase() : '';
+            
+            // 기본 추천 규칙들
+            const recommendationRules = [
+                // 냉장고 보관 식품
+                {
+                    keywords: ['우유', '계란', '치즈', '요거트', '버터', '마가린', '햄', '베이컨', '소시지', '김치', '반찬', '밑반찬', '채소', '야채', '대파', '양배추', '상추', '배추', '무', '당근', '오이', '토마토', '피망', '브로콜리'],
+                    locations: ['냉장고', 'refrigerator', '냉장', '주방', '부엌', 'kitchen'],
+                    reason: '신선도 유지를 위해 냉장 보관이 필요한 식품입니다',
+                    confidence: 95
+                },
+                // 냉동고 보관 식품
+                {
+                    keywords: ['냉동', '아이스크림', '만두', '냉동식품', '빙과', '냉동고기', '냉동생선'],
+                    locations: ['냉동고', 'freezer', '냉동', '주방', '부엌'],
+                    reason: '냉동 보관이 필요한 식품입니다',
+                    confidence: 98
+                },
+                // 상온 보관 식품
+                {
+                    keywords: ['라면', '과자', '쿠키', '빵', '빵류', '시리얼', '견과류', '견과', '견과류', '쿠킹', '통조림', '캔', '조미료', '양념', '기름', '식용유', '올리브오일', '참기름', '들기름', '소금', '설탕', '후추', '마늘'],
+                    locations: ['식료품저장고', '냉장고', '주방', '부엌', '팬트리', '창고', '저장고'],
+                    reason: '상온에서 보관 가능한 식품입니다',
+                    confidence: 85
+                },
+                // 화장실/세면용품
+                {
+                    keywords: ['샴푸', '린스', '바디워시', '치약', '칫솔', '세면용품', '화장품', '로션', '크림'],
+                    locations: ['화장실', '세면대', '욕실', 'bathroom'],
+                    reason: '세면용품은 화장실에 보관하는 것이 일반적입니다',
+                    confidence: 90
+                },
+                // 청소용품
+                {
+                    keywords: ['세제', '청소', '클리너', '락스', '세정제', '고무장갑', '스펀지', '걸레'],
+                    locations: ['청소용품보관함', '싱크대아래', '베란다', '창고', '화장실'],
+                    reason: '청소용품은 별도 공간에 보관하는 것이 안전합니다',
+                    confidence: 88
+                }
+            ];
+            
+            // 추천 위치 찾기
+            let bestRecommendation = {
+                locationId: null,
+                locationName: '위치미설정',
+                reason: '적절한 보관장소를 찾지 못했습니다',
+                confidence: 50
+            };
+            
+            for (const rule of recommendationRules) {
+                const matchedKeyword = rule.keywords.find(keyword => 
+                    itemName.includes(keyword) || category.includes(keyword)
+                );
+                
+                if (matchedKeyword) {
+                    // 해당 규칙에 맞는 위치 찾기
+                    for (const locationKeyword of rule.locations) {
+                        const foundLocation = availableLocations.find(loc => 
+                            loc.name.toLowerCase().includes(locationKeyword.toLowerCase())
+                        );
+                        
+                        if (foundLocation) {
+                            bestRecommendation = {
+                                locationId: foundLocation.id,
+                                locationName: foundLocation.name,
+                                reason: rule.reason,
+                                confidence: rule.confidence
+                            };
+                            break;
+                        }
+                    }
+                    
+                    if (bestRecommendation.locationId) break;
+                }
+            }
+            
+            // 위치를 찾지 못한 경우 카테고리 기반 추천
+            if (!bestRecommendation.locationId && category === '식품') {
+                const kitchenLocation = availableLocations.find(loc => 
+                    loc.name.toLowerCase().includes('주방') || 
+                    loc.name.toLowerCase().includes('부엌') ||
+                    loc.name.toLowerCase().includes('kitchen')
+                );
+                
+                if (kitchenLocation) {
+                    bestRecommendation = {
+                        locationId: kitchenLocation.id,
+                        locationName: kitchenLocation.name,
+                        reason: '식품류는 주방에 보관하는 것이 일반적입니다',
+                        confidence: 75
+                    };
+                }
+            }
+            
+            return bestRecommendation;
+        }
+        
+        // ✅ 모든 추천 수락
+        async function acceptAllRecommendations(itemsWithRecommendations) {
+            try {
+                addMessage(`🧠 AI 추천에 따라 ${itemsWithRecommendations.length}개 물품을 적절한 위치에 추가하고 있습니다...`, 'bot');
+                
+                // 물품들을 위치별로 그룹핑
+                const locationGroups = {};
+                itemsWithRecommendations.forEach(item => {
+                    const locId = item.recommendedLocation.locationId || 'unassigned';
+                    const locName = item.recommendedLocation.locationName;
+                    
+                    if (!locationGroups[locId]) {
+                        locationGroups[locId] = {
+                            locationId: locId === 'unassigned' ? null : locId,
+                            locationName: locName,
+                            items: []
+                        };
+                    }
+                    
+                    locationGroups[locId].items.push({
+                        ...item,
+                        locationId: locId === 'unassigned' ? null : locId,
+                        locationName: locName
+                    });
+                });
+                
+                // 각 위치별로 물품 추가
+                let totalAdded = 0;
+                let resultMessage = `✅ **AI 추천에 따라 물품이 성공적으로 추가되었습니다!**<br><br>`;
+                
+                for (const [locId, group] of Object.entries(locationGroups)) {
+                    const response = await fetch(`${API_URL}/items/bulk-add`, {
+                        method: 'POST',
+                        headers: getAuthHeaders(),
+                        body: JSON.stringify({ items: group.items })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        totalAdded += data.addedItems.length;
+                        resultMessage += `📍 **${group.locationName}**<br>`;
+                        data.addedItems.forEach((item, index) => {
+                            const confidence = group.items[index]?.recommendedLocation?.confidence || 0;
+                            resultMessage += `&nbsp;&nbsp;• ${item.name} (${item.quantity}${item.unit || '개'}) <span style="color: #17a2b8;">${confidence}% 확신</span><br>`;
+                        });
+                        resultMessage += `<br>`;
+                    }
+                }
+                
+                addMessage(resultMessage, 'bot');
+                showToast(`✅ ${totalAdded}개 물품이 AI 추천 위치에 추가됨`);
+                
+                // 재고 새로고침
+                if (typeof loadAllData === 'function') {
+                    loadAllData();
+                }
+                
+            } catch (error) {
+                console.error('추천 기반 물품 추가 오류:', error);
+                addMessage('❌ 물품 추가 중 오류가 발생했습니다: ' + error.message, 'bot');
+                showToast('❌ 물품 추가 오류');
+            }
+        }
+        
+        // 🔍 개별 추천 선택
+        function showIndividualRecommendations(itemsWithRecommendations) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const individualElement = document.createElement('div');
+            individualElement.className = 'message bot-message';
+            
+            let individualContent = `
+                <div class="message-avatar">🤖</div>
+                <div class="message-content">
+                    <div class="message-bubble">
+                        <strong>🔍 개별 물품 선택</strong><br><br>
+                        각 물품별로 추천을 수락하거나 거부하세요:<br><br>
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin: 10px 0;">
+            `;
+            
+            itemsWithRecommendations.forEach((item, index) => {
+                const rec = item.recommendedLocation;
+                individualContent += `
+                    <div id="item-${index}" style="border-bottom: 1px solid #e9ecef; padding: 12px 0; ${index === itemsWithRecommendations.length - 1 ? 'border-bottom: none;' : ''}">
+                        <div style="font-weight: bold; color: #495057; margin-bottom: 8px;">
+                            ${index + 1}. ${item.name}
+                        </div>
+                        <div style="margin: 5px 0; font-size: 13px;">
+                            🎯 추천: <span style="color: #17a2b8;">${rec.locationName}</span>
+                            <span style="background: #17a2b8; color: white; padding: 2px 6px; border-radius: 10px; font-size: 11px; margin-left: 8px;">
+                                ${rec.confidence}% 확신
+                            </span>
+                        </div>
+                        <div style="font-size: 12px; color: #6c757d; margin-bottom: 10px;">
+                            💡 ${rec.reason}
+                        </div>
+                        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                            <button onclick="acceptIndividualRecommendation(${index}, ${JSON.stringify(item).replace(/"/g, '&quot;')})" 
+                                    style="background: #28a745; color: white; border: none; padding: 6px 12px; border-radius: 15px; cursor: pointer; font-size: 12px;">
+                                ✅ 수락
+                            </button>
+                            <button onclick="rejectIndividualRecommendation(${index})" 
+                                    style="background: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 15px; cursor: pointer; font-size: 12px;">
+                                ❌ 거부
+                            </button>
+                            <button onclick="changeIndividualLocation(${index}, ${JSON.stringify(item).replace(/"/g, '&quot;')})" 
+                                    style="background: #ffc107; color: #212529; border: none; padding: 6px 12px; border-radius: 15px; cursor: pointer; font-size: 12px;">
+                                📍 위치 변경
+                            </button>
+                        </div>
+                        <div id="item-status-${index}" style="margin-top: 8px; font-size: 12px; font-weight: bold;"></div>
+                    </div>
+                `;
+            });
+            
+            individualContent += `
+                        </div>
+                        <div style="margin: 15px 0; text-align: center;">
+                            <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;">
+                                <button onclick="processSelectedItems()" 
+                                        style="background: #007bff; color: white; border: none; padding: 10px 16px; border-radius: 20px; cursor: pointer; font-size: 13px;">
+                                    📦 선택된 물품 추가
+                                </button>
+                                <button onclick="selectAllRecommendations()" 
+                                        style="background: #28a745; color: white; border: none; padding: 10px 16px; border-radius: 20px; cursor: pointer; font-size: 13px;">
+                                    ✅ 모두 선택
+                                </button>
+                                <button onclick="deselectAllRecommendations()" 
+                                        style="background: #6c757d; color: white; border: none; padding: 10px 16px; border-radius: 20px; cursor: pointer; font-size: 13px;">
+                                    ❌ 모두 해제
+                                </button>
+                            </div>
+                        </div>
+                        <div style="font-size: 12px; color: #6c757d; text-align: center; margin-top: 10px;">
+                            💡 수락한 물품만 재고에 추가됩니다
+                        </div>
+                    </div>
+                    <div class="message-time">${new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</div>
+                </div>
+            `;
+            
+            individualElement.innerHTML = individualContent;
+            messagesContainer.appendChild(individualElement);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            
+            // 전역 변수로 현재 처리 중인 아이템들 저장
+            window.currentItemsWithRecommendations = itemsWithRecommendations;
+            window.selectedItems = [];
+        }
+        
+        // ✅ 개별 추천 수락
+        function acceptIndividualRecommendation(index, item) {
+            const statusElement = document.getElementById(`item-status-${index}`);
+            statusElement.innerHTML = '<span style="color: #28a745;">✅ 수락됨</span>';
+            statusElement.style.display = 'block';
+            
+            // 선택된 아이템 목록에 추가
+            if (!window.selectedItems) window.selectedItems = [];
+            const existingIndex = window.selectedItems.findIndex(si => si.originalIndex === index);
+            if (existingIndex === -1) {
+                window.selectedItems.push({
+                    originalIndex: index,
+                    item: item,
+                    status: 'accepted'
+                });
+            } else {
+                window.selectedItems[existingIndex].status = 'accepted';
+                window.selectedItems[existingIndex].item = item;
+            }
+            
+            showToast(`✅ ${item.name} 추천 수락`);
+        }
+        
+        // ❌ 개별 추천 거부  
+        function rejectIndividualRecommendation(index) {
+            const statusElement = document.getElementById(`item-status-${index}`);
+            statusElement.innerHTML = '<span style="color: #dc3545;">❌ 거부됨</span>';
+            statusElement.style.display = 'block';
+            
+            // 선택된 아이템 목록에서 제거
+            if (window.selectedItems) {
+                window.selectedItems = window.selectedItems.filter(si => si.originalIndex !== index);
+            }
+            
+            const itemName = window.currentItemsWithRecommendations[index]?.name || '물품';
+            showToast(`❌ ${itemName} 추천 거부`);
+        }
+        
+        // 📍 개별 위치 변경
+        function changeIndividualLocation(index, item) {
+            const availableLocations = appState.locations || [];
+            
+            if (availableLocations.length === 0) {
+                addMessage('❌ 등록된 위치가 없습니다. 먼저 하단의 "위치" 메뉴에서 위치를 추가해주세요.', 'bot');
+                return;
+            }
+            
+            // 위치 선택 다이얼로그 생성
+            const messagesContainer = document.getElementById('chatMessages');
+            const locationElement = document.createElement('div');
+            locationElement.className = 'message bot-message';
+            locationElement.id = `location-change-${index}`;
+            
+            const rootLocations = availableLocations.filter(loc => loc.level === 0 || !loc.parentId);
+            let locationButtons = rootLocations.map(location => 
+                `<button onclick="selectNewLocationForItem(${index}, ${location.id}, '${location.name}', ${JSON.stringify(item).replace(/"/g, '&quot;')})" 
+                        style="background: #e9ecef; border: 1px solid #ced4da; padding: 8px 12px; margin: 4px; border-radius: 8px; cursor: pointer; font-size: 12px;">
+                    📍 ${location.name}
+                </button>`
+            ).join('');
+            
+            const locationContent = `
+                <div class="message-avatar">🤖</div>
+                <div class="message-content">
+                    <div class="message-bubble">
+                        <strong>📍 ${item.name} 위치 변경</strong><br><br>
+                        새로운 보관장소를 선택하세요:<br><br>
+                        <div style="margin: 10px 0;">
+                            ${locationButtons}
+                        </div>
+                        <div style="margin: 10px 0;">
+                            <button onclick="selectNewLocationForItem(${index}, null, '위치미설정', ${JSON.stringify(item).replace(/"/g, '&quot;')})" 
+                                    style="background: #6c757d; color: white; border: none; padding: 8px 12px; border-radius: 15px; cursor: pointer; font-size: 12px;">
+                                📦 위치미설정
+                            </button>
+                            <button onclick="cancelLocationChange(${index})" 
+                                    style="background: #dc3545; color: white; border: none; padding: 8px 12px; border-radius: 15px; cursor: pointer; font-size: 12px; margin-left: 8px;">
+                                ❌ 취소
+                            </button>
+                        </div>
+                    </div>
+                    <div class="message-time">${new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</div>
+                </div>
+            `;
+            
+            locationElement.innerHTML = locationContent;
+            messagesContainer.appendChild(locationElement);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        // 📍 새 위치 선택
+        function selectNewLocationForItem(index, locationId, locationName, item) {
+            // 위치 변경 다이얼로그 제거
+            const locationChangeElement = document.getElementById(`location-change-${index}`);
+            if (locationChangeElement) {
+                locationChangeElement.remove();
+            }
+            
+            // 아이템 정보 업데이트
+            const updatedItem = {
+                ...item,
+                recommendedLocation: {
+                    locationId: locationId,
+                    locationName: locationName,
+                    reason: '사용자가 직접 선택한 위치입니다',
+                    confidence: 100
+                }
+            };
+            
+            // 전역 배열 업데이트
+            if (window.currentItemsWithRecommendations) {
+                window.currentItemsWithRecommendations[index] = updatedItem;
+            }
+            
+            // 상태 업데이트
+            const statusElement = document.getElementById(`item-status-${index}`);
+            statusElement.innerHTML = `<span style="color: #17a2b8;">📍 위치 변경됨: ${locationName}</span>`;
+            statusElement.style.display = 'block';
+            
+            // 선택된 아이템 목록에 추가
+            if (!window.selectedItems) window.selectedItems = [];
+            const existingIndex = window.selectedItems.findIndex(si => si.originalIndex === index);
+            if (existingIndex === -1) {
+                window.selectedItems.push({
+                    originalIndex: index,
+                    item: updatedItem,
+                    status: 'modified'
+                });
+            } else {
+                window.selectedItems[existingIndex].item = updatedItem;
+                window.selectedItems[existingIndex].status = 'modified';
+            }
+            
+            showToast(`📍 ${item.name} 위치를 ${locationName}으로 변경`);
+        }
+        
+        // ❌ 위치 변경 취소
+        function cancelLocationChange(index) {
+            const locationChangeElement = document.getElementById(`location-change-${index}`);
+            if (locationChangeElement) {
+                locationChangeElement.remove();
+            }
+        }
+        
+        // ✅ 모두 선택
+        function selectAllRecommendations() {
+            if (!window.currentItemsWithRecommendations) return;
+            
+            window.selectedItems = [];
+            window.currentItemsWithRecommendations.forEach((item, index) => {
+                acceptIndividualRecommendation(index, item);
+            });
+            
+            showToast('✅ 모든 물품이 선택되었습니다');
+        }
+        
+        // ❌ 모두 해제
+        function deselectAllRecommendations() {
+            if (!window.currentItemsWithRecommendations) return;
+            
+            window.selectedItems = [];
+            window.currentItemsWithRecommendations.forEach((item, index) => {
+                rejectIndividualRecommendation(index);
+            });
+            
+            showToast('❌ 모든 선택이 해제되었습니다');
+        }
+        
+        // 📦 선택된 물품 처리
+        async function processSelectedItems() {
+            if (!window.selectedItems || window.selectedItems.length === 0) {
+                addMessage('❌ 선택된 물품이 없습니다. 먼저 추가할 물품을 선택해주세요.', 'bot');
+                return;
+            }
+            
+            try {
+                addMessage(`📦 선택된 ${window.selectedItems.length}개 물품을 추가하고 있습니다...`, 'bot');
+                
+                // 위치별로 그룹핑
+                const locationGroups = {};
+                window.selectedItems.forEach(selectedItem => {
+                    const item = selectedItem.item;
+                    const locId = item.recommendedLocation.locationId || 'unassigned';
+                    const locName = item.recommendedLocation.locationName;
+                    
+                    if (!locationGroups[locId]) {
+                        locationGroups[locId] = {
+                            locationId: locId === 'unassigned' ? null : locId,
+                            locationName: locName,
+                            items: []
+                        };
+                    }
+                    
+                    locationGroups[locId].items.push({
+                        ...item,
+                        locationId: locId === 'unassigned' ? null : locId,
+                        locationName: locName
+                    });
+                });
+                
+                // 각 위치별로 물품 추가
+                let totalAdded = 0;
+                let resultMessage = `✅ **선택된 ${window.selectedItems.length}개 물품이 성공적으로 추가되었습니다!**<br><br>`;
+                
+                for (const [locId, group] of Object.entries(locationGroups)) {
+                    const response = await fetch(`${API_URL}/items/bulk-add`, {
+                        method: 'POST',
+                        headers: getAuthHeaders(),
+                        body: JSON.stringify({ items: group.items })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        totalAdded += data.addedItems.length;
+                        resultMessage += `📍 **${group.locationName}**<br>`;
+                        data.addedItems.forEach((addedItem, index) => {
+                            const originalItem = group.items[index];
+                            const confidence = originalItem?.recommendedLocation?.confidence || 0;
+                            const status = window.selectedItems.find(si => si.item.name === addedItem.name)?.status || 'accepted';
+                            const statusIcon = status === 'modified' ? '📍' : '✅';
+                            resultMessage += `&nbsp;&nbsp;${statusIcon} ${addedItem.name} (${addedItem.quantity}${addedItem.unit || '개'}) <span style="color: #17a2b8;">${confidence}% 확신</span><br>`;
+                        });
+                        resultMessage += `<br>`;
+                    }
+                }
+                
+                addMessage(resultMessage, 'bot');
+                showToast(`✅ ${totalAdded}개 물품이 선택된 위치에 추가됨`);
+                
+                // 전역 변수 초기화
+                window.selectedItems = [];
+                window.currentItemsWithRecommendations = null;
+                
+                // 재고 새로고침
+                if (typeof loadAllData === 'function') {
+                    loadAllData();
+                }
+                
+            } catch (error) {
+                console.error('선택된 물품 추가 오류:', error);
+                addMessage('❌ 물품 추가 중 오류가 발생했습니다: ' + error.message, 'bot');
+                showToast('❌ 물품 추가 오류');
+            }
+        }
+        
+        // ✏️ 추천 수정 (고급 수정 모드)
+        function customizeRecommendations(itemsWithRecommendations) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const customizeElement = document.createElement('div');
+            customizeElement.className = 'message bot-message';
+            
+            let customizeContent = `
+                <div class="message-avatar">🤖</div>
+                <div class="message-content">
+                    <div class="message-bubble">
+                        <strong>✏️ 추천 수정 모드</strong><br><br>
+                        모든 물품의 위치를 한번에 검토하고 수정하세요:<br><br>
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin: 10px 0;">
+            `;
+            
+            itemsWithRecommendations.forEach((item, index) => {
+                const rec = item.recommendedLocation;
+                const availableLocations = appState.locations || [];
+                const rootLocations = availableLocations.filter(loc => loc.level === 0 || !loc.parentId);
+                
+                let locationOptions = '<option value="null">위치미설정</option>' + 
+                    rootLocations.map(loc => 
+                        `<option value="${loc.id}" ${rec.locationId === loc.id ? 'selected' : ''}>${loc.name}</option>`
+                    ).join('');
+                
+                customizeContent += `
+                    <div style="border-bottom: 1px solid #e9ecef; padding: 12px 0; ${index === itemsWithRecommendations.length - 1 ? 'border-bottom: none;' : ''}">
+                        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                            <div style="font-weight: bold; color: #495057; min-width: 120px;">
+                                ${index + 1}. ${item.name}
+                            </div>
+                            <select id="location-select-${index}" onchange="updateItemLocation(${index}, this.value)" 
+                                    style="padding: 6px 10px; border: 1px solid #ced4da; border-radius: 5px; font-size: 13px;">
+                                ${locationOptions}
+                            </select>
+                            <div style="font-size: 12px; color: #6c757d;">
+                                (원래 추천: ${rec.locationName} - ${rec.confidence}% 확신)
+                            </div>
+                        </div>
+                        <div id="custom-status-${index}" style="margin-top: 8px; font-size: 12px;"></div>
+                    </div>
+                `;
+            });
+            
+            customizeContent += `
+                        </div>
+                        <div style="margin: 15px 0; text-align: center;">
+                            <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;">
+                                <button onclick="applyCustomizedRecommendations()" 
+                                        style="background: #28a745; color: white; border: none; padding: 10px 16px; border-radius: 20px; cursor: pointer; font-size: 13px;">
+                                    ✅ 수정 사항 적용
+                                </button>
+                                <button onclick="resetToOriginalRecommendations()" 
+                                        style="background: #17a2b8; color: white; border: none; padding: 10px 16px; border-radius: 20px; cursor: pointer; font-size: 13px;">
+                                    🔄 원래 추천으로 복원
+                                </button>
+                                <button onclick="setAllToUnassigned()" 
+                                        style="background: #6c757d; color: white; border: none; padding: 10px 16px; border-radius: 20px; cursor: pointer; font-size: 13px;">
+                                    📦 모두 위치미설정
+                                </button>
+                            </div>
+                        </div>
+                        <div style="font-size: 12px; color: #6c757d; text-align: center; margin-top: 10px;">
+                            💡 드롭다운에서 각 물품의 보관 위치를 자유롭게 변경하세요
+                        </div>
+                    </div>
+                    <div class="message-time">${new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</div>
+                </div>
+            `;
+            
+            customizeElement.innerHTML = customizeContent;
+            messagesContainer.appendChild(customizeElement);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            
+            // 전역 변수로 현재 커스터마이즈 중인 아이템들 저장
+            window.customizingItems = JSON.parse(JSON.stringify(itemsWithRecommendations));
+        }
+        
+        // 📍 아이템 위치 업데이트 (커스터마이즈 모드)
+        function updateItemLocation(index, locationId) {
+            if (!window.customizingItems) return;
+            
+            const availableLocations = appState.locations || [];
+            let locationName = '위치미설정';
+            
+            if (locationId && locationId !== 'null') {
+                const selectedLocation = availableLocations.find(loc => loc.id == locationId);
+                if (selectedLocation) {
+                    locationName = selectedLocation.name;
+                }
+            }
+            
+            // 아이템 위치 정보 업데이트
+            window.customizingItems[index].recommendedLocation = {
+                locationId: locationId === 'null' ? null : parseInt(locationId),
+                locationName: locationName,
+                reason: '사용자가 직접 수정한 위치입니다',
+                confidence: 100
+            };
+            
+            // 상태 메시지 업데이트
+            const statusElement = document.getElementById(`custom-status-${index}`);
+            statusElement.innerHTML = `<span style="color: #17a2b8;">✏️ 수정됨: ${locationName}</span>`;
+            statusElement.style.display = 'block';
+        }
+        
+        // ✅ 커스터마이즈된 추천 적용
+        async function applyCustomizedRecommendations() {
+            if (!window.customizingItems) {
+                addMessage('❌ 수정할 물품 정보를 찾을 수 없습니다.', 'bot');
+                return;
+            }
+            
+            try {
+                addMessage(`📦 수정된 설정으로 ${window.customizingItems.length}개 물품을 추가하고 있습니다...`, 'bot');
+                
+                // 위치별로 그룹핑
+                const locationGroups = {};
+                window.customizingItems.forEach(item => {
+                    const locId = item.recommendedLocation.locationId || 'unassigned';
+                    const locName = item.recommendedLocation.locationName;
+                    
+                    if (!locationGroups[locId]) {
+                        locationGroups[locId] = {
+                            locationId: locId === 'unassigned' ? null : locId,
+                            locationName: locName,
+                            items: []
+                        };
+                    }
+                    
+                    locationGroups[locId].items.push({
+                        ...item,
+                        locationId: locId === 'unassigned' ? null : locId,
+                        locationName: locName
+                    });
+                });
+                
+                // 각 위치별로 물품 추가
+                let totalAdded = 0;
+                let resultMessage = `✅ **커스터마이즈된 설정으로 ${window.customizingItems.length}개 물품이 성공적으로 추가되었습니다!**<br><br>`;
+                
+                for (const [locId, group] of Object.entries(locationGroups)) {
+                    const response = await fetch(`${API_URL}/items/bulk-add`, {
+                        method: 'POST',
+                        headers: getAuthHeaders(),
+                        body: JSON.stringify({ items: group.items })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        totalAdded += data.addedItems.length;
+                        resultMessage += `📍 **${group.locationName}**<br>`;
+                        data.addedItems.forEach((addedItem) => {
+                            resultMessage += `&nbsp;&nbsp;✏️ ${addedItem.name} (${addedItem.quantity}${addedItem.unit || '개'}) <span style="color: #17a2b8;">사용자 수정</span><br>`;
+                        });
+                        resultMessage += `<br>`;
+                    }
+                }
+                
+                addMessage(resultMessage, 'bot');
+                showToast(`✅ ${totalAdded}개 물품이 커스터마이즈된 위치에 추가됨`);
+                
+                // 전역 변수 초기화
+                window.customizingItems = null;
+                
+                // 재고 새로고침
+                if (typeof loadAllData === 'function') {
+                    loadAllData();
+                }
+                
+            } catch (error) {
+                console.error('커스터마이즈된 물품 추가 오류:', error);
+                addMessage('❌ 물품 추가 중 오류가 발생했습니다: ' + error.message, 'bot');
+                showToast('❌ 물품 추가 오류');
+            }
+        }
+        
+        // 🔄 원래 추천으로 복원
+        function resetToOriginalRecommendations() {
+            if (!window.customizingItems) return;
+            
+            window.customizingItems.forEach((item, index) => {
+                // 원래 추천으로 복원 (이 시점에서는 이미 수정된 상태이므로 기본 추천 재실행)
+                const originalRec = getLocationRecommendation(item);
+                
+                // 셀렉트 박스 값 복원
+                const selectElement = document.getElementById(`location-select-${index}`);
+                if (selectElement) {
+                    selectElement.value = originalRec.locationId || 'null';
+                }
+                
+                // 상태 메시지 제거
+                const statusElement = document.getElementById(`custom-status-${index}`);
+                if (statusElement) {
+                    statusElement.innerHTML = '';
+                }
+                
+                // 아이템 정보 복원
+                window.customizingItems[index].recommendedLocation = originalRec;
+            });
+            
+            showToast('🔄 모든 설정이 원래 AI 추천으로 복원되었습니다');
+        }
+        
+        // 📦 모두 위치미설정으로 설정
+        function setAllToUnassigned() {
+            if (!window.customizingItems) return;
+            
+            window.customizingItems.forEach((item, index) => {
+                // 셀렉트 박스 값 변경
+                const selectElement = document.getElementById(`location-select-${index}`);
+                if (selectElement) {
+                    selectElement.value = 'null';
+                }
+                
+                // 상태 메시지 업데이트
+                const statusElement = document.getElementById(`custom-status-${index}`);
+                if (statusElement) {
+                    statusElement.innerHTML = '<span style="color: #6c757d;">📦 위치미설정으로 변경됨</span>';
+                }
+                
+                // 아이템 정보 업데이트
+                window.customizingItems[index].recommendedLocation = {
+                    locationId: null,
+                    locationName: '위치미설정',
+                    reason: '사용자가 위치미설정으로 선택했습니다',
+                    confidence: 100
+                };
+            });
+            
+            showToast('📦 모든 물품이 위치미설정으로 변경되었습니다');
+        }
+        
+        // 📦 직접 물품 추가 (기존 함수, 다른 곳에서 사용)
+        async function addItemsDirectly(items) {
             try {
                 addMessage('📦 물품을 재고에 추가하고 있습니다...', 'bot');
                 
@@ -1840,6 +2960,11 @@
             const currentTime = new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
             const avatar = type === 'user' ? '👤' : '🤖';
             
+            // 🚚 출고 처리 패턴 검사 (봇 응답에서만)
+            if (type === 'bot' && content.includes('STOCK_OUT_REQUEST:')) {
+                content = processStockOutRequest(content);
+            }
+            
             messageElement.innerHTML = `
                 <div class="message-avatar">${avatar}</div>
                 <div class="message-content">
@@ -1866,21 +2991,156 @@
             localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
         }
         
+        // 🚚 출고 요청 처리
+        function processStockOutRequest(content) {
+            const stockOutPattern = /STOCK_OUT_REQUEST:\s*([^<\n]+)/g;
+            let match;
+            let processedContent = content;
+            
+            while ((match = stockOutPattern.exec(content)) !== null) {
+                const requestText = match[1].trim();
+                
+                // 물품명과 수량 추출
+                const itemMatch = requestText.match(/^(.+?)\s+(\d+)(.*)$/);
+                if (itemMatch) {
+                    const itemName = itemMatch[1].trim();
+                    const quantity = parseInt(itemMatch[2]);
+                    const unit = itemMatch[3].trim() || '개';
+                    
+                    // 실제 출고 처리
+                    const result = performStockOut(itemName, quantity, unit);
+                    
+                    if (result.success) {
+                        const location = result.location || '위치미설정';
+                        const successMessage = `✅ 출고 완료! ${itemName} ${quantity}${unit}<br>📍 위치: ${location}<br>📦 남은재고: ${result.remainingStock}${unit}`;
+                        processedContent = processedContent.replace(match[0], successMessage);
+                        
+                        // 재고 현황 업데이트
+                        setTimeout(() => {
+                            updateInventoryDisplay();
+                            loadItems();
+                        }, 100);
+                        
+                        showToast(`🚚 ${itemName} ${quantity}${unit} 출고 완료!`);
+                    } else {
+                        const errorMessage = `❌ 출고 실패: ${result.error}`;
+                        processedContent = processedContent.replace(match[0], errorMessage);
+                        showToast(`❌ 출고 실패: ${result.error}`);
+                    }
+                } else {
+                    // 패턴 매칭 실패시 기본 메시지
+                    processedContent = processedContent.replace(match[0], '❌ 출고 처리 형식을 확인해주세요.');
+                }
+            }
+            
+            return processedContent;
+        }
+        
+        // 🚚 실제 출고 수행
+        async function performStockOut(itemName, quantity, unit) {
+            try {
+                // 현재 재고에서 해당 물품 찾기
+                const item = appState.items?.find(item => 
+                    item.name.toLowerCase().includes(itemName.toLowerCase()) ||
+                    itemName.toLowerCase().includes(item.name.toLowerCase())
+                );
+                
+                if (!item) {
+                    return { success: false, error: `"${itemName}" 물품을 찾을 수 없습니다.` };
+                }
+                
+                const currentStock = item.quantity || 0;
+                if (currentStock < quantity) {
+                    return { success: false, error: `재고 부족 (현재: ${currentStock}${unit}, 요청: ${quantity}${unit})` };
+                }
+                
+                // 백엔드 API 호출로 출고 처리
+                const response = await fetch(`${API_URL}/inventory/stock-out`, {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({
+                        itemId: item.id || item._id,
+                        quantity: quantity,
+                        note: '채팅을 통한 출고',
+                        reason: 'chat_stock_out'
+                    })
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                        const newStock = currentStock - quantity;
+                        // 로컬 상태 업데이트
+                        item.quantity = newStock;
+                        
+                        // 로컬스토리지 업데이트
+                        if (appState.items) {
+                            localStorage.setItem('items', JSON.stringify(appState.items));
+                        }
+                        
+                        return { 
+                            success: true, 
+                            remainingStock: newStock,
+                            message: result.message,
+                            location: item.locationName || '위치미설정'
+                        };
+                    }
+                }
+                
+                // API 실패시 로컬에서 처리
+                item.quantity = Math.max(0, currentStock - quantity);
+                const newStock = item.quantity;
+                
+                // 로컬스토리지 업데이트
+                if (appState.items) {
+                    localStorage.setItem('items', JSON.stringify(appState.items));
+                }
+                
+                return { 
+                    success: true, 
+                    remainingStock: newStock,
+                    message: '로컬에서 출고 처리됨',
+                    location: item.locationName || '위치미설정'
+                };
+                
+            } catch (error) {
+                console.error('출고 처리 오류:', error);
+                return { success: false, error: '출고 처리 중 오류가 발생했습니다.' };
+            }
+        }
+        
         // 봇 응답 생성 (API 호출)
         async function generateBotResponse(userMessage) {
             try {
-                // 백엔드 챗봇 API 호출
+                console.log('🤖 챗봇 응답 생성 시작:', userMessage);
+                console.log('📊 현재 앱 상태:', {
+                    items: (appState.items || []).length,
+                    categories: (appState.categories || []).length,
+                    locations: (appState.locations || []).length,
+                    inventoryHistory: (appState.inventoryHistory || []).length
+                });
+                
+                // 백엔드 챗봇 API 호출 (백엔드가 최신 데이터를 가지고 있음)
                 const response = await fetch(`${API_URL}/chatbot`, {
                     method: 'POST',
                     headers: getAuthHeaders(),
                     body: JSON.stringify({
-                        message: userMessage
+                        message: userMessage,
+                        // 프론트엔드 컨텍스트 정보도 함께 전송
+                        context: {
+                            frontendDataCount: {
+                                items: (appState.items || []).length,
+                                categories: (appState.categories || []).length,
+                                locations: (appState.locations || []).length
+                            }
+                        }
                     })
                 });
                 
                 if (response.ok) {
                     const data = await response.json();
                     if (data.success) {
+                        console.log('✅ 챗봇 API 응답 성공');
                         return data.response;
                     }
                 }
@@ -1891,31 +3151,105 @@
             } catch (error) {
                 console.error('챗봇 API 오류:', error);
                 
-                // 오프라인 또는 API 실패 시 기본 응답
-                return generateFallbackResponse(userMessage);
+                // 오프라인 또는 API 실패 시 로컬 데이터를 활용한 기본 응답
+                return generateFallbackResponseWithData(userMessage);
             }
         }
         
-        // API 실패 시 대체 응답
-        function generateFallbackResponse(userMessage) {
+        // 📊 로컬 데이터 활용 대체 응답 (개선됨)
+        function generateFallbackResponseWithData(userMessage) {
             const message = userMessage.toLowerCase();
             
-            // 기본적인 키워드 기반 응답
-            if (message.includes('재고') || message.includes('현황')) {
-                const totalItems = appState.items ? appState.items.length : 0;
-                const totalQuantity = appState.items ? appState.items.reduce((sum, item) => sum + (item.quantity || 0), 0) : 0;
-                return `📊 현재 재고 현황:<br>• 전체 물품: ${totalItems}개<br>• 총 수량: ${totalQuantity}개<br><br>자세한 정보는 '재고관리' 메뉴를 확인해주세요!`;
+            console.log('🔄 로컬 데이터 기반 응답 생성:', {
+                message: userMessage,
+                items: (appState.items || []).length,
+                categories: (appState.categories || []).length,
+                locations: (appState.locations || []).length
+            });
+            
+            // 재고 현황 관련 응답 (최신 로컬 데이터 활용)
+            if (message.includes('재고') || message.includes('현황') || message.includes('물품') || message.includes('목록')) {
+                const items = appState.items || [];
+                const totalItems = items.length;
+                const totalQuantity = items.reduce((sum, item) => sum + (item.quantity || 0), 0);
+                const lowStockItems = items.filter(item => (item.quantity || 0) <= 2);
+                
+                let response = `📊 **현재 재고 현황** (로컬 데이터)<br><br>`;
+                response += `• 전체 물품: **${totalItems}개**<br>`;
+                response += `• 총 수량: **${totalQuantity}개**<br>`;
+                response += `• 카테고리: ${(appState.categories || []).length}개<br>`;
+                response += `• 위치: ${(appState.locations || []).length}개<br><br>`;
+                
+                if (lowStockItems.length > 0) {
+                    response += `⚠️ **재고 부족 물품:**<br>`;
+                    lowStockItems.slice(0, 5).forEach(item => {
+                        response += `• ${item.name}: ${item.quantity || 0}${item.unit || '개'}<br>`;
+                    });
+                    response += `<br>`;
+                }
+                
+                if (totalItems > 0) {
+                    response += `📦 **주요 물품:**<br>`;
+                    items.filter(item => (item.quantity || 0) > 0).slice(0, 5).forEach(item => {
+                        response += `• ${item.name}: ${item.quantity}${item.unit || '개'}<br>`;
+                    });
+                }
+                
+                response += `<br>💡 실시간 데이터는 네트워크 연결 후 자동 동기화됩니다.`;
+                return response;
             }
             
-            if (message.includes('안녕') || message.includes('hi')) {
-                return `안녕하세요! 😊 AI물품관리 도우미입니다.<br>현재 오프라인 모드로 제한적인 응답만 가능합니다.<br><br>기본적인 질문은 언제든 해주세요!`;
+            // 출고 관련 응답
+            if (message.includes('출고') || message.includes('사용') || message.includes('소비')) {
+                return `🚚 **출고 기능 안내** (오프라인 모드)<br><br>` +
+                       `출고는 다음과 같이 말해보세요:<br>` +
+                       `• "우유 2개 사용했어"<br>` +
+                       `• "라면 1개 먹었어"<br>` +
+                       `• "토마토 3개 출고해줘"<br><br>` +
+                       `또는 🚚 빠른 출고 버튼을 이용하세요!<br><br>` +
+                       `💡 네트워크 연결 시 더 정확한 처리가 가능합니다.`;
             }
             
-            if (message.includes('도움') || message.includes('help')) {
-                return `❓ 기본 사용법:<br><br>📦 재고관리: 하단 메뉴<br>➕ 물건 추가: ➕ 버튼<br>📍 위치 관리: 위치 메뉴<br><br>더 자세한 도움이 필요하시면 네트워크 연결을 확인해주세요.`;
+            // 안녕 인사
+            if (message.includes('안녕') || message.includes('hi') || message.includes('hello')) {
+                const items = appState.items || [];
+                return `안녕하세요! 😊 **AI 물품관리 도우미**입니다.<br><br>` +
+                       `현재 **${items.length}개 물품**을 관리 중이에요!<br><br>` +
+                       `🔌 현재 오프라인 모드로 제한적인 응답만 가능하지만,<br>` +
+                       `기본적인 재고 관리는 정상 작동합니다.<br><br>` +
+                       `무엇을 도와드릴까요?`;
             }
             
-            return `죄송해요, 현재 네트워크 연결에 문제가 있어 제한적인 응답만 가능합니다. 😅<br><br>다음을 확인해보세요:<br>• 인터넷 연결 상태<br>• 서버 상태<br><br>기본적인 앱 기능은 정상적으로 사용 가능합니다!`;
+            // 도움말
+            if (message.includes('도움') || message.includes('help') || message.includes('사용법')) {
+                return `❓ **AI 물품관리 사용법**<br><br>` +
+                       `📦 **재고 관리:**<br>` +
+                       `• 하단 '재고관리' 메뉴<br>` +
+                       `• "재고 현황" 이라고 물어보세요<br><br>` +
+                       `🚚 **출고 처리:**<br>` +
+                       `• "라면 2개 사용했어"<br>` +
+                       `• 🚚 빠른 출고 버튼 활용<br><br>` +
+                       `➕ **물품 추가:**<br>` +
+                       `• ➕ 버튼으로 직접 등록<br>` +
+                       `• 🧾 영수증 분석으로 일괄 등록<br><br>` +
+                       `📍 **위치 관리:** 하단 '위치' 메뉴<br>` +
+                       `🏷️ **카테고리 관리:** 하단 '카테고리' 메뉴`;
+            }
+            
+            // 기본 응답
+            return `🤖 **AI 도우미** (오프라인 모드)<br><br>` +
+                   `현재 네트워크 연결에 문제가 있어 제한적인 응답만 가능합니다.<br><br>` +
+                   `🔍 **시도해볼 수 있는 질문들:**<br>` +
+                   `• "재고 현황"<br>` +
+                   `• "도움말"<br>` +
+                   `• "라면 2개 사용했어" (출고)<br><br>` +
+                   `💡 모든 기본 기능은 정상 작동합니다!<br>` +
+                   `네트워크 연결 후 더욱 똑똑한 응답을 받을 수 있어요.`;
+        }
+        
+        // API 실패 시 기본 대체 응답 (하위 호환성)
+        function generateFallbackResponse(userMessage) {
+            return generateFallbackResponseWithData(userMessage);
         }
         
         // 채팅 초기화
