@@ -4374,7 +4374,7 @@
         // 🔐 인증 관련 함수들
         async function checkAuthentication() {
             // 무한 리다이렉트 방지를 위한 플래그 확인
-            if (window.location.pathname === '/login.html') {
+            if (window.location.pathname.endsWith('/login.html')) {
                 return; // 이미 로그인 페이지에 있으면 체크하지 않음
             }
 
@@ -4523,7 +4523,7 @@
         
         // 로그인 페이지로 이동
         function goToLogin() {
-            window.location.href = '/login.html';
+            window.location.href = './login.html';
         }
         
         // 로그아웃
