@@ -2063,6 +2063,14 @@
                     const result = await response.json();
                     if (result.success) {
                         const newStock = currentStock - quantity;
+                        // 로컬 상태 업데이트
+                        item.quantity = newStock;
+                        
+                        // 로컬스토리지 업데이트
+                        if (appState.items) {
+                            localStorage.setItem('items', JSON.stringify(appState.items));
+                        }
+                        
                         return { 
                             success: true, 
                             remainingStock: newStock,
