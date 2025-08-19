@@ -1775,6 +1775,10 @@
                 <div class="message-content">
                     <div class="message-bubble">
                         <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;">
+                            <button onclick="showSmartLocationRecommendations(${JSON.stringify(items).replace(/"/g, '&quot;')})" 
+                                    style="background: #17a2b8; color: white; border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-size: 14px;">
+                                🧠 스마트 위치 추천
+                            </button>
                             <button onclick="addAllItemsToInventory(${JSON.stringify(items).replace(/"/g, '&quot;')})" 
                                     style="background: #28a745; color: white; border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-size: 14px;">
                                 ✅ 모든 물품 추가
@@ -1910,6 +1914,258 @@
         function showNewLocationForm(items) {
             addMessage('새 보관장소를 만들어보세요! 하단의 "위치" 메뉴에서 위치를 추가한 후 다시 시도해주세요.<br><br>' +
                      '또는 "📦 위치미설정으로 추가" 버튼을 클릭하여 일단 추가하고 나중에 위치를 설정할 수도 있습니다.', 'bot');
+        }
+        
+        // 🧠 스마트 위치 추천 시스템
+        function showSmartLocationRecommendations(items) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const recommendationElement = document.createElement('div');  
+            recommendationElement.className = 'message bot-message';
+            
+            // 각 물품에 대한 위치 추천
+            const itemsWithRecommendations = items.map(item => {
+                const recommendation = getLocationRecommendation(item);
+                return {
+                    ...item,
+                    recommendedLocation: recommendation
+                };
+            });
+            
+            // 추천 결과 표시
+            let recommendationContent = `
+                <div class="message-avatar">🤖</div>
+                <div class="message-content">
+                    <div class="message-bubble">
+                        <strong>🧠 스마트 위치 추천</strong><br><br>
+                        각 물품에 가장 적절한 보관장소를 추천해드릴게요!<br><br>
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin: 10px 0;">
+            `;
+            
+            itemsWithRecommendations.forEach((item, index) => {
+                const rec = item.recommendedLocation;
+                recommendationContent += `
+                    <div style="border-bottom: 1px solid #e9ecef; padding: 8px 0; ${index === itemsWithRecommendations.length - 1 ? 'border-bottom: none;' : ''}">
+                        <div style="font-weight: bold; color: #495057;">
+                            ${index + 1}. ${item.name}
+                        </div>
+                        <div style="margin: 5px 0; font-size: 13px;">
+                            🎯 <strong>추천 위치</strong>: <span style="color: #17a2b8;">${rec.locationName}</span>
+                            <span style="background: #17a2b8; color: white; padding: 2px 6px; border-radius: 10px; font-size: 11px; margin-left: 8px;">
+                                ${rec.confidence}% 확신
+                            </span>
+                        </div>
+                        <div style="font-size: 12px; color: #6c757d;">
+                            💡 ${rec.reason}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            recommendationContent += `
+                        </div>
+                        <div style="margin: 15px 0; text-align: center;">
+                            <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;">
+                                <button onclick="acceptAllRecommendations(${JSON.stringify(itemsWithRecommendations).replace(/"/g, '&quot;')})" 
+                                        style="background: #28a745; color: white; border: none; padding: 10px 16px; border-radius: 20px; cursor: pointer; font-size: 13px;">
+                                    ✅ 모든 추천 수락
+                                </button>
+                                <button onclick="showIndividualRecommendations(${JSON.stringify(itemsWithRecommendations).replace(/"/g, '&quot;')})" 
+                                        style="background: #007bff; color: white; border: none; padding: 10px 16px; border-radius: 20px; cursor: pointer; font-size: 13px;">
+                                    🔍 개별 선택
+                                </button>
+                                <button onclick="customizeRecommendations(${JSON.stringify(itemsWithRecommendations).replace(/"/g, '&quot;')})" 
+                                        style="background: #ffc107; color: #212529; border: none; padding: 10px 16px; border-radius: 20px; cursor: pointer; font-size: 13px;">
+                                    ✏️ 수정하기
+                                </button>
+                            </div>
+                        </div>
+                        <div style="font-size: 12px; color: #6c757d; text-align: center; margin-top: 10px;">
+                            💡 AI가 물품 특성과 기존 보관 패턴을 분석하여 추천했습니다
+                        </div>
+                    </div>
+                    <div class="message-time">${new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</div>
+                </div>
+            `;
+            
+            recommendationElement.innerHTML = recommendationContent;
+            messagesContainer.appendChild(recommendationElement);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        // 🎯 물품별 위치 추천 로직
+        function getLocationRecommendation(item) {
+            const availableLocations = appState.locations || [];
+            const itemName = item.name.toLowerCase();
+            const category = item.category ? item.category.toLowerCase() : '';
+            
+            // 기본 추천 규칙들
+            const recommendationRules = [
+                // 냉장고 보관 식품
+                {
+                    keywords: ['우유', '계란', '치즈', '요거트', '버터', '마가린', '햄', '베이컨', '소시지', '김치', '반찬', '밑반찬', '채소', '야채', '대파', '양배추', '상추', '배추', '무', '당근', '오이', '토마토', '피망', '브로콜리'],
+                    locations: ['냉장고', 'refrigerator', '냉장', '주방', '부엌', 'kitchen'],
+                    reason: '신선도 유지를 위해 냉장 보관이 필요한 식품입니다',
+                    confidence: 95
+                },
+                // 냉동고 보관 식품
+                {
+                    keywords: ['냉동', '아이스크림', '만두', '냉동식품', '빙과', '냉동고기', '냉동생선'],
+                    locations: ['냉동고', 'freezer', '냉동', '주방', '부엌'],
+                    reason: '냉동 보관이 필요한 식품입니다',
+                    confidence: 98
+                },
+                // 상온 보관 식품
+                {
+                    keywords: ['라면', '과자', '쿠키', '빵', '빵류', '시리얼', '견과류', '견과', '견과류', '쿠킹', '통조림', '캔', '조미료', '양념', '기름', '식용유', '올리브오일', '참기름', '들기름', '소금', '설탕', '후추', '마늘'],
+                    locations: ['식료품저장고', '냉장고', '주방', '부엌', '팬트리', '창고', '저장고'],
+                    reason: '상온에서 보관 가능한 식품입니다',
+                    confidence: 85
+                },
+                // 화장실/세면용품
+                {
+                    keywords: ['샴푸', '린스', '바디워시', '치약', '칫솔', '세면용품', '화장품', '로션', '크림'],
+                    locations: ['화장실', '세면대', '욕실', 'bathroom'],
+                    reason: '세면용품은 화장실에 보관하는 것이 일반적입니다',
+                    confidence: 90
+                },
+                // 청소용품
+                {
+                    keywords: ['세제', '청소', '클리너', '락스', '세정제', '고무장갑', '스펀지', '걸레'],
+                    locations: ['청소용품보관함', '싱크대아래', '베란다', '창고', '화장실'],
+                    reason: '청소용품은 별도 공간에 보관하는 것이 안전합니다',
+                    confidence: 88
+                }
+            ];
+            
+            // 추천 위치 찾기
+            let bestRecommendation = {
+                locationId: null,
+                locationName: '위치미설정',
+                reason: '적절한 보관장소를 찾지 못했습니다',
+                confidence: 50
+            };
+            
+            for (const rule of recommendationRules) {
+                const matchedKeyword = rule.keywords.find(keyword => 
+                    itemName.includes(keyword) || category.includes(keyword)
+                );
+                
+                if (matchedKeyword) {
+                    // 해당 규칙에 맞는 위치 찾기
+                    for (const locationKeyword of rule.locations) {
+                        const foundLocation = availableLocations.find(loc => 
+                            loc.name.toLowerCase().includes(locationKeyword.toLowerCase())
+                        );
+                        
+                        if (foundLocation) {
+                            bestRecommendation = {
+                                locationId: foundLocation.id,
+                                locationName: foundLocation.name,
+                                reason: rule.reason,
+                                confidence: rule.confidence
+                            };
+                            break;
+                        }
+                    }
+                    
+                    if (bestRecommendation.locationId) break;
+                }
+            }
+            
+            // 위치를 찾지 못한 경우 카테고리 기반 추천
+            if (!bestRecommendation.locationId && category === '식품') {
+                const kitchenLocation = availableLocations.find(loc => 
+                    loc.name.toLowerCase().includes('주방') || 
+                    loc.name.toLowerCase().includes('부엌') ||
+                    loc.name.toLowerCase().includes('kitchen')
+                );
+                
+                if (kitchenLocation) {
+                    bestRecommendation = {
+                        locationId: kitchenLocation.id,
+                        locationName: kitchenLocation.name,
+                        reason: '식품류는 주방에 보관하는 것이 일반적입니다',
+                        confidence: 75
+                    };
+                }
+            }
+            
+            return bestRecommendation;
+        }
+        
+        // ✅ 모든 추천 수락
+        async function acceptAllRecommendations(itemsWithRecommendations) {
+            try {
+                addMessage(`🧠 AI 추천에 따라 ${itemsWithRecommendations.length}개 물품을 적절한 위치에 추가하고 있습니다...`, 'bot');
+                
+                // 물품들을 위치별로 그룹핑
+                const locationGroups = {};
+                itemsWithRecommendations.forEach(item => {
+                    const locId = item.recommendedLocation.locationId || 'unassigned';
+                    const locName = item.recommendedLocation.locationName;
+                    
+                    if (!locationGroups[locId]) {
+                        locationGroups[locId] = {
+                            locationId: locId === 'unassigned' ? null : locId,
+                            locationName: locName,
+                            items: []
+                        };
+                    }
+                    
+                    locationGroups[locId].items.push({
+                        ...item,
+                        locationId: locId === 'unassigned' ? null : locId,
+                        locationName: locName
+                    });
+                });
+                
+                // 각 위치별로 물품 추가
+                let totalAdded = 0;
+                let resultMessage = `✅ **AI 추천에 따라 물품이 성공적으로 추가되었습니다!**<br><br>`;
+                
+                for (const [locId, group] of Object.entries(locationGroups)) {
+                    const response = await fetch(`${API_URL}/items/bulk-add`, {
+                        method: 'POST',
+                        headers: getAuthHeaders(),
+                        body: JSON.stringify({ items: group.items })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        totalAdded += data.addedItems.length;
+                        resultMessage += `📍 **${group.locationName}**<br>`;
+                        data.addedItems.forEach((item, index) => {
+                            const confidence = group.items[index]?.recommendedLocation?.confidence || 0;
+                            resultMessage += `&nbsp;&nbsp;• ${item.name} (${item.quantity}${item.unit || '개'}) <span style="color: #17a2b8;">${confidence}% 확신</span><br>`;
+                        });
+                        resultMessage += `<br>`;
+                    }
+                }
+                
+                addMessage(resultMessage, 'bot');
+                showToast(`✅ ${totalAdded}개 물품이 AI 추천 위치에 추가됨`);
+                
+                // 재고 새로고침
+                if (typeof loadAllData === 'function') {
+                    loadAllData();
+                }
+                
+            } catch (error) {
+                console.error('추천 기반 물품 추가 오류:', error);
+                addMessage('❌ 물품 추가 중 오류가 발생했습니다: ' + error.message, 'bot');
+                showToast('❌ 물품 추가 오류');
+            }
+        }
+        
+        // 🔍 개별 추천 선택
+        function showIndividualRecommendations(itemsWithRecommendations) {
+            addMessage('개별 선택 기능은 곧 구현될 예정입니다. 지금은 "모든 추천 수락" 또는 기존 "선택해서 추가" 기능을 이용해주세요!', 'bot');
+        }
+        
+        // ✏️ 추천 수정
+        function customizeRecommendations(itemsWithRecommendations) {
+            addMessage('추천 수정 기능은 곧 구현될 예정입니다. 지금은 "모든 추천 수락" 또는 기존 "수정 후 추가" 기능을 이용해주세요!', 'bot');
         }
         
         // 📦 직접 물품 추가 (기존 함수, 다른 곳에서 사용)
