@@ -95,8 +95,7 @@
             height: 100vh;
             display: flex;
             flex-direction: column;
-            padding-top: 62px; /* 헤더 높이 */
-            padding-bottom: 70px; /* 하단 네비 높이 */
+            padding-top: 62px; /* 헤더 높이만 */
         }
         
         /* 챗봇 헤더 - 모던 디자인 */
@@ -347,26 +346,30 @@
             transform: scale(0.95);
         }
         
-        /* 빠른 응답 버튼들 - 글래스 디자인 */
+        /* 통합 기능 버튼 스타일 */
         .quick-replies {
             display: flex;
-            gap: 8px;
+            gap: 6px;
             flex-wrap: wrap;
+            justify-content: center;
         }
         
         .quick-reply-btn {
-            background: rgba(255, 255, 255, 0.7);
+            background: rgba(255, 255, 255, 0.8);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(102, 126, 234, 0.2);
             border-radius: 20px;
             padding: 8px 12px;
-            font-size: 12px;
+            font-size: 11px;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             white-space: nowrap;
             color: #667eea;
             font-weight: 500;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            flex: 0 0 auto;
+            min-width: 80px;
+            text-align: center;
         }
         
         .quick-reply-btn:hover {
@@ -376,148 +379,11 @@
             box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
         }
         
-        /* 하단 네비게이션 - 엘레베이터 스타일 */
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 6px 15px;
-            box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
-            z-index: 100;
-            border-top: 1px solid rgba(0,0,0,0.05);
-            height: 70px;
+        .quick-reply-btn:active {
+            transform: translateY(0);
         }
         
-        .nav-elevator {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(102, 126, 234, 0.1);
-            padding: 6px 12px;
-            border-radius: 35px;
-            border: 1px solid rgba(102, 126, 234, 0.2);
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.15);
-            overflow-x: auto;
-            max-width: 100%;
-        }
-        
-        .nav-item, .fab-nav-item {
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            color: #666;
-            text-decoration: none;
-            font-size: 9px;
-            font-weight: 500;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 1px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            flex-shrink: 0;
-        }
-        
-        .nav-item:hover, .fab-nav-item:hover {
-            background: rgba(102, 126, 234, 0.15);
-            transform: translateY(-3px);
-            color: #667eea;
-        }
-        
-        .nav-item.active, .fab-nav-item.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            transform: translateY(-5px);
-            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
-        }
-        
-        .nav-item span, .fab-nav-item .fab-icon {
-            font-size: 18px;
-            transition: transform 0.3s ease;
-        }
-        
-        .nav-item.active span, .fab-nav-item.active .fab-icon {
-            transform: scale(1.1);
-        }
-        
-        .nav-item div, .fab-nav-item div {
-            font-size: 8px;
-            margin-top: 1px;
-            opacity: 0.8;
-        }
-        
-        /* 카메라 버튼 특별 스타일 */
-        .nav-item[onclick="openCameraQuick()"] {
-            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
-            color: white;
-            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
-        }
-        
-        .nav-item[onclick="openCameraQuick()"]:hover {
-            background: linear-gradient(135deg, #ff5252 0%, #f44336 100%);
-            transform: translateY(-3px) scale(1.05);
-            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
-        }
-        
-        .nav-item[onclick="openCameraQuick()"] .floor-number {
-            background: #ff4757;
-            color: white;
-        }
-        
-        /* 엘레베이터 인디케이터 */
-        .elevator-indicator {
-            position: absolute;
-            left: -5px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 3px;
-            height: 30px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 2px;
-            opacity: 0;
-            transition: all 0.3s ease;
-        }
-        
-        .nav-item.active .elevator-indicator,
-        .fab-nav-item.active .elevator-indicator {
-            opacity: 1;
-        }
-        
-        /* 엘레베이터 플로어 넘버 */
-        .floor-number {
-            position: absolute;
-            right: -8px;
-            top: -8px;
-            width: 20px;
-            height: 20px;
-            background: #ff4757;
-            color: white;
-            border-radius: 50%;
-            font-size: 10px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            transform: scale(0);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        .nav-item.active .floor-number,
-        .fab-nav-item.active .floor-number {
-            opacity: 1;
-            transform: scale(1);
-        }
+        /* 하단 네비게이션 스타일 제거됨 */
         
         /* 모달 - 모던 디자인 */
         .modal {
@@ -660,10 +526,10 @@
             transform: translateY(0);
         }
         
-        /* 토스트 - 개선된 디자인 */
+        /* 토스트 - 하단 여백 조정 */
         .toast {
             position: fixed;
-            bottom: 80px;
+            bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
             background: rgba(0,0,0,0.9);
@@ -785,25 +651,6 @@
         @media (max-width: 480px) {
             .mobile-content {
                 padding-top: 62px;
-                padding-bottom: 70px;
-            }
-            
-            .nav-elevator {
-                gap: 6px;
-                padding: 5px 10px;
-            }
-            
-            .nav-item, .fab-nav-item {
-                width: 40px;
-                height: 40px;
-            }
-            
-            .nav-item span, .fab-nav-item .fab-icon {
-                font-size: 16px;
-            }
-            
-            .nav-item div, .fab-nav-item div {
-                font-size: 7px;
             }
             
             .chat-messages {
@@ -820,6 +667,12 @@
                 font-size: 14px;
             }
             
+            .quick-reply-btn {
+                font-size: 10px;
+                padding: 6px 10px;
+                min-width: 70px;
+            }
+            
             .modal-content {
                 width: 95%;
                 padding: 20px;
@@ -829,14 +682,24 @@
         }
         
         @media (max-width: 360px) {
-            .nav-elevator {
+            .quick-replies {
                 gap: 4px;
-                padding: 4px 8px;
             }
             
-            .nav-item, .fab-nav-item {
-                width: 35px;
-                height: 35px;
+            .quick-reply-btn {
+                font-size: 9px;
+                padding: 5px 8px;
+                min-width: 60px;
+            }
+            
+            .chat-messages {
+                padding: 8px 12px;
+            }
+            
+            .chat-input-area {
+                padding: 10px 12px;
+            }
+        };
             }
             
             .nav-item span, .fab-nav-item .fab-icon {
@@ -986,12 +849,16 @@
                     <input type="file" id="receiptInput" accept="image/*" style="display: none;" onchange="analyzeReceipt(this.files[0])">
                 </div>
                 
-                <!-- 빠른 응답 버튼들 -->
+                <!-- 통합 기능 버튼들 -->
                 <div class="quick-replies">
                     <button class="quick-reply-btn" onclick="sendQuickMessage('재고 현황')">📊 재고 현황</button>
                     <button class="quick-reply-btn" onclick="sendQuickMessage('위치 구조 도움말')">🏠 위치 생성</button>
+                    <button class="quick-reply-btn" onclick="openAddModal()">📝 물품 등록</button>
+                    <button class="quick-reply-btn" onclick="openCameraQuick()">📸 카메라</button>
+                    <button class="quick-reply-btn" onclick="showCategoryManager()">🏷️ 카테고리</button>
+                    <button class="quick-reply-btn" onclick="showLocationManager()">📍 위치 관리</button>
                     <button class="quick-reply-btn" onclick="sendQuickMessage('다시 연결')">🔄 재연결</button>
-                    <button class="quick-reply-btn" onclick="clearChat()">🗑️ 대화 초기화</button>
+                    <button class="quick-reply-btn" onclick="clearChat()">🗑️ 초기화</button>
                 </div>
             </div>
         </div>
@@ -999,53 +866,7 @@
     
     <!-- FAB 메뉴 제거 - 모든 기능이 네비게이션 바로 이동됨 -->
     
-    <!-- 하단 네비게이션 - 엘레베이터 스타일 -->
-    <div class="bottom-nav">
-        <div class="nav-elevator">
-            <a href="#" class="nav-item active">
-                <div class="elevator-indicator"></div>
-                <span>🏠</span>
-                <div>홈</div>
-                <div class="floor-number">1</div>
-            </a>
-            <a href="locations.html" class="nav-item">
-                <div class="elevator-indicator"></div>
-                <span>📍</span>
-                <div>위치</div>
-                <div class="floor-number">2</div>
-            </a>
-            <a href="categories.html" class="nav-item">
-                <div class="elevator-indicator"></div>
-                <span>🏷️</span>
-                <div>카테고리</div>
-                <div class="floor-number">3</div>
-            </a>
-            <a href="inventory.html" class="nav-item">
-                <div class="elevator-indicator"></div>
-                <span>📦</span>
-                <div>재고관리</div>
-                <div class="floor-number">4</div>
-            </a>
-            <a href="#" class="nav-item" onclick="openCameraQuick()">
-                <div class="elevator-indicator"></div>
-                <span>📸</span>
-                <div>카메라</div>
-                <div class="floor-number">📷</div>
-            </a>
-            <a href="#" class="fab-nav-item" onclick="openAddModal()">
-                <div class="elevator-indicator"></div>
-                <span class="fab-icon">📝</span>
-                <div>직접등록</div>
-                <div class="floor-number">+</div>
-            </a>
-            <a href="user-profile.html" class="nav-item">
-                <div class="elevator-indicator"></div>
-                <span>⚙️</span>
-                <div>설정</div>
-                <div class="floor-number">5</div>
-            </a>
-        </div>
-    </div>
+    <!-- 하단 네비게이션 제거됨 - 모든 기능이 빠른 버튼으로 통합 -->
     
         /* FAB 메뉴 스타일 제거 */
     
