@@ -29,24 +29,25 @@
         .mobile-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 12px 20px;
+            padding: 8px 15px;
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             z-index: 100;
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
             backdrop-filter: blur(10px);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            height: 50px;
+            height: 42px;
+            min-height: 42px;
         }
         
         .mobile-header h1 {
-            font-size: 18px;
-            font-weight: 700;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            font-size: 16px;
+            font-weight: 600;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.2);
             margin: 0;
             flex: 1;
             text-align: center;
@@ -61,9 +62,9 @@
             background: rgba(255, 255, 255, 0.2);
             color: white;
             border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 20px;
-            padding: 8px 16px;
-            font-size: 12px;
+            border-radius: 15px;
+            padding: 6px 12px;
+            font-size: 11px;
             font-weight: 500;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -78,14 +79,14 @@
         
         .user-info {
             color: white;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 500;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 4px;
             background: rgba(255, 255, 255, 0.15);
-            padding: 6px 12px;
-            border-radius: 15px;
+            padding: 4px 8px;
+            border-radius: 12px;
             backdrop-filter: blur(10px);
         }
         
@@ -95,104 +96,12 @@
             height: 100vh;
             display: flex;
             flex-direction: column;
-            padding-top: 62px; /* 헤더 높이만 */
+            padding-top: 42px; /* 간소화된 모바일 헤더 높이 */
         }
         
-        /* 챗봇 헤더 - 모던 디자인 */
-        .chatbot-header {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border: 1px solid rgba(255,255,255,0.2);
-        }
+
         
-        .chatbot-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        
-        .chatbot-avatar {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-            animation: gentle-pulse 2s ease-in-out infinite;
-        }
-        
-        @keyframes gentle-pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-        
-        .chatbot-title h3 {
-            margin: 0;
-            font-size: 18px;
-            color: #333;
-            font-weight: 600;
-        }
-        
-        .chatbot-status {
-            margin: 4px 0 0 0;
-            font-size: 13px;
-            color: #28a745;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            background: #28a745;
-            border-radius: 50%;
-            animation: blink 1.5s ease-in-out infinite;
-        }
-        
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
-        }
-        
-        .chatbot-actions {
-            display: flex;
-            gap: 8px;
-        }
-        
-        .chat-action-btn {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            border: none;
-            background: rgba(102, 126, 234, 0.1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            color: #667eea;
-        }
-        
-        .chat-action-btn:hover {
-            background: rgba(102, 126, 234, 0.2);
-            transform: scale(1.1);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-        }
-        
-        /* 챗봇 메시지 영역 - 전체 화면 활용 */
+        /* 챗봇 메시지 영역 - 전체 화면 최대 활용 */
         .chat-container {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(20px);
@@ -205,15 +114,16 @@
             flex-direction: column;
             border: none;
             margin: 0;
+            padding: 0;
         }
         
         .chat-messages {
             flex: 1;
-            padding: 15px 20px;
+            padding: 10px 15px 5px 15px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 12px;
             scroll-behavior: smooth;
             background: transparent;
         }
@@ -346,44 +256,49 @@
             transform: scale(0.95);
         }
         
-        /* 통합 기능 버튼 스타일 */
+        /* 통합 기능 버튼 스타일 - 그룹별 최적화 */
         .quick-replies {
-            display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(85px, 1fr));
+            gap: 8px;
             justify-content: center;
+            max-width: 100%;
         }
         
         .quick-reply-btn {
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(102, 126, 234, 0.2);
-            border-radius: 20px;
-            padding: 8px 12px;
-            font-size: 11px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 18px;
+            padding: 10px 8px;
+            font-size: 10px;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             white-space: nowrap;
             color: #667eea;
-            font-weight: 500;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            flex: 0 0 auto;
-            min-width: 80px;
+            font-weight: 600;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
             text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 42px;
+            line-height: 1.2;
         }
         
         .quick-reply-btn:hover {
-            background: rgba(102, 126, 234, 0.1);
+            background: rgba(102, 126, 234, 0.15);
             border-color: #667eea;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.25);
         }
         
         .quick-reply-btn:active {
-            transform: translateY(0);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
         }
-        
-        /* 하단 네비게이션 스타일 제거됨 */
+
         
         /* 모달 - 모던 디자인 */
         .modal {
@@ -650,12 +565,12 @@
         /* 반응형 디자인 */
         @media (max-width: 480px) {
             .mobile-content {
-                padding-top: 62px;
+                padding-top: 42px;
             }
             
             .chat-messages {
-                padding: 10px 15px;
-                gap: 12px;
+                padding: 8px 12px 5px 12px;
+                gap: 10px;
             }
             
             .chat-input-area {
@@ -667,10 +582,15 @@
                 font-size: 14px;
             }
             
+            .quick-replies {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 6px;
+            }
+            
             .quick-reply-btn {
-                font-size: 10px;
-                padding: 6px 10px;
-                min-width: 70px;
+                font-size: 9px;
+                padding: 8px 6px;
+                min-height: 38px;
             }
             
             .modal-content {
@@ -683,56 +603,22 @@
         
         @media (max-width: 360px) {
             .quick-replies {
+                grid-template-columns: repeat(2, 1fr);
                 gap: 4px;
             }
             
             .quick-reply-btn {
-                font-size: 9px;
-                padding: 5px 8px;
-                min-width: 60px;
-            }
-            
-            .chat-messages {
-                padding: 8px 12px;
-            }
-            
-            .chat-input-area {
-                padding: 10px 12px;
-            }
-        };
-            }
-            
-            .nav-item span, .fab-nav-item .fab-icon {
-                font-size: 14px;
-            }
-            
-            .nav-item div, .fab-nav-item div {
-                font-size: 6px;
-            }
-            
-            .floor-number {
-                width: 16px;
-                height: 16px;
                 font-size: 8px;
-                right: -6px;
-                top: -6px;
+                padding: 6px 4px;
+                min-height: 35px;
             }
             
             .chat-messages {
-                padding: 8px 12px;
+                padding: 6px 10px 4px 10px;
             }
             
             .chat-input-area {
                 padding: 10px 12px;
-            }
-            
-            .quick-replies {
-                gap: 6px;
-            }
-            
-            .quick-reply-btn {
-                padding: 6px 10px;
-                font-size: 11px;
             }
         }
         
@@ -760,11 +646,7 @@
                 background: rgba(40, 40, 40, 0.8);
                 border-color: rgba(255,255,255,0.1);
             }
-            
-            .bottom-nav {
-                background: rgba(30, 30, 30, 0.95);
-                border-color: rgba(255,255,255,0.1);
-            }
+
         }
         
         /* 계층형 선택기 스타일 */
@@ -849,14 +731,20 @@
                     <input type="file" id="receiptInput" accept="image/*" style="display: none;" onchange="analyzeReceipt(this.files[0])">
                 </div>
                 
-                <!-- 통합 기능 버튼들 -->
+                <!-- 통합 기능 버튼들 - 그룹별로 배치 -->
                 <div class="quick-replies">
-                    <button class="quick-reply-btn" onclick="sendQuickMessage('재고 현황')">📊 재고 현황</button>
-                    <button class="quick-reply-btn" onclick="sendQuickMessage('위치 구조 도움말')">🏠 위치 생성</button>
-                    <button class="quick-reply-btn" onclick="openAddModal()">📝 물품 등록</button>
+                    <!-- 주요 기능 그룹 -->
+                    <button class="quick-reply-btn" onclick="sendQuickMessage('재고 현황')">📊 재고현황</button>
+                    <button class="quick-reply-btn" onclick="openAddModal()">➕ 물품등록</button>
+                    <button class="quick-reply-btn" onclick="sendQuickMessage('빠른출고')">📤 빠른출고</button>
                     <button class="quick-reply-btn" onclick="openCameraQuick()">📸 카메라</button>
+                    
+                    <!-- 관리 기능 그룹 -->
+                    <button class="quick-reply-btn" onclick="showLocationManager()">📍 위치관리</button>
                     <button class="quick-reply-btn" onclick="showCategoryManager()">🏷️ 카테고리</button>
-                    <button class="quick-reply-btn" onclick="showLocationManager()">📍 위치 관리</button>
+                    <button class="quick-reply-btn" onclick="sendQuickMessage('사용현황')">📈 사용현황</button>
+                    
+                    <!-- 시스템 기능 그룹 -->
                     <button class="quick-reply-btn" onclick="sendQuickMessage('다시 연결')">🔄 재연결</button>
                     <button class="quick-reply-btn" onclick="clearChat()">🗑️ 초기화</button>
                 </div>
@@ -1668,3 +1556,539 @@
                 <div class="message-content">
                     <div class="message-bubble typing-dots">
                         <span></span><span></span><span></span>
+                    </div>
+                </div>
+            `;
+            
+            messagesContainer.appendChild(typingElement);
+            scrollToBottom();
+            
+            return typingId;
+        }
+        
+        // 타이핑 인디케이터 제거
+        function removeTypingIndicator(typingId) {
+            const typingElement = document.getElementById(typingId);
+            if (typingElement) {
+                typingElement.remove();
+            }
+        }
+        
+        // 봇 응답 생성
+        async function generateBotResponse(message) {
+            const normalizedMessage = message.toLowerCase().trim();
+            
+            // 재고 현황 요청
+            if (normalizedMessage.includes('재고') && normalizedMessage.includes('현황')) {
+                return generateInventoryStatus();
+            }
+            
+            // 빠른 출고 요청
+            if (normalizedMessage.includes('빠른출고') || (normalizedMessage.includes('출고') && normalizedMessage.includes('빠른'))) {
+                showStockOutQuickActions();
+                return null;
+            }
+            
+            // 사용 현황 요청
+            if (normalizedMessage.includes('사용현황') || (normalizedMessage.includes('사용') && normalizedMessage.includes('현황'))) {
+                return generateUsageStatus();
+            }
+            
+            // 위치 구조 도움말
+            if (normalizedMessage.includes('위치') && (normalizedMessage.includes('구조') || normalizedMessage.includes('도움말') || normalizedMessage.includes('생성'))) {
+                return generateLocationHelp();
+            }
+            
+            // 다시 연결
+            if (normalizedMessage.includes('다시') && normalizedMessage.includes('연결')) {
+                await attemptReconnection();
+                return '🔄 서버 재연결을 시도했습니다.';
+            }
+            
+            // 물품 출고 처리
+            const stockOutMatch = normalizedMessage.match(/(.*?)\s*(\d+)\s*(?:개|장|봉지|병|캔|상자)?\s*(?:사용|출고|먹|마셨|썼)/);
+            if (stockOutMatch) {
+                const itemName = stockOutMatch[1].trim();
+                const quantity = parseInt(stockOutMatch[2]);
+                return await processStockOut(itemName, quantity);
+            }
+            
+            // 기본 응답
+            return generateDefaultResponse(message);
+        }
+        
+        // 재고 현황 생성
+        function generateInventoryStatus() {
+            if (!appState.items || appState.items.length === 0) {
+                return '📦 현재 등록된 물품이 없습니다.<br><br>➕ 물품등록 버튼을 눌러 새 물품을 추가해주세요!';
+            }
+            
+            const totalItems = appState.items.length;
+            const inStockItems = appState.items.filter(item => (item.quantity || 0) > 0);
+            const outOfStockItems = appState.items.filter(item => (item.quantity || 0) === 0);
+            const lowStockItems = appState.items.filter(item => {
+                const qty = item.quantity || 0;
+                return qty > 0 && qty <= (item.minQuantity || 5);
+            });
+            
+            let statusMessage = `📊 **재고 현황 요약**<br><br>`;
+            statusMessage += `📦 총 물품: ${totalItems}개<br>`;
+            statusMessage += `✅ 재고 있음: ${inStockItems.length}개<br>`;
+            statusMessage += `❌ 재고 없음: ${outOfStockItems.length}개<br>`;
+            statusMessage += `⚠️ 부족 경고: ${lowStockItems.length}개<br><br>`;
+            
+            if (lowStockItems.length > 0) {
+                statusMessage += `🔔 **부족한 물품들:**<br>`;
+                lowStockItems.slice(0, 5).forEach(item => {
+                    statusMessage += `• ${item.name}: ${item.quantity || 0}${item.unit || '개'}<br>`;
+                });
+            }
+            
+            if (inStockItems.length > 0) {
+                statusMessage += `<br>📋 **재고 보유 물품 (상위 10개):**<br>`;
+                inStockItems
+                    .sort((a, b) => (b.quantity || 0) - (a.quantity || 0))
+                    .slice(0, 10)
+                    .forEach(item => {
+                        const location = item.locationName || '위치미설정';
+                        statusMessage += `• ${item.name}: ${item.quantity || 0}${item.unit || '개'} (📍 ${location})<br>`;
+                    });
+            }
+            
+            return statusMessage;
+        }
+        
+        // 사용 현황 생성
+        function generateUsageStatus() {
+            // 최근 7일간의 사용 데이터 (실제로는 서버에서 가져와야 함)
+            const recentUsage = JSON.parse(localStorage.getItem('recentUsage') || '[]');
+            
+            if (recentUsage.length === 0) {
+                return '📈 최근 사용 내역이 없습니다.<br><br>물품을 출고하면 사용 현황이 표시됩니다.';
+            }
+            
+            let usageMessage = `📈 **최근 사용 현황**<br><br>`;
+            
+            const today = new Date();
+            const last7Days = Array.from({length: 7}, (_, i) => {
+                const date = new Date(today);
+                date.setDate(today.getDate() - i);
+                return date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
+            }).reverse();
+            
+            usageMessage += `📅 **최근 7일:** ${last7Days[0]} ~ ${last7Days[6]}<br><br>`;
+            
+            // 최다 사용 물품
+            const usageCount = {};
+            recentUsage.forEach(usage => {
+                usageCount[usage.itemName] = (usageCount[usage.itemName] || 0) + usage.quantity;
+            });
+            
+            const sortedUsage = Object.entries(usageCount)
+                .sort(([,a], [,b]) => b - a)
+                .slice(0, 5);
+            
+            if (sortedUsage.length > 0) {
+                usageMessage += `🏆 **최다 사용 물품:**<br>`;
+                sortedUsage.forEach(([itemName, count], index) => {
+                    usageMessage += `${index + 1}. ${itemName}: ${count}개<br>`;
+                });
+            }
+            
+            return usageMessage;
+        }
+        
+        // 위치 도움말 생성
+        function generateLocationHelp() {
+            return `🏠 **위치 구조 생성 가이드**<br><br>` +
+                   `📍 **계층 구조 예시:**<br>` +
+                   `• 🏠 집 → 🚪 방 → 🪄 책장 → 📚 상단선반<br>` +
+                   `• 🏢 사무실 → 💼 회의실 → 🗄️ 캐비닛 → 📂 서류함<br>` +
+                   `• 🏪 상점 → 🛒 진열대 → 📦 상자 → 🏷️ 구역<br><br>` +
+                   `➡️ **생성 방법:**<br>` +
+                   `1. 📍 위치관리 버튼 클릭<br>` +
+                   `2. 최상위 위치부터 차례로 생성<br>` +
+                   `3. 하위 위치는 상위 위치 선택 후 추가<br>` +
+                   `4. 물품 등록 시 위치 선택<br><br>` +
+                   `💡 **팁:** 자주 사용하는 공간부터 만들어보세요!`;
+        }
+        
+        // 물품 출고 처리
+        async function processStockOut(itemName, quantity) {
+            try {
+                // 해당 물품 찾기
+                const item = appState.items.find(i => 
+                    i.name.includes(itemName) || itemName.includes(i.name)
+                );
+                
+                if (!item) {
+                    return `❌ "${itemName}" 물품을 찾을 수 없습니다.<br><br>등록된 물품 이름을 정확히 입력해주세요.`;
+                }
+                
+                if ((item.quantity || 0) < quantity) {
+                    return `⚠️ **재고 부족**<br><br>` +
+                           `물품: ${item.name}<br>` +
+                           `요청 수량: ${quantity}개<br>` +
+                           `현재 재고: ${item.quantity || 0}개<br><br>` +
+                           `재고보다 적은 수량을 입력해주세요.`;
+                }
+                
+                // 오프라인 모드에서는 로컬에서만 처리
+                if (appState.isOfflineMode) {
+                    // 로컬 데이터 업데이트
+                    item.quantity = (item.quantity || 0) - quantity;
+                    localStorage.setItem('offline_items', JSON.stringify(appState.items));
+                    
+                    // 사용 기록 저장
+                    const usage = {
+                        itemName: item.name,
+                        quantity: quantity,
+                        date: new Date().toISOString(),
+                        type: 'stock_out'
+                    };
+                    
+                    const recentUsage = JSON.parse(localStorage.getItem('recentUsage') || '[]');
+                    recentUsage.unshift(usage);
+                    recentUsage.splice(50); // 최근 50개만 유지
+                    localStorage.setItem('recentUsage', JSON.stringify(recentUsage));
+                    
+                    return `✅ **출고 완료** (오프라인)<br><br>` +
+                           `물품: ${item.name}<br>` +
+                           `출고 수량: ${quantity}개<br>` +
+                           `남은 재고: ${item.quantity}개<br><br>` +
+                           `🌐 인터넷 연결 시 서버에 동기화됩니다.`;
+                }
+                
+                // 서버에 출고 요청
+                const response = await fetch(`${API_URL}/items/${item.id}/stock-out`, {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ quantity })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // 로컬 데이터도 업데이트
+                    item.quantity = data.newQuantity;
+                    localStorage.setItem('offline_items', JSON.stringify(appState.items));
+                    
+                    return `✅ **출고 완료**<br><br>` +
+                           `물품: ${item.name}<br>` +
+                           `출고 수량: ${quantity}개<br>` +
+                           `남은 재고: ${data.newQuantity}개`;
+                } else {
+                    return `❌ 출고 처리 중 오류가 발생했습니다: ${data.message || '알 수 없는 오류'}`;
+                }
+                
+            } catch (error) {
+                console.error('출고 처리 오류:', error);
+                return `❌ 출고 처리 중 네트워크 오류가 발생했습니다.<br><br>인터넷 연결을 확인해주세요.`;
+            }
+        }
+        
+        // 기본 응답 생성
+        function generateDefaultResponse(message) {
+            const responses = [
+                `안녕하세요! 😊<br><br>다음과 같이 도움을 드릴 수 있어요:<br><br>` +
+                `📊 **재고현황** - 현재 보유 물품 확인<br>` +
+                `➕ **물품등록** - 새로운 물품 추가<br>` +
+                `📤 **빠른출고** - 물품 사용/출고<br>` +
+                `📍 **위치관리** - 보관 위치 설정<br><br>` +
+                `💬 또는 "라면 2개 사용했어" 같이 자연스럽게 말해주세요!`,
+                
+                `무엇을 도와드릴까요? 🤔<br><br>` +
+                `**사용 예시:**<br>` +
+                `• "우유 재고 확인해줘"<br>` +
+                `• "토마토 3개 출고해줘"<br>` +
+                `• "새로운 물품 등록하고 싶어"<br>` +
+                `• "위치 구조 만들고 싶어"<br><br>` +
+                `위의 빠른 버튼들도 활용해보세요! 📱`,
+                
+                `안녕하세요! AI물품관리입니다 👋<br><br>` +
+                `현재 **${appState.items.length}개**의 물품이 등록되어 있어요.<br><br>` +
+                `어떤 도움이 필요하신가요?<br>` +
+                `버튼을 누르거나 직접 말씀해주세요! 😊`
+            ];
+            
+            return responses[Math.floor(Math.random() * responses.length)];
+        }
+        
+        // 새로운 기능 함수들 추가
+        function openCameraQuick() {
+            const receiptInput = document.getElementById('receiptInput');
+            if (receiptInput) {
+                receiptInput.click();
+            }
+        }
+        
+        function showLocationManager() {
+            window.location.href = 'locations.html';
+        }
+        
+        function showCategoryManager() {
+            window.location.href = 'categories.html';
+        }
+        
+        function openAddModal() {
+            const modal = document.getElementById('addModal');
+            if (modal) {
+                modal.classList.add('show');
+                updateCategoryOptions();
+                updateLocationOptions();
+            }
+        }
+        
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.remove('show');
+            }
+        }
+        
+        function clearChat() {
+            const chatMessages = document.getElementById('chatMessages');
+            if (chatMessages) {
+                chatMessages.innerHTML = `
+                    <div class="message bot-message">
+                        <div class="message-avatar">🤖</div>
+                        <div class="message-content">
+                            <div class="message-bubble">
+                                채팅이 초기화되었습니다! 😊<br><br>
+                                무엇을 도와드릴까요?
+                            </div>
+                            <div class="message-time">방금 전</div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+        
+        // 메시지 추가 함수
+        function addMessage(content, sender = 'bot') {
+            const messagesContainer = document.getElementById('chatMessages');
+            if (!messagesContainer) return;
+            
+            const messageElement = document.createElement('div');
+            messageElement.className = `message ${sender}-message`;
+            
+            const time = new Date().toLocaleTimeString('ko-KR', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            
+            const avatar = sender === 'user' ? '👤' : '🤖';
+            
+            messageElement.innerHTML = `
+                <div class="message-avatar">${avatar}</div>
+                <div class="message-content">
+                    <div class="message-bubble">${content}</div>
+                    <div class="message-time">${time}</div>
+                </div>
+            `;
+            
+            messagesContainer.appendChild(messageElement);
+            scrollToBottom();
+        }
+        
+        // 스크롤 하단으로 이동
+        function scrollToBottom() {
+            const messagesContainer = document.getElementById('chatMessages');
+            if (messagesContainer) {
+                setTimeout(() => {
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                }, 100);
+            }
+        }
+        
+        // 키보드 이벤트 처리
+        function handleChatKeyPress(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+        
+        // 폼 제출 처리
+        function setupFormSubmission() {
+            const itemForm = document.getElementById('itemForm');
+            if (itemForm) {
+                itemForm.addEventListener('submit', handleItemSubmit);
+            }
+        }
+        
+        async function handleItemSubmit(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(event.target);
+            const itemData = {
+                name: document.getElementById('itemName').value,
+                category: document.getElementById('itemCategory').value,
+                locationId: getSelectedItemLocationId(),
+                quantity: parseInt(document.getElementById('itemQuantity').value) || 1,
+                description: document.getElementById('itemDescription').value
+            };
+            
+            try {
+                showLoading();
+                
+                if (appState.isOfflineMode) {
+                    // 오프라인 모드에서는 로컬에 저장
+                    const newItem = {
+                        id: 'offline-' + Date.now(),
+                        ...itemData,
+                        createdAt: new Date().toISOString()
+                    };
+                    
+                    appState.items.push(newItem);
+                    localStorage.setItem('offline_items', JSON.stringify(appState.items));
+                    
+                    showToast('✅ 물품이 추가되었습니다 (오프라인)');
+                } else {
+                    // 서버에 저장
+                    const response = await fetch(`${API_URL}/items`, {
+                        method: 'POST',
+                        headers: getAuthHeaders(),
+                        body: JSON.stringify(itemData)
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        await loadData();
+                        showToast('✅ 물품이 성공적으로 추가되었습니다');
+                    } else {
+                        throw new Error(data.message || '저장 실패');
+                    }
+                }
+                
+                closeModal('addModal');
+                event.target.reset();
+                
+            } catch (error) {
+                console.error('물품 추가 오류:', error);
+                showToast('❌ ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        // 유틸리티 함수들
+        function showLoading() {
+            const loading = document.getElementById('loading');
+            if (loading) loading.classList.add('show');
+        }
+        
+        function hideLoading() {
+            const loading = document.getElementById('loading');
+            if (loading) loading.classList.remove('show');
+        }
+        
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            if (toast) {
+                toast.textContent = message;
+                toast.classList.add('show');
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 3000);
+            }
+        }
+        
+        // 인증 관련 함수들
+        function getAuthHeaders(includeContentType = true) {
+            const headers = {};
+            if (includeContentType) {
+                headers['Content-Type'] = 'application/json';
+            }
+            
+            const token = localStorage.getItem('authToken');
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+            
+            return headers;
+        }
+        
+        function updateHeaderAuthState() {
+            const user = JSON.parse(localStorage.getItem('currentUser') || 'null');
+            const loginBtn = document.getElementById('loginBtn');
+            const logoutBtn = document.getElementById('logoutBtn');
+            const userInfo = document.getElementById('userInfo');
+            const userName = document.getElementById('userName');
+            
+            if (user) {
+                appState.isAuthenticated = true;
+                appState.currentUser = user;
+                
+                if (loginBtn) loginBtn.style.display = 'none';
+                if (logoutBtn) logoutBtn.style.display = 'block';
+                if (userInfo) userInfo.style.display = 'flex';
+                if (userName) userName.textContent = user.name || user.email;
+            } else {
+                appState.isAuthenticated = false;
+                appState.currentUser = null;
+                
+                if (loginBtn) loginBtn.style.display = 'block';
+                if (logoutBtn) logoutBtn.style.display = 'none';
+                if (userInfo) userInfo.style.display = 'none';
+            }
+        }
+        
+        function goToLogin() {
+            window.location.href = 'login.html';
+        }
+        
+        function logout() {
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('currentUser');
+            updateHeaderAuthState();
+            showToast('로그아웃되었습니다');
+        }
+        
+        // 엘리베이터 네비게이션 (기존 기능 유지)
+        function setupElevatorNavigation() {
+            // 기존 엘리베이터 네비게이션 로직
+        }
+        
+        // 사진 관련 함수들
+        function showPhotoOptions() {
+            if (confirm('사진을 선택하는 방법을 선택하세요.\n\n확인: 갤러리에서 선택\n취소: 카메라로 촬영')) {
+                document.getElementById('itemImageFile').click();
+            } else {
+                document.getElementById('itemImageCapture').click();
+            }
+        }
+        
+        function handleImageSelection(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('imagePreview');
+                    const img = document.getElementById('previewImg');
+                    const info = document.getElementById('imageInfo');
+                    
+                    img.src = e.target.result;
+                    info.textContent = `${file.name} (${(file.size / 1024).toFixed(1)}KB)`;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+        
+        function removeImage() {
+            const preview = document.getElementById('imagePreview');
+            const fileInput = document.getElementById('itemImageFile');
+            const captureInput = document.getElementById('itemImageCapture');
+            
+            preview.style.display = 'none';
+            fileInput.value = '';
+            captureInput.value = '';
+        }
+        
+        // 페이지 로드 시 초기화
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
