@@ -99,8 +99,6 @@
             padding-top: 42px; /* 간소화된 모바일 헤더 높이 */
         }
         
-
-        
         /* 챗봇 메시지 영역 - 전체 화면 최대 활용 */
         .chat-container {
             background: rgba(255, 255, 255, 0.95);
@@ -298,7 +296,6 @@
             transform: translateY(-1px);
             box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
         }
-
         
         /* 모달 - 모던 디자인 */
         .modal {
@@ -630,7 +627,6 @@
             }
             
             .chat-container,
-            .chatbot-header,
             .modal-content {
                 background: rgba(30, 30, 30, 0.95);
                 border-color: rgba(255,255,255,0.1);
@@ -646,7 +642,6 @@
                 background: rgba(40, 40, 40, 0.8);
                 border-color: rgba(255,255,255,0.1);
             }
-
         }
         
         /* 계층형 선택기 스타일 */
@@ -751,12 +746,6 @@
             </div>
         </div>
     </div>
-    
-    <!-- FAB 메뉴 제거 - 모든 기능이 네비게이션 바로 이동됨 -->
-    
-    <!-- 하단 네비게이션 제거됨 - 모든 기능이 빠른 버튼으로 통합 -->
-    
-        /* FAB 메뉴 스타일 제거 */
     
     <!-- 물품 추가 모달 -->
     <div class="modal" id="addModal">
@@ -907,7 +896,6 @@
                 await loadData();
                 initializeChatbot();
                 setupFormSubmission();
-                setupElevatorNavigation();
                 
                 // 오프라인 데이터가 있으면 표시
                 if (appState.items.length > 0) {
@@ -1338,7 +1326,9 @@
             try {
                 const botResponse = await generateBotResponse(message);
                 removeTypingIndicator(typingId);
-                addMessage(botResponse, 'bot');
+                if (botResponse) {
+                    addMessage(botResponse, 'bot');
+                }
             } catch (error) {
                 console.error('메시지 전송 오류:', error);
                 removeTypingIndicator(typingId);
@@ -2044,11 +2034,6 @@
             localStorage.removeItem('currentUser');
             updateHeaderAuthState();
             showToast('로그아웃되었습니다');
-        }
-        
-        // 엘리베이터 네비게이션 (기존 기능 유지)
-        function setupElevatorNavigation() {
-            // 기존 엘리베이터 네비게이션 로직
         }
         
         // 사진 관련 함수들
