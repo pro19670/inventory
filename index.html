@@ -20,27 +20,31 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Malgun Gothic', sans-serif;
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             color: #333;
-            padding-bottom: 70px;
+            padding: 0;
+            margin: 0;
             overflow-x: hidden;
-            min-height: 100vh;
+            height: 100vh;
         }
         
         .mobile-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 15px 20px;
-            position: sticky;
+            padding: 12px 20px;
+            position: fixed;
             top: 0;
+            left: 0;
+            right: 0;
             z-index: 100;
             box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
             backdrop-filter: blur(10px);
             display: flex;
             justify-content: space-between;
             align-items: center;
+            height: 50px;
         }
         
         .mobile-header h1 {
-            font-size: 20px;
+            font-size: 18px;
             font-weight: 700;
             text-shadow: 0 2px 4px rgba(0,0,0,0.2);
             margin: 0;
@@ -86,9 +90,13 @@
         }
         
         .mobile-content {
-            padding: 15px;
-            max-width: 600px;
-            margin: 0 auto;
+            padding: 0;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding-top: 62px; /* 헤더 높이 */
+            padding-bottom: 70px; /* 하단 네비 높이 */
         }
         
         /* 챗봇 헤더 - 모던 디자인 */
@@ -189,24 +197,26 @@
         .chat-container {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(20px);
-            border-radius: 20px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            border-radius: 0;
+            box-shadow: none;
             overflow: hidden;
-            height: calc(100vh - 160px); /* 헤더와 하단 네비게이션 제외 */
-            min-height: 600px;
+            height: 100%;
+            flex: 1;
             display: flex;
             flex-direction: column;
-            border: 1px solid rgba(255,255,255,0.2);
+            border: none;
+            margin: 0;
         }
         
         .chat-messages {
             flex: 1;
-            padding: 20px;
+            padding: 15px 20px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
             gap: 15px;
             scroll-behavior: smooth;
+            background: transparent;
         }
         
         .message {
@@ -280,8 +290,9 @@
         /* 메시지 입력 영역 - 개선된 디자인 */
         .chat-input-area {
             border-top: 1px solid rgba(0,0,0,0.05);
-            padding: 20px;
-            background: rgba(255,255,255,0.5);
+            padding: 15px 20px;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(20px);
         }
         
         .chat-input-container {
@@ -365,7 +376,7 @@
             box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
         }
         
-        /* 하단 네비게이션 - 글래스모피즘 */
+        /* 하단 네비게이션 - 엘레베이터 스타일 */
         .bottom-nav {
             position: fixed;
             bottom: 0;
@@ -374,59 +385,138 @@
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(20px);
             display: flex;
-            justify-content: space-around;
-            padding: 12px 0 8px;
+            justify-content: center;
+            align-items: center;
+            padding: 6px 15px;
             box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
             z-index: 100;
             border-top: 1px solid rgba(0,0,0,0.05);
+            height: 70px;
+        }
+        
+        .nav-elevator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(102, 126, 234, 0.1);
+            padding: 6px 12px;
+            border-radius: 35px;
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.15);
+            overflow-x: auto;
+            max-width: 100%;
         }
         
         .nav-item, .fab-nav-item {
-            flex: 1;
-            text-align: center;
-            padding: 8px 5px;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
             color: #666;
             text-decoration: none;
-            font-size: 11px;
+            font-size: 9px;
             font-weight: 500;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 4px;
-            border-radius: 12px;
+            justify-content: center;
+            gap: 1px;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            flex-shrink: 0;
         }
         
         .nav-item:hover, .fab-nav-item:hover {
-            background: rgba(102, 126, 234, 0.1);
-            transform: translateY(-2px);
+            background: rgba(102, 126, 234, 0.15);
+            transform: translateY(-3px);
+            color: #667eea;
         }
         
         .nav-item.active, .fab-nav-item.active {
-            color: #667eea;
-            background: rgba(102, 126, 234, 0.1);
-        }
-        
-        .nav-item.active::before, .fab-nav-item.active::before {
-            content: '';
-            position: absolute;
-            top: -2px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 20px;
-            height: 3px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 2px;
+            color: white;
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
         }
         
         .nav-item span, .fab-nav-item .fab-icon {
-            font-size: 20px;
+            font-size: 18px;
             transition: transform 0.3s ease;
         }
         
         .nav-item.active span, .fab-nav-item.active .fab-icon {
             transform: scale(1.1);
+        }
+        
+        .nav-item div, .fab-nav-item div {
+            font-size: 8px;
+            margin-top: 1px;
+            opacity: 0.8;
+        }
+        
+        /* 카메라 버튼 특별 스타일 */
+        .nav-item[onclick="openCameraQuick()"] {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+        }
+        
+        .nav-item[onclick="openCameraQuick()"]:hover {
+            background: linear-gradient(135deg, #ff5252 0%, #f44336 100%);
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+        }
+        
+        .nav-item[onclick="openCameraQuick()"] .floor-number {
+            background: #ff4757;
+            color: white;
+        }
+        
+        /* 엘레베이터 인디케이터 */
+        .elevator-indicator {
+            position: absolute;
+            left: -5px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 3px;
+            height: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 2px;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-item.active .elevator-indicator,
+        .fab-nav-item.active .elevator-indicator {
+            opacity: 1;
+        }
+        
+        /* 엘레베이터 플로어 넘버 */
+        .floor-number {
+            position: absolute;
+            right: -8px;
+            top: -8px;
+            width: 20px;
+            height: 20px;
+            background: #ff4757;
+            color: white;
+            border-radius: 50%;
+            font-size: 10px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transform: scale(0);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .nav-item.active .floor-number,
+        .fab-nav-item.active .floor-number {
+            opacity: 1;
+            transform: scale(1);
         }
         
         /* 모달 - 모던 디자인 */
@@ -573,7 +663,7 @@
         /* 토스트 - 개선된 디자인 */
         .toast {
             position: fixed;
-            bottom: 90px;
+            bottom: 80px;
             left: 50%;
             transform: translateX(-50%);
             background: rgba(0,0,0,0.9);
@@ -694,34 +784,92 @@
         /* 반응형 디자인 */
         @media (max-width: 480px) {
             .mobile-content {
-                padding: 10px;
+                padding-top: 62px;
+                padding-bottom: 70px;
             }
             
-            .chatbot-header {
-                padding: 15px;
-                margin-bottom: 15px;
+            .nav-elevator {
+                gap: 6px;
+                padding: 5px 10px;
             }
             
-            .chat-container {
-                border-radius: 16px;
+            .nav-item, .fab-nav-item {
+                width: 40px;
+                height: 40px;
+            }
+            
+            .nav-item span, .fab-nav-item .fab-icon {
+                font-size: 16px;
+            }
+            
+            .nav-item div, .fab-nav-item div {
+                font-size: 7px;
             }
             
             .chat-messages {
-                padding: 15px;
+                padding: 10px 15px;
+                gap: 12px;
             }
             
             .chat-input-area {
-                padding: 15px;
+                padding: 12px 15px;
             }
             
             .message-bubble {
                 padding: 12px 15px;
+                font-size: 14px;
             }
             
             .modal-content {
                 width: 95%;
                 padding: 20px;
                 border-radius: 16px;
+                margin: 10px;
+            }
+        }
+        
+        @media (max-width: 360px) {
+            .nav-elevator {
+                gap: 4px;
+                padding: 4px 8px;
+            }
+            
+            .nav-item, .fab-nav-item {
+                width: 35px;
+                height: 35px;
+            }
+            
+            .nav-item span, .fab-nav-item .fab-icon {
+                font-size: 14px;
+            }
+            
+            .nav-item div, .fab-nav-item div {
+                font-size: 6px;
+            }
+            
+            .floor-number {
+                width: 16px;
+                height: 16px;
+                font-size: 8px;
+                right: -6px;
+                top: -6px;
+            }
+            
+            .chat-messages {
+                padding: 8px 12px;
+            }
+            
+            .chat-input-area {
+                padding: 10px 12px;
+            }
+            
+            .quick-replies {
+                gap: 6px;
+            }
+            
+            .quick-reply-btn {
+                padding: 6px 10px;
+                font-size: 11px;
             }
         }
         
@@ -832,9 +980,6 @@
             <div class="chat-input-area">
                 <div class="chat-input-container">
                     <input type="text" id="chatInput" class="chat-input" placeholder="메시지를 입력하세요..." onkeypress="handleChatKeyPress(event)">
-                    <button class="chat-send-btn" onclick="document.getElementById('receiptInput').click()" title="영수증 분석">
-                        <span class="send-icon">🧾</span>
-                    </button>
                     <button class="chat-send-btn" onclick="sendMessage()" title="메시지 전송">
                         <span class="send-icon">📤</span>
                     </button>
@@ -844,48 +989,65 @@
                 <!-- 빠른 응답 버튼들 -->
                 <div class="quick-replies">
                     <button class="quick-reply-btn" onclick="sendQuickMessage('재고 현황')">📊 재고 현황</button>
-                    <button class="quick-reply-btn" onclick="sendQuickMessage('물건 추가')">➕ 물건 추가</button>
-                    <button class="quick-reply-btn" onclick="showStockOutQuickActions()">🚚 빠른 출고</button>
                     <button class="quick-reply-btn" onclick="sendQuickMessage('도움말')">❓ 도움말</button>
+                    <button class="quick-reply-btn" onclick="showStockOutQuickActions()">🚚 빠른 출고</button>
+                    <button class="quick-reply-btn" onclick="clearChat()">🗑️ 대화 초기화</button>
                 </div>
             </div>
         </div>
     </div>
     
-    <!-- 하단 네비게이션 -->
+    <!-- FAB 메뉴 제거 - 모든 기능이 네비게이션 바로 이동됨 -->
+    
+    <!-- 하단 네비게이션 - 엘레베이터 스타일 -->
     <div class="bottom-nav">
-        <a href="#" class="nav-item active">
-            <span>🏠</span>
-            <div>홈</div>
-        </a>
-        <a href="locations.html" class="nav-item">
-            <span>📍</span>
-            <div>위치</div>
-        </a>
-        <a href="categories.html" class="nav-item">
-            <span>🏷️</span>
-            <div>카테고리</div>
-        </a>
-        <a href="inventory.html" class="nav-item">
-            <span>📦</span>
-            <div>재고관리</div>
-        </a>
-        <a href="#" class="fab-nav-item" onclick="toggleFabMenu()">
-            <span class="fab-icon">➕</span>
-            <div>물품추가</div>
-        </a>
-        <a href="user-profile.html" class="nav-item">
-            <span>⚙️</span>
-            <div>설정</div>
-        </a>
+        <div class="nav-elevator">
+            <a href="#" class="nav-item active">
+                <div class="elevator-indicator"></div>
+                <span>🏠</span>
+                <div>홈</div>
+                <div class="floor-number">1</div>
+            </a>
+            <a href="locations.html" class="nav-item">
+                <div class="elevator-indicator"></div>
+                <span>📍</span>
+                <div>위치</div>
+                <div class="floor-number">2</div>
+            </a>
+            <a href="categories.html" class="nav-item">
+                <div class="elevator-indicator"></div>
+                <span>🏷️</span>
+                <div>카테고리</div>
+                <div class="floor-number">3</div>
+            </a>
+            <a href="inventory.html" class="nav-item">
+                <div class="elevator-indicator"></div>
+                <span>📦</span>
+                <div>재고관리</div>
+                <div class="floor-number">4</div>
+            </a>
+            <a href="#" class="nav-item" onclick="openCameraQuick()">
+                <div class="elevator-indicator"></div>
+                <span>📸</span>
+                <div>카메라</div>
+                <div class="floor-number">📷</div>
+            </a>
+            <a href="#" class="fab-nav-item" onclick="openAddModal()">
+                <div class="elevator-indicator"></div>
+                <span class="fab-icon">📝</span>
+                <div>직접등록</div>
+                <div class="floor-number">+</div>
+            </a>
+            <a href="user-profile.html" class="nav-item">
+                <div class="elevator-indicator"></div>
+                <span>⚙️</span>
+                <div>설정</div>
+                <div class="floor-number">5</div>
+            </a>
+        </div>
     </div>
     
-    <!-- FAB 메뉴 -->
-    <div class="fab-menu" id="fabMenu" style="position: fixed; bottom: 150px; left: 50%; transform: translateX(-50%); display: none; flex-direction: row; gap: 15px; z-index: 98; background: rgba(255,255,255,0.95); padding: 15px; border-radius: 25px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); backdrop-filter: blur(10px);">
-        <button class="fab-option" onclick="openPhotoCapture()" title="사진으로 등록" style="width: 48px; height: 48px; border-radius: 50%; background: white; color: #667eea; border: 2px solid #667eea; font-size: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s;">📷</button>
-        <button class="fab-option" onclick="openAlbumSelect()" title="앨범에서 선택" style="width: 48px; height: 48px; border-radius: 50%; background: white; color: #667eea; border: 2px solid #667eea; font-size: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s;">📱</button>
-        <button class="fab-option" onclick="openAddModal()" title="직접 입력" style="width: 48px; height: 48px; border-radius: 50%; background: white; color: #667eea; border: 2px solid #667eea; font-size: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s;">📝</button>
-    </div>
+        /* FAB 메뉴 스타일 제거 */
     
     <!-- 물품 추가 모달 -->
     <div class="modal" id="addModal">
@@ -1020,6 +1182,7 @@
                 await loadData();
                 initializeChatbot();
                 setupFormSubmission();
+                setupElevatorNavigation(); // 엘레베이터 네비게이션 설정
             } catch (error) {
                 console.error('초기화 실패:', error);
                 showToast('❌ 앱 초기화에 실패했습니다');
