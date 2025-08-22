@@ -185,15 +185,15 @@
             box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
         }
         
-        /* 챗봇 메시지 영역 - 글래스모피즘 */
+        /* 챗봇 메시지 영역 - 전체 화면 활용 */
         .chat-container {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(20px);
             border-radius: 20px;
             box-shadow: 0 8px 32px rgba(0,0,0,0.1);
             overflow: hidden;
-            height: calc(100vh - 220px);
-            min-height: 500px;
+            height: calc(100vh - 160px); /* 헤더와 하단 네비게이션 제외 */
+            min-height: 600px;
             display: flex;
             flex-direction: column;
             border: 1px solid rgba(255,255,255,0.2);
@@ -807,25 +807,7 @@
     </div>
     
     <div class="mobile-content">
-        <!-- 챗봇 헤더 -->
-        <div class="chatbot-header">
-            <div class="chatbot-info">
-                <div class="chatbot-avatar">🤖</div>
-                <div class="chatbot-title">
-                    <h3>AI물품관리 도우미</h3>
-                    <p class="chatbot-status">
-                        <span class="status-dot"></span>
-                        온라인 • 언제든 질문하세요
-                    </p>
-                </div>
-            </div>
-            <div class="chatbot-actions">
-                <button class="chat-action-btn" onclick="clearChat()" title="대화 초기화">🗑️</button>
-                <button class="chat-action-btn" onclick="toggleChatSettings()" title="설정">⚙️</button>
-            </div>
-        </div>
-        
-        <!-- 챗봇 메시지 영역 -->
+        <!-- 챗봇 메시지 영역 - 전체 화면으로 확대 -->
         <div class="chat-container">
             <div class="chat-messages" id="chatMessages">
                 <!-- 초기 환영 메시지 -->
@@ -833,7 +815,7 @@
                     <div class="message-avatar">🤖</div>
                     <div class="message-content">
                         <div class="message-bubble">
-                            안녕하세요! <strong>AI물품관리 도우미</strong>입니다. 😊<br><br>
+                            안녕하세요! <strong>AI물품관리</strong>입니다. 😊<br><br>
                             무엇을 도와드릴까요?<br><br>
                             <strong>💡 이렇게 말해보세요:</strong><br>
                             • "휴지 재고 확인해줘"<br>
