@@ -990,7 +990,7 @@
                 <div class="quick-replies">
                     <button class="quick-reply-btn" onclick="sendQuickMessage('재고 현황')">📊 재고 현황</button>
                     <button class="quick-reply-btn" onclick="sendQuickMessage('도움말')">❓ 도움말</button>
-                    <button class="quick-reply-btn" onclick="showStockOutQuickActions()">🚚 빠른 출고</button>
+                    <button class="quick-reply-btn" onclick="sendQuickMessage('다시 연결')">🔄 재연결</button>
                     <button class="quick-reply-btn" onclick="clearChat()">🗑️ 대화 초기화</button>
                 </div>
             </div>
@@ -1151,83 +1151,316 @@
     </div>
     
     <script>
-        // ⭐ API URL 설정
-        const API_URL = (function() {
+        // ⭐ API URL 설정 - 다중 서버 지원
+        const API_SERVERS = [
+            'https://family-inventory-backend.onrender.com/api',
+            'https://3001-i72krmbsmpnff1c7v14w6-6532622b.e2b.dev/api',
+            'http://localhost:3001/api'
+        ];
+        
+        let currentServerIndex = 0;
+        
+        const API_URL = (() => {
             const hostname = window.location.hostname;
-            
-            if (hostname.endsWith('github.io')) {
-                return 'https://family-inventory-backend.onrender.com/api';
-            }
             
             if (hostname === 'localhost' || hostname === '127.0.0.1') {
                 return 'http://localhost:3001/api';
             }
             
-            return 'https://family-inventory-backend.onrender.com/api';
+            return API_SERVERS[currentServerIndex];
         })();
+        
+        // 서버 연결 상태 관리
+        const connectionState = {
+            isOnline: navigator.onLine,
+            lastSuccessfulConnection: null,
+            retryCount: 0,
+            maxRetries: 3,
+            retryDelay: 2000
+        };
         
         // 앱 상태 관리
         const appState = {
-            items: [],
-            categories: [],
-            locations: [],
+            items: JSON.parse(localStorage.getItem('offline_items') || '[]'),
+            categories: JSON.parse(localStorage.getItem('offline_categories') || '[]'),
+            locations: JSON.parse(localStorage.getItem('offline_locations') || '[]'),
             isAuthenticated: false,
-            currentUser: null
+            currentUser: null,
+            isOfflineMode: false,
+            lastSyncTime: localStorage.getItem('lastSyncTime')
         };
         
         // 초기화
         async function init() {
             try {
                 updateHeaderAuthState();
+                setupNetworkMonitoring();
                 await loadData();
                 initializeChatbot();
                 setupFormSubmission();
-                setupElevatorNavigation(); // 엘레베이터 네비게이션 설정
+                setupElevatorNavigation();
+                
+                // 오프라인 데이터가 있으면 표시
+                if (appState.items.length > 0) {
+                    showConnectionStatus();
+                }
             } catch (error) {
                 console.error('초기화 실패:', error);
-                showToast('❌ 앱 초기화에 실패했습니다');
+                showToast('⚠️ 오프라인 모드로 시작합니다');
+                appState.isOfflineMode = true;
+                updateConnectionStatus(false);
             }
         }
         
-        // 데이터 로드
-        async function loadData() {
-            showLoading();
+        // 네트워크 모니터링 설정
+        function setupNetworkMonitoring() {
+            window.addEventListener('online', () => {
+                connectionState.isOnline = true;
+                showToast('🌐 인터넷에 연결되었습니다');
+                attemptReconnection();
+            });
+            
+            window.addEventListener('offline', () => {
+                connectionState.isOnline = false;
+                appState.isOfflineMode = true;
+                showToast('📵 오프라인 모드로 전환합니다');
+                updateConnectionStatus(false);
+            });
+        }
+        
+        // 재연결 시도
+        async function attemptReconnection() {
+            if (!connectionState.isOnline) return;
+            
             try {
+                showToast('🔄 서버에 연결 중...');
+                await loadData();
+                appState.isOfflineMode = false;
+                updateConnectionStatus(true);
+                showToast('✅ 서버 연결 성공!');
+                
+                // 오프라인 중 변경된 데이터 동기화
+                await syncOfflineData();
+            } catch (error) {
+                console.error('재연결 실패:', error);
+                showToast('❌ 서버 연결 실패 - 오프라인 모드 유지');
+            }
+        }
+        
+        // 연결 상태 표시
+        function updateConnectionStatus(isConnected) {
+            const headerTitle = document.getElementById('headerTitle');
+            if (headerTitle) {
+                if (isConnected) {
+                    headerTitle.textContent = 'AI물품관리';
+                    headerTitle.style.color = '';
+                } else {
+                    headerTitle.textContent = 'AI물품관리 (오프라인)';
+                    headerTitle.style.color = '#ff6b6b';
+                }
+            }
+        }
+        
+        // 연결 상태 안내
+        function showConnectionStatus() {
+            const itemCount = appState.items.length;
+            const lastSync = appState.lastSyncTime ? 
+                new Date(appState.lastSyncTime).toLocaleString('ko-KR') : '없음';
+            
+            addMessage(`📱 **오프라인 모드 안내**<br><br>
+                현재 저장된 데이터:<br>
+                • 물품: ${itemCount}개<br>
+                • 마지막 동기화: ${lastSync}<br><br>
+                🌐 인터넷 연결 시 자동으로 서버와 동기화됩니다.`, 'bot');
+        }
+        
+        // 데이터 로드 - 오프라인 지원
+        async function loadData() {
+            if (!connectionState.isOnline) {
+                console.log('🔄 오프라인 모드 - 로컬 데이터 사용');
+                updateCategoryOptions();
+                updateLocationOptions();
+                updateConnectionStatus(false);
+                return;
+            }
+            
+            showLoading();
+            
+            try {
+                // 서버 연결 테스트
+                const testResponse = await fetchWithRetry(`${API_URL}/health`, { 
+                    method: 'GET',
+                    timeout: 5000 
+                });
+                
+                if (!testResponse.ok) {
+                    throw new Error('서버 응답 없음');
+                }
+                
                 // 병렬로 데이터 로드
-                const [catResponse, locResponse, itemResponse] = await Promise.all([
-                    fetch(`${API_URL}/categories`).catch(() => ({ ok: false })),
-                    fetch(`${API_URL}/locations`).catch(() => ({ ok: false })),
-                    fetch(`${API_URL}/items`).catch(() => ({ ok: false }))
+                const [catResponse, locResponse, itemResponse] = await Promise.allSettled([
+                    fetchWithRetry(`${API_URL}/categories`),
+                    fetchWithRetry(`${API_URL}/locations`),
+                    fetchWithRetry(`${API_URL}/items`)
                 ]);
                 
-                if (catResponse.ok) {
-                    const catData = await catResponse.json();
+                // 카테고리 데이터 처리
+                if (catResponse.status === 'fulfilled' && catResponse.value.ok) {
+                    const catData = await catResponse.value.json();
                     appState.categories = catData.categories || [];
+                    localStorage.setItem('offline_categories', JSON.stringify(appState.categories));
                     updateCategoryOptions();
                 }
                 
-                if (locResponse.ok) {
-                    const locData = await locResponse.json();
+                // 위치 데이터 처리
+                if (locResponse.status === 'fulfilled' && locResponse.value.ok) {
+                    const locData = await locResponse.value.json();
                     appState.locations = locData.locations || [];
+                    localStorage.setItem('offline_locations', JSON.stringify(appState.locations));
                     updateLocationOptions();
                 }
                 
-                if (itemResponse.ok) {
-                    const itemData = await itemResponse.json();
+                // 물품 데이터 처리
+                if (itemResponse.status === 'fulfilled' && itemResponse.value.ok) {
+                    const itemData = await itemResponse.value.json();
                     appState.items = itemData.items || [];
+                    localStorage.setItem('offline_items', JSON.stringify(appState.items));
                 }
                 
-                console.log('📊 데이터 로드 완료:', {
+                // 동기화 시간 저장
+                appState.lastSyncTime = new Date().toISOString();
+                localStorage.setItem('lastSyncTime', appState.lastSyncTime);
+                
+                connectionState.lastSuccessfulConnection = Date.now();
+                connectionState.retryCount = 0;
+                appState.isOfflineMode = false;
+                updateConnectionStatus(true);
+                
+                console.log('✅ 서버 데이터 로드 완료:', {
                     items: appState.items.length,
                     categories: appState.categories.length,
                     locations: appState.locations.length
                 });
                 
             } catch (error) {
-                console.error('데이터 로드 실패:', error);
-                showToast('⚠️ 일부 데이터 로드에 실패했습니다');
+                console.error('서버 연결 실패:', error);
+                
+                // 오프라인 모드로 전환
+                appState.isOfflineMode = true;
+                updateConnectionStatus(false);
+                
+                // 로컬 데이터 사용
+                updateCategoryOptions();
+                updateLocationOptions();
+                
+                // 재시도 스케줄링
+                scheduleRetry();
+                
+                throw error;
             } finally {
                 hideLoading();
+            }
+        }
+        
+        // 재시도가 가능한 fetch 함수
+        async function fetchWithRetry(url, options = {}, retries = 3) {
+            const timeout = options.timeout || 10000;
+            
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), timeout);
+                    
+                    const response = await fetch(url, {
+                        ...options,
+                        signal: controller.signal
+                    });
+                    
+                    clearTimeout(timeoutId);
+                    
+                    if (response.ok) {
+                        return response;
+                    }
+                    
+                    // 서버 오류인 경우 다음 서버 시도
+                    if (i < retries - 1) {
+                        currentServerIndex = (currentServerIndex + 1) % API_SERVERS.length;
+                        url = url.replace(API_URL, API_SERVERS[currentServerIndex]);
+                    }
+                    
+                } catch (error) {
+                    if (i === retries - 1) throw error;
+                    
+                    // 잠시 대기 후 재시도
+                    await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
+                }
+            }
+            
+            throw new Error('모든 재시도 실패');
+        }
+        
+        // 재시도 스케줄링
+        function scheduleRetry() {
+            if (connectionState.retryCount >= connectionState.maxRetries) {
+                console.log('⏹️ 최대 재시도 횟수 도달 - 수동 재시도 대기');
+                return;
+            }
+            
+            connectionState.retryCount++;
+            const delay = connectionState.retryDelay * connectionState.retryCount;
+            
+            console.log(`⏰ ${delay}ms 후 재시도 (${connectionState.retryCount}/${connectionState.maxRetries})`);
+            
+            setTimeout(async () => {
+                if (connectionState.isOnline) {
+                    try {
+                        await loadData();
+                    } catch (error) {
+                        console.log('재시도 실패, 다음 재시도 대기');
+                    }
+                }
+            }, delay);
+        }
+        
+        // 오프라인 데이터 동기화
+        async function syncOfflineData() {
+            const pendingActions = JSON.parse(localStorage.getItem('pendingActions') || '[]');
+            
+            if (pendingActions.length === 0) return;
+            
+            try {
+                for (const action of pendingActions) {
+                    await executeAction(action);
+                }
+                
+                localStorage.removeItem('pendingActions');
+                showToast(`✅ ${pendingActions.length}개 작업 동기화 완료`);
+            } catch (error) {
+                console.error('동기화 실패:', error);
+                showToast('⚠️ 일부 작업 동기화 실패');
+            }
+        }
+        
+        // 액션 실행
+        async function executeAction(action) {
+            switch (action.type) {
+                case 'ADD_ITEM':
+                    return await fetch(`${API_URL}/items`, {
+                        method: 'POST',
+                        headers: getAuthHeaders(),
+                        body: JSON.stringify(action.data)
+                    });
+                case 'UPDATE_ITEM':
+                    return await fetch(`${API_URL}/items/${action.id}`, {
+                        method: 'PUT',
+                        headers: getAuthHeaders(),
+                        body: JSON.stringify(action.data)
+                    });
+                case 'DELETE_ITEM':
+                    return await fetch(`${API_URL}/items/${action.id}`, {
+                        method: 'DELETE',
+                        headers: getAuthHeaders()
+                    });
             }
         }
         
