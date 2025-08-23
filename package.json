@@ -1,0 +1,67 @@
+{
+  "name": "smart-inventory-system",
+  "version": "1.0.0",
+  "description": "AI 기반 스마트 물품관리 시스템",
+  "main": "index.html",
+  "scripts": {
+    "dev": "pm2 start ecosystem.config.js --env development",
+    "build": "echo 'Building for production...' && npm run optimize",
+    "start": "pm2 start ecosystem.config.js --env production",
+    "deploy": "./deploy.sh",
+    "optimize": "npm run minify-css && npm run minify-js",
+    "minify-css": "echo 'CSS minification would go here'",
+    "minify-js": "echo 'JS minification would go here'",
+    "app:init": "npm install -g @capacitor/cli @capacitor/core",
+    "app:add-platforms": "npx cap add android && npx cap add ios",
+    "app:build": "npm run build && npx cap sync",
+    "app:open-android": "npx cap open android",
+    "app:open-ios": "npx cap open ios",
+    "app:build-android": "npx cap build android --prod",
+    "app:build-ios": "npx cap build ios --prod",
+    "pwa:build": "npm run build && npm run pwa:optimize",
+    "pwa:optimize": "workbox generateSW workbox-config.js",
+    "test": "echo 'Tests would run here'",
+    "lint": "echo 'Linting would run here'",
+    "docker:build": "docker-compose build",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down"
+  },
+  "keywords": [
+    "inventory",
+    "ai",
+    "chatgpt",
+    "pwa",
+    "mobile",
+    "smart-home"
+  ],
+  "author": "Smart Inventory Team",
+  "license": "MIT",
+  "homepage": "https://genspark-ai-developer.github.io/smart-inventory-system/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/genspark-ai-developer/smart-inventory-system.git"
+  },
+  "devDependencies": {
+    "@capacitor/android": "^5.0.0",
+    "@capacitor/cli": "^5.0.0",
+    "@capacitor/core": "^5.0.0",
+    "@capacitor/ios": "^5.0.0",
+    "@capacitor/camera": "^5.0.0",
+    "@capacitor/local-notifications": "^5.0.0",
+    "@capacitor/push-notifications": "^5.0.0",
+    "@capacitor/status-bar": "^5.0.0",
+    "@capacitor/keyboard": "^5.0.0",
+    "workbox-cli": "^7.0.0"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead",
+    "iOS >= 12",
+    "Android >= 8"
+  ]
+}

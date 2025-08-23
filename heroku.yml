@@ -1,0 +1,21 @@
+# Heroku 배포 설정
+build:
+  docker:
+    web: backend/Dockerfile
+    
+setup:
+  addons:
+    - plan: heroku-redis:hobby-dev
+      as: REDIS
+  config:
+    NODE_ENV: production
+    USE_CHATGPT: true
+    USE_S3: true
+    
+release:
+  image: web
+  command:
+    - npm run setup-db
+    
+run:
+  web: node src/server.js
