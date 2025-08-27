@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#667eea">
+    <meta name="theme-color" content="#1a1f71">
     <title>AI물품관리 - 스마트 재물관리</title>
     <style>
         * {
@@ -18,197 +18,440 @@
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background-color: #f5f5f5;
-            color: #333;
-            height: 100vh;
-            overflow: hidden;
-        }
-        
-        .chat-container {
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-        }
-        
-        .mobile-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(180deg, #1a1f71 0%, #2d1b69 50%, #8b5cf6 100%);
             color: white;
-            padding: 15px 20px;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .status-bar {
             display: flex;
-            align-items: center;
             justify-content: space-between;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        
-        .header-info {
-            display: flex;
             align-items: center;
-            gap: 10px;
-        }
-        
-        .bot-avatar {
-            width: 40px;
-            height: 40px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-        }
-        
-        .header-text h1 {
-            font-size: 18px;
-            font-weight: 600;
-            margin: 0;
-        }
-        
-        .header-text p {
-            font-size: 12px;
-            opacity: 0.9;
-            margin: 0;
-        }
-        
-        .chat-messages {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-            background: white;
-        }
-        
-        .message {
-            margin-bottom: 15px;
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-        }
-        
-        .message-avatar {
-            width: 32px;
-            height: 32px;
-            background: #667eea;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-            color: white;
-            flex-shrink: 0;
-        }
-        
-        .message-content {
-            background: #f8f9fa;
-            padding: 12px 16px;
-            border-radius: 18px;
-            max-width: 80%;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-        }
-        
-        .message-content h3 {
+            padding: 8px 20px;
             font-size: 14px;
             font-weight: 600;
-            margin: 0 0 8px 0;
-            color: #667eea;
         }
         
-        .message-content p {
-            font-size: 14px;
-            line-height: 1.4;
-            margin: 0 0 10px 0;
-        }
-        
-        .example-commands {
-            list-style: none;
-            padding: 0;
-            margin: 10px 0 0 0;
-        }
-        
-        .example-commands li {
-            padding: 6px 12px;
-            background: rgba(102, 126, 234, 0.1);
-            border-radius: 12px;
-            margin: 5px 0;
-            font-size: 13px;
-            color: #667eea;
-            border: 1px solid rgba(102, 126, 234, 0.2);
-        }
-        
-        .chat-input-container {
-            padding: 15px 20px 20px 20px;
-            background: white;
-            border-top: 1px solid #e9ecef;
-        }
-        
-        .input-row {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-        
-        .chat-input {
-            flex: 1;
-            padding: 12px 16px;
-            border: 1px solid #dee2e6;
-            border-radius: 25px;
-            font-size: 14px;
-            outline: none;
-            background: #f8f9fa;
-        }
-        
-        .chat-input:focus {
-            border-color: #667eea;
-            background: white;
-        }
-        
-        .send-button {
-            width: 44px;
-            height: 44px;
-            background: #667eea;
-            border: none;
-            border-radius: 50%;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
-        }
-        
-        .send-button:active {
-            transform: scale(0.95);
-        }
-        
-        .quick-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-            overflow-x: auto;
-            padding-bottom: 5px;
-        }
-        
-        .quick-action {
-            padding: 8px 16px;
-            background: white;
-            border: 1px solid #dee2e6;
-            border-radius: 20px;
-            font-size: 12px;
-            white-space: nowrap;
-            color: #667eea;
-            text-decoration: none;
+        .status-left {
             display: flex;
             align-items: center;
             gap: 5px;
         }
         
-        .quick-action:hover {
-            background: #f8f9fa;
+        .status-right {
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
         
-        .bottom-nav {
+        .main-header {
+            padding: 20px 20px 10px 20px;
             display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header-title {
+            font-size: 24px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .header-btn {
+            width: 24px;
+            height: 24px;
+            color: white;
+            opacity: 0.8;
+            font-size: 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .notification-dot {
+            width: 8px;
+            height: 8px;
+            background: #ff4757;
+            border-radius: 50%;
+            position: absolute;
+            top: -2px;
+            right: -2px;
+        }
+        
+        .container {
+            padding: 0 20px 100px 20px;
+        }
+        
+        /* AI Assistant Card */
+        .ai-assistant-card {
+            background: linear-gradient(135deg, #ff6b6b, #ff8e8e, #ffa8a8);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 25px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .ai-assistant-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: rotate 8s linear infinite;
+        }
+        
+        .ai-card-content {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .ai-icon {
+            font-size: 28px;
+            background: rgba(255,255,255,0.2);
+            padding: 10px;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .ai-text {
+            flex: 1;
+        }
+        
+        .ai-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .ai-desc {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+        
+        /* Smart Routine Section */
+        .section {
+            margin-bottom: 30px;
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+        }
+        
+        .section-arrow {
+            font-size: 18px;
+            opacity: 0.7;
+        }
+        
+        .routine-card {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 15px;
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .routine-text {
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        /* Main Feature Card */
+        .feature-showcase {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 0;
+            margin-bottom: 30px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .feature-visual {
+            background: linear-gradient(135deg, #e8f4fd, #f0f8ff);
+            padding: 30px 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .feature-visual::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="%23667eea" opacity="0.3"/><circle cx="80" cy="40" r="1.5" fill="%23764ba2" opacity="0.4"/><circle cx="60" cy="80" r="1" fill="%23f093fb" opacity="0.3"/></svg>') repeat;
+            pointer-events: none;
+        }
+        
+        .warehouse-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            display: block;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .floating-icons {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+        }
+        
+        .floating-icon {
+            position: absolute;
             background: white;
-            border-top: 1px solid #e9ecef;
-            padding: 8px 0;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .floating-icon:nth-child(1) {
+            top: 20%;
+            left: 15%;
+            animation-delay: 0s;
+        }
+        
+        .floating-icon:nth-child(2) {
+            top: 30%;
+            right: 15%;
+            animation-delay: 1s;
+        }
+        
+        .floating-icon:nth-child(3) {
+            bottom: 30%;
+            left: 20%;
+            animation-delay: 2s;
+        }
+        
+        .floating-icon:nth-child(4) {
+            bottom: 20%;
+            right: 20%;
+            animation-delay: 0.5s;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .feature-info {
+            padding: 25px 20px;
+            color: #333;
+            background: white;
+        }
+        
+        .feature-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #1a1f71;
+        }
+        
+        .feature-subtitle {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.5;
+        }
+        
+        /* Inventory Grid */
+        .inventory-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .inventory-card {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 15px;
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .inventory-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255,255,255,0.15);
+        }
+        
+        .inventory-icon {
+            font-size: 32px;
+            margin-bottom: 10px;
+            display: block;
+        }
+        
+        .inventory-label {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .inventory-count {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+        
+        /* Recent Activity Card */
+        .activity-card {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            overflow: hidden;
+            margin-bottom: 30px;
+            color: #333;
+        }
+        
+        .activity-header {
+            padding: 20px 20px 15px 20px;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+        
+        .activity-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: #1a1f71;
+        }
+        
+        .activity-subtitle {
+            font-size: 13px;
+            color: #666;
+        }
+        
+        .activity-item {
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: white;
+        }
+        
+        .activity-info {
+            flex: 1;
+        }
+        
+        .activity-name {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+        
+        .activity-desc {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .activity-time {
+            font-size: 11px;
+            color: #999;
+        }
+        
+        /* Quick Actions */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .quick-action-card {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 15px;
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .quick-action-card.primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+        }
+        
+        .quick-action-card:hover {
+            transform: translateY(-3px);
+        }
+        
+        .quick-action-icon {
+            font-size: 28px;
+            margin-bottom: 10px;
+            display: block;
+        }
+        
+        .quick-action-title {
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(26, 31, 113, 0.95);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            padding: 8px 0 20px 0;
         }
         
         .nav-item {
@@ -218,134 +461,299 @@
             align-items: center;
             padding: 8px;
             text-decoration: none;
-            color: #666;
+            color: rgba(255,255,255,0.6);
             font-size: 10px;
+            transition: all 0.3s ease;
         }
         
         .nav-item.active {
-            color: #667eea;
+            color: white;
         }
         
         .nav-icon {
             font-size: 20px;
-            margin-bottom: 2px;
+            margin-bottom: 4px;
+        }
+        
+        /* Chat Interface */
+        .chat-fab {
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            animation: pulse 2s infinite;
+        }
+        
+        .chat-fab:hover {
+            transform: scale(1.1);
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4); }
+            50% { box-shadow: 0 8px 35px rgba(255, 107, 107, 0.6); }
+            100% { box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4); }
+        }
+        
+        /* Responsive */
+        @media (max-width: 480px) {
+            .container { padding: 0 15px 100px 15px; }
+            .main-header { padding: 15px 15px 10px 15px; }
+            .header-title { font-size: 22px; }
+            .inventory-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
-    <div class="chat-container">
-        <!-- 헤더 -->
-        <div class="mobile-header">
-            <div class="header-info">
-                <div class="bot-avatar">🤖</div>
-                <div class="header-text">
-                    <h1>AI물품관리 도우미</h1>
-                    <p>온라인 • 언제든 질문하세요</p>
-                </div>
-            </div>
-            <div style="display: flex; gap: 10px;">
-                <div style="color: rgba(255,255,255,0.8); font-size: 20px;">🗑️</div>
-                <div style="color: rgba(255,255,255,0.8); font-size: 20px;">⚙️</div>
-            </div>
+    <!-- Status Bar -->
+    <div class="status-bar">
+        <div class="status-left">
+            <span>SKT</span>
+            <span>11:25</span>
+            <span>🔄</span>
+            <span>🏦</span>
         </div>
-        
-        <!-- 채팅 영역 -->
-        <div class="chat-messages">
-            <div class="message">
-                <div class="message-avatar">🤖</div>
-                <div class="message-content">
-                    <h3>안녕하세요! AI물품관리 도우미입니다. 😊</h3>
-                    <p>무엇을 도와드릴까요?</p>
-                    <p><strong>예시 질문:</strong></p>
-                    <ul class="example-commands">
-                        <li>• "휴지 재고 확인해줘"</li>
-                        <li>• "물건 추가하는 방법 알려줘"</li>
-                        <li>• "오늘 사용한 물품 목록 보여줘"</li>
-                    </ul>
-                    <p style="font-size: 12px; color: #999; margin-top: 10px;">방금 전</p>
-                </div>
-            </div>
-        </div>
-        
-        <!-- 입력 영역 -->
-        <div class="chat-input-container">
-            <div class="input-row">
-                <input type="text" class="chat-input" placeholder="메시지를 입력하세요..." id="messageInput">
-                <button class="send-button" onclick="sendMessage()">✈️</button>
-            </div>
-            <div class="quick-actions">
-                <a href="#" class="quick-action">📊 재고 현황</a>
-                <a href="#" class="quick-action">➕ 물건 추가</a>
-                <a href="#" class="quick-action">📝 사용 등록</a>
-            </div>
-        </div>
-        
-        <!-- 하단 네비게이션 -->
-        <div class="bottom-nav">
-            <a href="#" class="nav-item active">
-                <div class="nav-icon">🏠</div>
-                <div>홈</div>
-            </a>
-            <a href="#" class="nav-item">
-                <div class="nav-icon">📍</div>
-                <div>위치</div>
-            </a>
-            <a href="#" class="nav-item">
-                <div class="nav-icon">🏷️</div>
-                <div>카테고리</div>
-            </a>
-            <a href="#" class="nav-item">
-                <div class="nav-icon">📦</div>
-                <div>재고관리</div>
-            </a>
-            <a href="#" class="nav-item">
-                <div class="nav-icon">➕</div>
-                <div>물품추가</div>
-            </a>
-            <a href="#" class="nav-item">
-                <div class="nav-icon">⚙️</div>
-                <div>설정</div>
-            </a>
+        <div class="status-right">
+            <span>🔇</span>
+            <span>📶</span>
+            <span>LTE</span>
+            <span>📶</span>
+            <span style="background: white; color: #1a1f71; padding: 2px 6px; border-radius: 8px; font-size: 12px;">93</span>
         </div>
     </div>
 
-    <script>
-        function sendMessage() {
-            const input = document.getElementById('messageInput');
-            const message = input.value.trim();
-            if (message) {
-                // 여기에 실제 ChatGPT API 호출 로직 추가
-                console.log('전송된 메시지:', message);
-                input.value = '';
-                
-                // 데모용 응답 시뮬레이션
-                setTimeout(() => {
-                    addMessage('🤖', '메시지를 받았습니다: "' + message + '"');
-                }, 1000);
-            }
-        }
-        
-        function addMessage(avatar, content) {
-            const messagesContainer = document.querySelector('.chat-messages');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = 'message';
-            messageDiv.innerHTML = `
-                <div class="message-avatar">${avatar}</div>
-                <div class="message-content">
-                    <p>${content}</p>
-                    <p style="font-size: 12px; color: #999; margin-top: 10px;">방금 전</p>
+    <!-- Main Header -->
+    <div class="main-header">
+        <div class="header-title">
+            AI물품관리 홈 <span style="font-size: 16px; opacity: 0.7;">▼</span>
+        </div>
+        <div class="header-actions">
+            <button class="header-btn">➕</button>
+            <button class="header-btn" style="position: relative;">
+                🔔
+                <div class="notification-dot"></div>
+            </button>
+            <button class="header-btn">⋯</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- AI Assistant Card -->
+        <div class="ai-assistant-card" onclick="openChat()">
+            <div class="ai-card-content">
+                <div class="ai-icon">🤖</div>
+                <div class="ai-text">
+                    <div class="ai-title">AI 물품관리 도우미</div>
+                    <div class="ai-desc">앱을 더 스마트하게 제품과 공간을 업그레이드해보세요.</div>
                 </div>
-            `;
-            messagesContainer.appendChild(messageDiv);
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                <div style="font-size: 16px; opacity: 0.8;">▶</div>
+            </div>
+        </div>
+
+        <!-- Smart Routine Section -->
+        <div class="section">
+            <div class="section-header">
+                <div class="section-title">스마트 루틴</div>
+                <div class="section-arrow">›</div>
+            </div>
+            <div class="routine-card">
+                <div class="routine-text">루틴 알아보기</div>
+            </div>
+        </div>
+
+        <!-- Main Feature Showcase -->
+        <div class="feature-showcase">
+            <div class="feature-visual">
+                <span class="warehouse-icon">🏢</span>
+                <div class="floating-icons">
+                    <div class="floating-icon">📍</div>
+                    <div class="floating-icon">📋</div>
+                    <div class="floating-icon">💤</div>
+                    <div class="floating-icon">📦</div>
+                </div>
+            </div>
+            <div class="feature-info">
+                <div class="feature-title">제품에 추가 정보를 등록해 보세요</div>
+                <div class="feature-subtitle">더 많은 정보를 입력하면 다양한 서비스를 받을 수 있어요</div>
+            </div>
+        </div>
+
+        <!-- Inventory Overview -->
+        <div class="section">
+            <div class="section-header">
+                <div class="section-title">현재 재고 현황</div>
+                <div class="section-arrow">›</div>
+            </div>
+            <div class="inventory-grid">
+                <div class="inventory-card" onclick="showCategory('office')">
+                    <span class="inventory-icon">🖊️</span>
+                    <div class="inventory-label">사무용품</div>
+                    <div class="inventory-count">23개 품목</div>
+                </div>
+                <div class="inventory-card" onclick="showCategory('cleaning')">
+                    <span class="inventory-icon">🧽</span>
+                    <div class="inventory-label">청소용품</div>
+                    <div class="inventory-count">15개 품목</div>
+                </div>
+                <div class="inventory-card" onclick="showCategory('kitchen')">
+                    <span class="inventory-icon">🍽️</span>
+                    <div class="inventory-label">주방용품</div>
+                    <div class="inventory-count">31개 품목</div>
+                </div>
+                <div class="inventory-card" onclick="showCategory('medical')">
+                    <span class="inventory-icon">🏥</span>
+                    <div class="inventory-label">의료용품</div>
+                    <div class="inventory-count">8개 품목</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="activity-card">
+            <div class="activity-header">
+                <div class="activity-title">최근 활동</div>
+                <div class="activity-subtitle">오늘의 물품 사용 현황을 확인하세요</div>
+            </div>
+            <div class="activity-item">
+                <div class="activity-icon">📝</div>
+                <div class="activity-info">
+                    <div class="activity-name">A4 용지 사용 등록</div>
+                    <div class="activity-desc">사무실 2층 • 10장 사용</div>
+                </div>
+                <div class="activity-time">2분 전</div>
+            </div>
+            <div class="activity-item">
+                <div class="activity-icon">🧻</div>
+                <div class="activity-info">
+                    <div class="activity-name">휴지 재고 부족 알림</div>
+                    <div class="activity-desc">화장실 A • 3개 남음</div>
+                </div>
+                <div class="activity-time">15분 전</div>
+            </div>
+            <div class="activity-item">
+                <div class="activity-icon">➕</div>
+                <div class="activity-info">
+                    <div class="activity-name">세제 새로 추가됨</div>
+                    <div class="activity-desc">청소용품실 • 5개 입고</div>
+                </div>
+                <div class="activity-time">1시간 전</div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="section">
+            <div class="section-header">
+                <div class="section-title">빠른 작업</div>
+            </div>
+            <div class="quick-actions">
+                <div class="quick-action-card primary" onclick="quickAdd()">
+                    <span class="quick-action-icon">➕</span>
+                    <div class="quick-action-title">물품 추가</div>
+                </div>
+                <div class="quick-action-card" onclick="quickUse()">
+                    <span class="quick-action-icon">📝</span>
+                    <div class="quick-action-title">사용 등록</div>
+                </div>
+                <div class="quick-action-card" onclick="quickSearch()">
+                    <span class="quick-action-icon">🔍</span>
+                    <div class="quick-action-title">물품 찾기</div>
+                </div>
+                <div class="quick-action-card" onclick="quickReport()">
+                    <span class="quick-action-icon">📊</span>
+                    <div class="quick-action-title">사용 보고서</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat FAB -->
+    <div class="chat-fab" onclick="openChat()">
+        💬
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+        <a href="#" class="nav-item active">
+            <div class="nav-icon">🏠</div>
+            <div>홈</div>
+        </a>
+        <a href="#" class="nav-item">
+            <div class="nav-icon">📱</div>
+            <div>디바이스</div>
+        </a>
+        <a href="#" class="nav-item">
+            <div class="nav-icon">🏢</div>
+            <div>케어</div>
+        </a>
+        <a href="#" class="nav-item">
+            <div class="nav-icon">☰</div>
+            <div>메뉴</div>
+        </a>
+    </div>
+
+    <script>
+        function openChat() {
+            alert('AI 챗봇을 시작합니다! 🤖\n\n"휴지 재고 확인해줘" 또는 "물품 추가 방법 알려줘"와 같이 질문해보세요.');
         }
         
-        // Enter 키로 메시지 전송
-        document.getElementById('messageInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                sendMessage();
-            }
+        function showCategory(category) {
+            const categories = {
+                office: '사무용품',
+                cleaning: '청소용품', 
+                kitchen: '주방용품',
+                medical: '의료용품'
+            };
+            alert(`${categories[category]} 카테고리를 선택했습니다.\n\n해당 카테고리의 상세 재고 현황을 확인하시겠습니까?`);
+        }
+        
+        function quickAdd() {
+            alert('물품 추가 기능입니다.\n\n바코드 스캔 또는 수동 입력으로 새로운 물품을 등록할 수 있습니다.');
+        }
+        
+        function quickUse() {
+            alert('사용 등록 기능입니다.\n\n사용한 물품과 수량을 빠르게 기록할 수 있습니다.');
+        }
+        
+        function quickSearch() {
+            alert('물품 찾기 기능입니다.\n\n등록된 물품의 위치와 재고를 검색할 수 있습니다.');
+        }
+        
+        function quickReport() {
+            alert('사용 보고서 기능입니다.\n\n일/월/연간 물품 사용 통계를 확인할 수 있습니다.');
+        }
+        
+        // 네비게이션 활성화 처리
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+                this.classList.add('active');
+            });
         });
+        
+        // 스크롤 시 헤더 효과
+        let lastScrollTop = 0;
+        window.addEventListener('scroll', function() {
+            let st = window.pageYOffset || document.documentElement.scrollTop;
+            if (st > lastScrollTop) {
+                // 스크롤 다운
+                document.querySelector('.main-header').style.transform = 'translateY(-10px)';
+            } else {
+                // 스크롤 업
+                document.querySelector('.main-header').style.transform = 'translateY(0)';
+            }
+            lastScrollTop = st <= 0 ? 0 : st;
+        }, false);
     </script>
 </body>
 </html>
