@@ -5,8 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="AI물품관리">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1a1f71">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192x192.png">
+    <link rel="apple-touch-icon" href="icon-192x192.png">
     <title>AI물품관리 - 스마트 재물관리</title>
     <style>
         * {
@@ -24,6 +27,306 @@
             overflow-x: hidden;
         }
         
+        /* App Install Splash */
+        .app-install-splash {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1a1f71 0%, #2d1b69 50%, #8b5cf6 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: all 0.5s ease;
+        }
+        
+        .app-install-splash.hide {
+            opacity: 0;
+            visibility: hidden;
+        }
+        
+        .app-logo {
+            width: 120px;
+            height: 120px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+            margin-bottom: 30px;
+            animation: logoFloat 2s ease-in-out infinite alternate;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+        
+        .app-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .app-subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+        
+        .install-status {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .app-loader {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes logoFloat {
+            0% { transform: translateY(0px) scale(1); }
+            100% { transform: translateY(-10px) scale(1.05); }
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* First Time Setup */
+        .setup-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1a1f71 0%, #2d1b69 50%, #8b5cf6 100%);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9998;
+            padding: 20px;
+        }
+        
+        .setup-screen.show {
+            display: flex;
+        }
+        
+        .setup-card {
+            background: rgba(255,255,255,0.95);
+            border-radius: 25px;
+            padding: 40px 30px;
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+            color: #333;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: slideUp 0.5s ease-out;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        .setup-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+        
+        .setup-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1a1f71;
+            margin-bottom: 15px;
+        }
+        
+        .setup-description {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+        
+        .kakao-login-btn {
+            background: #FEE500;
+            color: #3C1E1E;
+            border: none;
+            border-radius: 15px;
+            padding: 16px 24px;
+            font-size: 16px;
+            font-weight: 600;
+            width: 100%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            margin-bottom: 15px;
+        }
+        
+        .kakao-login-btn:hover {
+            background: #FFEB3B;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(254, 229, 0, 0.4);
+        }
+        
+        .kakao-logo {
+            width: 20px;
+            height: 18px;
+            background: #3C1E1E;
+            border-radius: 3px;
+            position: relative;
+        }
+        
+        .kakao-logo::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 12px;
+            height: 10px;
+            background: #FEE500;
+            border-radius: 2px;
+        }
+        
+        .guest-btn {
+            background: none;
+            color: #666;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 12px 24px;
+            font-size: 14px;
+            width: 100%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .guest-btn:hover {
+            border-color: #1a1f71;
+            color: #1a1f71;
+        }
+        
+        .setup-info {
+            font-size: 12px;
+            color: #999;
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        /* Install Prompt */
+        .install-prompt {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            transform: translateY(100%);
+            transition: all 0.3s ease;
+            color: #333;
+        }
+        
+        .install-prompt.show {
+            transform: translateY(0);
+        }
+        
+        .install-prompt-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .install-prompt-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #1a1f71, #2d1b69);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+        }
+        
+        .install-prompt-text {
+            flex: 1;
+        }
+        
+        .install-prompt-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1a1f71;
+            margin-bottom: 4px;
+        }
+        
+        .install-prompt-desc {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .install-prompt-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .install-btn {
+            background: linear-gradient(135deg, #1a1f71, #2d1b69);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 12px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .install-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(26, 31, 113, 0.4);
+        }
+        
+        .dismiss-btn {
+            background: none;
+            color: #666;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 12px 16px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .dismiss-btn:hover {
+            background: #f5f5f5;
+        }
+        
+        /* Status Bar */
         .status-bar {
             display: flex;
             justify-content: space-between;
@@ -33,19 +336,14 @@
             font-weight: 600;
         }
         
-        .status-left {
+        .status-left, .status-right {
             display: flex;
             align-items: center;
             gap: 5px;
         }
         
-        .status-right {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        
-        .main-header {
+        /* Main Header */
+        .mobile-header {
             padding: 20px 20px 10px 20px;
             display: flex;
             justify-content: space-between;
@@ -60,31 +358,56 @@
             gap: 8px;
         }
         
-        .header-actions {
+        .user-section {
             display: flex;
-            gap: 15px;
+            gap: 8px;
             align-items: center;
         }
         
-        .header-btn {
-            width: 24px;
-            height: 24px;
+        .user-info {
             color: white;
-            opacity: 0.8;
-            font-size: 20px;
-            background: none;
-            border: none;
-            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            display: none;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 8px 12px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
         }
         
-        .notification-dot {
-            width: 8px;
-            height: 8px;
-            background: #ff4757;
+        .user-avatar {
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
-            position: absolute;
-            top: -2px;
-            right: -2px;
+            background: rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+        
+        .user-name {
+            font-weight: 600;
+        }
+        
+        .auth-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            padding: 8px 16px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            backdrop-filter: blur(10px);
+        }
+        
+        .auth-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
         }
         
         .container {
@@ -99,6 +422,13 @@
             margin-bottom: 25px;
             position: relative;
             overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .ai-assistant-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4);
         }
         
         .ai-assistant-card::before {
@@ -143,302 +473,105 @@
             opacity: 0.9;
         }
         
-        /* Smart Routine Section */
-        .section {
-            margin-bottom: 30px;
-        }
-        
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        
-        .section-title {
-            font-size: 20px;
-            font-weight: 700;
-        }
-        
-        .section-arrow {
-            font-size: 18px;
-            opacity: 0.7;
-        }
-        
-        .routine-card {
-            background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(20px);
-            border-radius: 15px;
-            border: 1px solid rgba(255,255,255,0.2);
-            padding: 15px;
-            margin-bottom: 15px;
-        }
-        
-        .routine-text {
-            font-size: 14px;
-            font-weight: 500;
-        }
-        
-        /* Main Feature Card */
-        .feature-showcase {
-            background: rgba(255,255,255,0.95);
-            border-radius: 20px;
-            padding: 0;
-            margin-bottom: 30px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-        
-        .feature-visual {
-            background: linear-gradient(135deg, #e8f4fd, #f0f8ff);
-            padding: 30px 20px;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .feature-visual::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="%23667eea" opacity="0.3"/><circle cx="80" cy="40" r="1.5" fill="%23764ba2" opacity="0.4"/><circle cx="60" cy="80" r="1" fill="%23f093fb" opacity="0.3"/></svg>') repeat;
-            pointer-events: none;
-        }
-        
-        .warehouse-icon {
-            font-size: 80px;
-            margin-bottom: 20px;
-            display: block;
-            position: relative;
-            z-index: 1;
-        }
-        
-        .floating-icons {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-        }
-        
-        .floating-icon {
-            position: absolute;
-            background: white;
-            border-radius: 50%;
-            width: 45px;
-            height: 45px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            animation: float 3s ease-in-out infinite;
-        }
-        
-        .floating-icon:nth-child(1) {
-            top: 20%;
-            left: 15%;
-            animation-delay: 0s;
-        }
-        
-        .floating-icon:nth-child(2) {
-            top: 30%;
-            right: 15%;
-            animation-delay: 1s;
-        }
-        
-        .floating-icon:nth-child(3) {
-            bottom: 30%;
-            left: 20%;
-            animation-delay: 2s;
-        }
-        
-        .floating-icon:nth-child(4) {
-            bottom: 20%;
-            right: 20%;
-            animation-delay: 0.5s;
-        }
-        
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-        }
-        
         @keyframes rotate {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
         
-        .feature-info {
-            padding: 25px 20px;
-            color: #333;
-            background: white;
-        }
-        
-        .feature-title {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 8px;
-            color: #1a1f71;
-        }
-        
-        .feature-subtitle {
-            font-size: 14px;
-            color: #666;
-            line-height: 1.5;
-        }
-        
-        /* Inventory Grid */
-        .inventory-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 30px;
-        }
-        
-        .inventory-card {
-            background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(20px);
-            border-radius: 15px;
-            border: 1px solid rgba(255,255,255,0.2);
-            padding: 20px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .inventory-card:hover {
-            transform: translateY(-5px);
-            background: rgba(255,255,255,0.15);
-        }
-        
-        .inventory-icon {
-            font-size: 32px;
-            margin-bottom: 10px;
-            display: block;
-        }
-        
-        .inventory-label {
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 5px;
-        }
-        
-        .inventory-count {
-            font-size: 12px;
-            opacity: 0.8;
-        }
-        
-        /* Recent Activity Card */
-        .activity-card {
+        /* Welcome Section */
+        .welcome-section {
             background: rgba(255,255,255,0.95);
             border-radius: 20px;
-            overflow: hidden;
-            margin-bottom: 30px;
+            padding: 25px;
+            margin-bottom: 25px;
             color: #333;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
         }
         
-        .activity-header {
-            padding: 20px 20px 15px 20px;
-            border-bottom: 1px solid rgba(0,0,0,0.1);
-        }
-        
-        .activity-title {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 5px;
-            color: #1a1f71;
-        }
-        
-        .activity-subtitle {
-            font-size: 13px;
-            color: #666;
-        }
-        
-        .activity-item {
-            padding: 15px 20px;
+        .welcome-header {
             display: flex;
             align-items: center;
             gap: 15px;
-            border-bottom: 1px solid rgba(0,0,0,0.05);
+            margin-bottom: 15px;
         }
         
-        .activity-item:last-child {
-            border-bottom: none;
+        .welcome-icon {
+            font-size: 36px;
         }
         
-        .activity-icon {
-            width: 40px;
-            height: 40px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            color: white;
+        .welcome-text h2 {
+            font-size: 20px;
+            color: #1a1f71;
+            margin-bottom: 5px;
         }
         
-        .activity-info {
-            flex: 1;
-        }
-        
-        .activity-name {
+        .welcome-text p {
             font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 3px;
-        }
-        
-        .activity-desc {
-            font-size: 12px;
             color: #666;
         }
         
-        .activity-time {
-            font-size: 11px;
-            color: #999;
+        .app-features {
+            margin-top: 20px;
         }
         
-        /* Quick Actions */
-        .quick-actions {
+        .feature-list {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 15px;
-            margin-bottom: 30px;
+            margin-top: 15px;
         }
         
-        .quick-action-card {
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            background: rgba(26, 31, 113, 0.05);
+            border-radius: 10px;
+        }
+        
+        .feature-icon {
+            font-size: 20px;
+        }
+        
+        .feature-text {
+            font-size: 13px;
+            font-weight: 500;
+            color: #555;
+        }
+        
+        /* Quick Stats */
+        .quick-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .stat-card {
             background: rgba(255,255,255,0.1);
             backdrop-filter: blur(20px);
             border-radius: 15px;
             border: 1px solid rgba(255,255,255,0.2);
             padding: 20px;
             text-align: center;
-            cursor: pointer;
             transition: all 0.3s ease;
         }
         
-        .quick-action-card.primary {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            border: none;
-        }
-        
-        .quick-action-card:hover {
+        .stat-card:hover {
+            background: rgba(255,255,255,0.15);
             transform: translateY(-3px);
         }
         
-        .quick-action-icon {
+        .stat-number {
             font-size: 28px;
-            margin-bottom: 10px;
-            display: block;
+            font-weight: 700;
+            margin-bottom: 5px;
         }
         
-        .quick-action-title {
-            font-size: 14px;
-            font-weight: 600;
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.9;
         }
         
         /* Bottom Navigation */
@@ -451,7 +584,8 @@
             backdrop-filter: blur(20px);
             border-top: 1px solid rgba(255,255,255,0.1);
             display: flex;
-            padding: 8px 0 20px 0;
+            padding: 12px 0 20px 0;
+            z-index: 100;
         }
         
         .nav-item {
@@ -476,209 +610,413 @@
         }
         
         /* Chat Interface */
-        .chat-fab {
+        .chat-overlay {
             position: fixed;
-            bottom: 100px;
-            right: 20px;
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, #1a1f71 0%, #2d1b69 50%, #8b5cf6 100%);
+            z-index: 9000;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+        }
+        
+        .chat-overlay.show {
+            transform: translateX(0);
+        }
+        
+        .chat-header {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .chat-back-btn {
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
-            color: white;
-            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4);
-            cursor: pointer;
             transition: all 0.3s ease;
-            animation: pulse 2s infinite;
         }
         
-        .chat-fab:hover {
-            transform: scale(1.1);
+        .chat-back-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.05);
         }
         
-        @keyframes pulse {
-            0% { box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4); }
-            50% { box-shadow: 0 8px 35px rgba(255, 107, 107, 0.6); }
-            100% { box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4); }
+        .chat-header-info {
+            flex: 1;
+        }
+        
+        .chat-header-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 2px;
+        }
+        
+        .chat-header-status {
+            font-size: 12px;
+            color: rgba(255,255,255,0.8);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #4CAF50;
+            border-radius: 50%;
+            animation: statusPulse 2s infinite;
+        }
+        
+        @keyframes statusPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .chat-container {
+            height: calc(100vh - 80px);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .chat-messages-area {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .chat-message {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+        }
+        
+        .chat-message.user {
+            flex-direction: row-reverse;
+        }
+        
+        .message-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: white;
+            flex-shrink: 0;
+        }
+        
+        .chat-message.user .message-avatar {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+        }
+        
+        .message-bubble {
+            max-width: 75%;
+            padding: 14px 18px;
+            border-radius: 18px;
+            font-size: 14px;
+            line-height: 1.5;
+            position: relative;
+        }
+        
+        .chat-message.bot .message-bubble {
+            background: rgba(255,255,255,0.95);
+            color: #333;
+            border-radius: 18px 18px 18px 6px;
+        }
+        
+        .chat-message.user .message-bubble {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 18px 18px 6px 18px;
+        }
+        
+        .message-time {
+            font-size: 11px;
+            opacity: 0.7;
+            margin-top: 5px;
+            text-align: center;
+        }
+        
+        .chat-input-area {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255,255,255,0.2);
+            padding: 20px;
+        }
+        
+        .chat-input-row {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            background: rgba(255,255,255,0.1);
+            border-radius: 25px;
+            padding: 8px;
+        }
+        
+        .chat-input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            color: white;
+            padding: 12px 16px;
+            font-size: 16px;
+            outline: none;
+        }
+        
+        .chat-input::placeholder {
+            color: rgba(255,255,255,0.7);
+        }
+        
+        .chat-send-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .chat-send-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+        }
+        
+        .quick-suggestions {
+            display: flex;
+            gap: 8px;
+            margin-top: 15px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+        }
+        
+        .suggestion-btn {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.3s ease;
+        }
+        
+        .suggestion-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-1px);
+        }
+        .toast {
+            position: fixed;
+            bottom: 120px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-size: 14px;
+            z-index: 2000;
+            display: none;
+            backdrop-filter: blur(10px);
+        }
+        
+        .toast.show {
+            display: block;
+            animation: slideUpToast 0.3s ease;
+        }
+        
+        @keyframes slideUpToast {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
         }
         
         /* Responsive */
         @media (max-width: 480px) {
             .container { padding: 0 15px 100px 15px; }
-            .main-header { padding: 15px 15px 10px 15px; }
+            .mobile-header { padding: 15px 15px 10px 15px; }
             .header-title { font-size: 22px; }
-            .inventory-grid { grid-template-columns: 1fr; }
+            .quick-stats { grid-template-columns: 1fr; }
+            .feature-list { grid-template-columns: 1fr; }
+        }
+        
+        /* PWA Detection */
+        .pwa-detected {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 500;
         }
     </style>
 </head>
 <body>
-    <!-- Status Bar -->
-    <div class="status-bar">
-        <div class="status-left">
-            <span>SKT</span>
-            <span>11:25</span>
-            <span>🔄</span>
-            <span>🏦</span>
-        </div>
-        <div class="status-right">
-            <span>🔇</span>
-            <span>📶</span>
-            <span>LTE</span>
-            <span>📶</span>
-            <span style="background: white; color: #1a1f71; padding: 2px 6px; border-radius: 8px; font-size: 12px;">93</span>
+    <!-- App Install Splash Screen -->
+    <div class="app-install-splash" id="appInstallSplash">
+        <div class="app-logo">📦</div>
+        <div class="app-title">AI물품관리</div>
+        <div class="app-subtitle">스마트한 재고 관리 앱</div>
+        <div class="install-status" id="installStatus">앱을 초기화하고 있습니다...</div>
+        <div class="app-loader"></div>
+    </div>
+
+    <!-- First Time Setup Screen -->
+    <div class="setup-screen" id="setupScreen">
+        <div class="setup-card">
+            <div class="setup-icon">🤖</div>
+            <div class="setup-title">AI물품관리에 오신 것을 환영합니다!</div>
+            <div class="setup-description">
+                스마트한 재고 관리를 시작하려면<br>
+                카카오 계정으로 간편하게 가입해주세요
+            </div>
+            
+            <button class="kakao-login-btn" onclick="startKakaoLogin()">
+                <div class="kakao-logo"></div>
+                카카오 계정으로 시작하기
+            </button>
+            
+            <button class="guest-btn" onclick="startAsGuest()">
+                둘러보기 (게스트 모드)
+            </button>
+            
+            <div class="setup-info">
+                카카오 로그인 시 앱 설치가 가능하며<br>
+                모든 기능을 이용하실 수 있습니다
+            </div>
         </div>
     </div>
 
-    <!-- Main Header -->
-    <div class="main-header">
-        <div class="header-title">
-            AI물품관리 홈 <span style="font-size: 16px; opacity: 0.7;">▼</span>
+    <!-- Install Prompt -->
+    <div class="install-prompt" id="installPrompt">
+        <div class="install-prompt-header">
+            <div class="install-prompt-icon">📱</div>
+            <div class="install-prompt-text">
+                <div class="install-prompt-title">앱으로 설치</div>
+                <div class="install-prompt-desc">홈 화면에 추가하여 앱처럼 사용하세요</div>
+            </div>
         </div>
-        <div class="header-actions">
-            <button class="header-btn">➕</button>
-            <button class="header-btn" style="position: relative;">
-                🔔
-                <div class="notification-dot"></div>
-            </button>
-            <button class="header-btn">⋯</button>
+        <div class="install-prompt-actions">
+            <button class="install-btn" onclick="installApp()">설치하기</button>
+            <button class="dismiss-btn" onclick="dismissInstallPrompt()">나중에</button>
+        </div>
+    </div>
+
+    <!-- Status Bar 삭제됨 -->
+
+    <!-- Main Header -->
+    <div class="mobile-header">
+        <div class="header-title">
+            AI물품관리 <span id="appMode" style="font-size: 12px; opacity: 0.7;"></span>
+        </div>
+        <div class="user-section">
+            <!-- 사용자 정보 및 인증 버튼 제거됨 -->
         </div>
     </div>
 
     <div class="container">
+        <!-- PWA Detection Alert -->
+        <div class="pwa-detected" id="pwaDetected" style="display: none;">
+            📱 앱 모드로 실행 중입니다!
+        </div>
+
         <!-- AI Assistant Card -->
-        <div class="ai-assistant-card" onclick="openChat()">
+        <div class="ai-assistant-card" onclick="openChatInterface()">
             <div class="ai-card-content">
                 <div class="ai-icon">🤖</div>
                 <div class="ai-text">
                     <div class="ai-title">AI 물품관리 도우미</div>
-                    <div class="ai-desc">앱을 더 스마트하게 제품과 공간을 업그레이드해보세요.</div>
+                    <div class="ai-desc" id="aiDescription">음성으로 물품을 추가하고 관리하세요</div>
                 </div>
-                <div style="font-size: 16px; opacity: 0.8;">▶</div>
+                <div style="font-size: 16px; opacity: 0.8;">💬</div>
             </div>
         </div>
 
-        <!-- Smart Routine Section -->
-        <div class="section">
-            <div class="section-header">
-                <div class="section-title">스마트 루틴</div>
-                <div class="section-arrow">›</div>
-            </div>
-            <div class="routine-card">
-                <div class="routine-text">루틴 알아보기</div>
-            </div>
-        </div>
-
-        <!-- Main Feature Showcase -->
-        <div class="feature-showcase">
-            <div class="feature-visual">
-                <span class="warehouse-icon">🏢</span>
-                <div class="floating-icons">
-                    <div class="floating-icon">📍</div>
-                    <div class="floating-icon">📋</div>
-                    <div class="floating-icon">💤</div>
-                    <div class="floating-icon">📦</div>
+        <!-- Welcome Section -->
+        <div class="welcome-section">
+            <div class="welcome-header">
+                <div class="welcome-icon">📦</div>
+                <div class="welcome-text">
+                    <h2 id="welcomeTitle">스마트 재고 관리</h2>
+                    <p id="welcomeDesc">AI와 함께하는 효율적인 물품 관리</p>
                 </div>
             </div>
-            <div class="feature-info">
-                <div class="feature-title">제품에 추가 정보를 등록해 보세요</div>
-                <div class="feature-subtitle">더 많은 정보를 입력하면 다양한 서비스를 받을 수 있어요</div>
-            </div>
-        </div>
-
-        <!-- Inventory Overview -->
-        <div class="section">
-            <div class="section-header">
-                <div class="section-title">현재 재고 현황</div>
-                <div class="section-arrow">›</div>
-            </div>
-            <div class="inventory-grid">
-                <div class="inventory-card" onclick="showCategory('office')">
-                    <span class="inventory-icon">🖊️</span>
-                    <div class="inventory-label">사무용품</div>
-                    <div class="inventory-count">23개 품목</div>
-                </div>
-                <div class="inventory-card" onclick="showCategory('cleaning')">
-                    <span class="inventory-icon">🧽</span>
-                    <div class="inventory-label">청소용품</div>
-                    <div class="inventory-count">15개 품목</div>
-                </div>
-                <div class="inventory-card" onclick="showCategory('kitchen')">
-                    <span class="inventory-icon">🍽️</span>
-                    <div class="inventory-label">주방용품</div>
-                    <div class="inventory-count">31개 품목</div>
-                </div>
-                <div class="inventory-card" onclick="showCategory('medical')">
-                    <span class="inventory-icon">🏥</span>
-                    <div class="inventory-label">의료용품</div>
-                    <div class="inventory-count">8개 품목</div>
+            
+            <div class="app-features">
+                <div class="feature-list">
+                    <div class="feature-item">
+                        <div class="feature-icon">🎤</div>
+                        <div class="feature-text">음성 인식</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">📷</div>
+                        <div class="feature-text">사진 인식</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">📊</div>
+                        <div class="feature-text">실시간 통계</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">🔔</div>
+                        <div class="feature-text">스마트 알림</div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Recent Activity -->
-        <div class="activity-card">
-            <div class="activity-header">
-                <div class="activity-title">최근 활동</div>
-                <div class="activity-subtitle">오늘의 물품 사용 현황을 확인하세요</div>
+        <!-- Quick Stats -->
+        <div class="quick-stats">
+            <div class="stat-card">
+                <div class="stat-number" id="totalItems">0</div>
+                <div class="stat-label">전체 물품</div>
             </div>
-            <div class="activity-item">
-                <div class="activity-icon">📝</div>
-                <div class="activity-info">
-                    <div class="activity-name">A4 용지 사용 등록</div>
-                    <div class="activity-desc">사무실 2층 • 10장 사용</div>
-                </div>
-                <div class="activity-time">2분 전</div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalCategories">0</div>
+                <div class="stat-label">카테고리</div>
             </div>
-            <div class="activity-item">
-                <div class="activity-icon">🧻</div>
-                <div class="activity-info">
-                    <div class="activity-name">휴지 재고 부족 알림</div>
-                    <div class="activity-desc">화장실 A • 3개 남음</div>
-                </div>
-                <div class="activity-time">15분 전</div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalLocations">0</div>
+                <div class="stat-label">보관 위치</div>
             </div>
-            <div class="activity-item">
-                <div class="activity-icon">➕</div>
-                <div class="activity-info">
-                    <div class="activity-name">세제 새로 추가됨</div>
-                    <div class="activity-desc">청소용품실 • 5개 입고</div>
-                </div>
-                <div class="activity-time">1시간 전</div>
+            <div class="stat-card">
+                <div class="stat-number" id="appInstalls">1</div>
+                <div class="stat-label">앱 설치</div>
             </div>
         </div>
-
-        <!-- Quick Actions -->
-        <div class="section">
-            <div class="section-header">
-                <div class="section-title">빠른 작업</div>
-            </div>
-            <div class="quick-actions">
-                <div class="quick-action-card primary" onclick="quickAdd()">
-                    <span class="quick-action-icon">➕</span>
-                    <div class="quick-action-title">물품 추가</div>
-                </div>
-                <div class="quick-action-card" onclick="quickUse()">
-                    <span class="quick-action-icon">📝</span>
-                    <div class="quick-action-title">사용 등록</div>
-                </div>
-                <div class="quick-action-card" onclick="quickSearch()">
-                    <span class="quick-action-icon">🔍</span>
-                    <div class="quick-action-title">물품 찾기</div>
-                </div>
-                <div class="quick-action-card" onclick="quickReport()">
-                    <span class="quick-action-icon">📊</span>
-                    <div class="quick-action-title">사용 보고서</div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Chat FAB -->
-    <div class="chat-fab" onclick="openChat()">
-        💬
     </div>
 
     <!-- Bottom Navigation -->
@@ -688,72 +1026,1212 @@
             <div>홈</div>
         </a>
         <a href="#" class="nav-item">
-            <div class="nav-icon">📱</div>
-            <div>디바이스</div>
+            <div class="nav-icon">📍</div>
+            <div>위치</div>
         </a>
         <a href="#" class="nav-item">
-            <div class="nav-icon">🏢</div>
-            <div>케어</div>
+            <div class="nav-icon">🏷️</div>
+            <div>카테고리</div>
         </a>
         <a href="#" class="nav-item">
-            <div class="nav-icon">☰</div>
-            <div>메뉴</div>
+            <div class="nav-icon">📦</div>
+            <div>재고관리</div>
+        </a>
+        <a href="#" class="nav-item">
+            <div class="nav-icon">➕</div>
+            <div>물품추가</div>
+        </a>
+        <a href="#" class="nav-item">
+            <div class="nav-icon">⚙️</div>
+            <div>설정</div>
         </a>
     </div>
 
+    <!-- Chat Interface Overlay -->
+    <div class="chat-overlay" id="chatOverlay">
+        <div class="chat-header">
+            <button class="chat-back-btn" onclick="closeChatInterface()">←</button>
+            <div class="chat-header-info">
+                <div class="chat-header-title">AI 물품관리 도우미</div>
+                <div class="chat-header-status">
+                    <div class="status-dot"></div>
+                    온라인 • 언제든 질문하세요
+                </div>
+            </div>
+        </div>
+        
+        <div class="chat-container">
+            <div class="chat-messages-area" id="chatMessagesArea">
+                <!-- 초기 환영 메시지 -->
+                <div class="chat-message bot">
+                    <div class="message-avatar">🤖</div>
+                    <div class="message-bubble">
+                        안녕하세요! AI물품관리 도우미입니다. 😊<br><br>
+                        무엇을 도와드릴까요?<br><br>
+                        <strong>예시 질문:</strong><br>
+                        • "휴지 재고 확인해줘"<br>
+                        • "라면 5개 추가해줘"<br>
+                        • "냉장고에 뭐가 있어?"
+                        <div class="message-time">방금 전</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chat-input-area">
+                <div class="chat-input-row">
+                    <input type="text" class="chat-input" placeholder="메시지를 입력하세요..." id="chatInput" onkeypress="handleChatKeyPress(event)">
+                    <button class="chat-send-btn" onclick="sendChatMessage()">
+                        📤
+                    </button>
+                </div>
+                
+                <div class="quick-suggestions">
+                    <button class="suggestion-btn" onclick="sendQuickMessage('재고 현황')">📊 재고 현황</button>
+                    <button class="suggestion-btn" onclick="sendQuickMessage('물건 추가')">➕ 물건 추가</button>
+                    <button class="suggestion-btn" onclick="sendQuickMessage('사용 등록')">📝 사용 등록</button>
+                    <button class="suggestion-btn" onclick="sendQuickMessage('도움말')">❓ 도움말</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
     <script>
-        function openChat() {
-            alert('AI 챗봇을 시작합니다! 🤖\n\n"휴지 재고 확인해줘" 또는 "물품 추가 방법 알려줘"와 같이 질문해보세요.');
-        }
-        
-        function showCategory(category) {
-            const categories = {
-                office: '사무용품',
-                cleaning: '청소용품', 
-                kitchen: '주방용품',
-                medical: '의료용품'
-            };
-            alert(`${categories[category]} 카테고리를 선택했습니다.\n\n해당 카테고리의 상세 재고 현황을 확인하시겠습니까?`);
-        }
-        
-        function quickAdd() {
-            alert('물품 추가 기능입니다.\n\n바코드 스캔 또는 수동 입력으로 새로운 물품을 등록할 수 있습니다.');
-        }
-        
-        function quickUse() {
-            alert('사용 등록 기능입니다.\n\n사용한 물품과 수량을 빠르게 기록할 수 있습니다.');
-        }
-        
-        function quickSearch() {
-            alert('물품 찾기 기능입니다.\n\n등록된 물품의 위치와 재고를 검색할 수 있습니다.');
-        }
-        
-        function quickReport() {
-            alert('사용 보고서 기능입니다.\n\n일/월/연간 물품 사용 통계를 확인할 수 있습니다.');
-        }
-        
-        // 네비게이션 활성화 처리
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.addEventListener('click', function(e) {
-                e.preventDefault();
-                document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
-                this.classList.add('active');
-            });
-        });
-        
-        // 스크롤 시 헤더 효과
-        let lastScrollTop = 0;
-        window.addEventListener('scroll', function() {
-            let st = window.pageYOffset || document.documentElement.scrollTop;
-            if (st > lastScrollTop) {
-                // 스크롤 다운
-                document.querySelector('.main-header').style.transform = 'translateY(-10px)';
-            } else {
-                // 스크롤 업
-                document.querySelector('.main-header').style.transform = 'translateY(0)';
+        // 앱 상태 관리
+        const appState = {
+            isFirstTime: false,
+            isLoggedIn: false,
+            isPWA: false,
+            installPromptShown: false,
+            user: null
+        };
+
+        let deferredPrompt = null;
+
+        // 앱 초기화
+        async function initializeApp() {
+            const installStatus = document.getElementById('installStatus');
+            
+            try {
+                installStatus.textContent = 'PWA 상태 확인 중...';
+                await checkPWAStatus();
+                
+                installStatus.textContent = '사용자 인증 확인 중...';
+                await checkUserAuth();
+                
+                installStatus.textContent = '앱 데이터 로딩 중...';
+                await loadAppData();
+                
+                installStatus.textContent = '앱 초기화 완료!';
+                
+                setTimeout(() => {
+                    document.getElementById('appInstallSplash').classList.add('hide');
+                    
+                    if (appState.isFirstTime && !appState.isLoggedIn) {
+                        showSetupScreen();
+                    } else {
+                        showMainApp();
+                    }
+                }, 1500);
+                
+            } catch (error) {
+                console.error('앱 초기화 실패:', error);
+                installStatus.textContent = '초기화 오류 - 새로고침해주세요';
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
             }
-            lastScrollTop = st <= 0 ? 0 : st;
-        }, false);
+        }
+
+        // PWA 상태 확인
+        async function checkPWAStatus() {
+            // PWA로 실행 중인지 확인
+            if (window.matchMedia('(display-mode: standalone)').matches || 
+                window.navigator.standalone || 
+                document.referrer.includes('android-app://')) {
+                appState.isPWA = true;
+                document.getElementById('pwaDetected').style.display = 'block';
+                document.getElementById('appMode').textContent = '📱 앱';
+                
+                // PWA 실행 횟수 증가
+                const pwaLaunches = parseInt(localStorage.getItem('pwaLaunches') || '0') + 1;
+                localStorage.setItem('pwaLaunches', pwaLaunches.toString());
+                document.getElementById('appInstalls').textContent = pwaLaunches;
+            } else {
+                document.getElementById('appMode').textContent = '🌐 웹';
+                
+                // 설치 프롬프트 준비
+                window.addEventListener('beforeinstallprompt', (e) => {
+                    e.preventDefault();
+                    deferredPrompt = e;
+                    
+                    // 첫 방문자나 아직 앱을 설치하지 않은 경우 프롬프트 표시
+                    setTimeout(() => {
+                        if (!appState.installPromptShown && !appState.isPWA) {
+                            showInstallPrompt();
+                        }
+                    }, 3000);
+                });
+            }
+        }
+
+        // 사용자 인증 확인 (비활성화됨)
+        async function checkUserAuth() {
+            // TODO: 나중에 활성화 예정
+            // 현재는 모든 사용자를 로그인된 상태로 처리
+            console.log('🚧 인증 시스템 비활성화 - 개발 중');
+            
+            // 개발용 임시 사용자
+            const devUser = {
+                id: 'dev_user_001',
+                nickname: '개발자',
+                profile_image: '👨‍💻',
+                loginType: 'development',
+                registeredAt: new Date().toISOString()
+            };
+            
+            appState.user = devUser;
+            appState.isLoggedIn = true;
+            appState.isFirstTime = false;
+            
+            console.log('개발 모드: 임시 사용자로 자동 로그인');
+            
+            /* 
+            // 실제 구현 코드 (나중에 활성화)
+            const savedUser = localStorage.getItem('kakaoUser');
+            const authToken = localStorage.getItem('authToken');
+            
+            if (savedUser && authToken) {
+                try {
+                    const user = JSON.parse(savedUser);
+                    appState.user = user;
+                    appState.isLoggedIn = true;
+                    appState.isFirstTime = false;
+                    updateUserUI(user);
+                    console.log('기존 사용자 로그인 완료:', user.nickname);
+                } catch (error) {
+                    console.error('사용자 정보 파싱 실패:', error);
+                    localStorage.removeItem('kakaoUser');
+                    localStorage.removeItem('authToken');
+                    appState.isFirstTime = true;
+                }
+            } else {
+                appState.isFirstTime = true;
+                console.log('신규 사용자 - 회원가입 필요');
+            }
+            */
+        }
+
+        // 앱 데이터 로드
+        async function loadAppData() {
+            // 로컬 데이터 로드
+            const items = JSON.parse(localStorage.getItem('inventoryItems') || '[]');
+            const categories = JSON.parse(localStorage.getItem('categories') || '[]');
+            const locations = JSON.parse(localStorage.getItem('locations') || '[]');
+            
+            // 통계 업데이트
+            document.getElementById('totalItems').textContent = items.length;
+            document.getElementById('totalCategories').textContent = categories.length;
+            document.getElementById('totalLocations').textContent = locations.length;
+            
+            // 실제 서버 API 호출 (필요시)
+            /*
+            try {
+                const response = await fetch('/api/user/data', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    }
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    updateDataFromServer(data);
+                }
+            } catch (error) {
+                console.log('서버 데이터 로드 실패 - 오프라인 모드');
+            }
+            */
+        }
+
+        // 설정 화면 표시 (비활성화됨)
+        function showSetupScreen() {
+            // TODO: 나중에 활성화 예정
+            console.log('🚧 회원가입 화면 비활성화 - 개발 중');
+            // document.getElementById('setupScreen').classList.add('show');
+        }
+
+        // 메인 앱 표시
+        function showMainApp() {
+            if (appState.isLoggedIn) {
+                updateWelcomeContent();
+            }
+            
+            // 설치 프롬프트 체크
+            if (!appState.isPWA && !appState.installPromptShown && deferredPrompt) {
+                setTimeout(() => {
+                    showInstallPrompt();
+                }, 2000);
+            }
+        }
+
+        // 카카오 로그인 시작 (비활성화됨)
+        async function startKakaoLogin() {
+            // TODO: 나중에 활성화 예정
+            console.log('🚧 카카오 로그인 비활성화 - 개발 중');
+            showToast('카카오 로그인 기능 개발 중입니다');
+            
+            /*
+            // 실제 구현 코드 (나중에 활성화)
+            showToast('카카오 로그인을 시작합니다...');
+            
+            try {
+                await simulateKakaoLogin();
+            } catch (error) {
+                console.error('카카오 로그인 실패:', error);
+                showToast('로그인에 실패했습니다. 다시 시도해주세요.');
+            }
+            */
+        }
+
+        // 카카오 로그인 시뮬레이션
+        async function simulateKakaoLogin() {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    // 시뮬레이션된 카카오 사용자 정보
+                    const mockKakaoUser = {
+                        id: 'kakao_' + Math.random().toString(36).substr(2, 9),
+                        nickname: '카카오사용자',
+                        profile_image: '👤',
+                        email: 'user@kakao.com',
+                        loginType: 'kakao',
+                        registeredAt: new Date().toISOString()
+                    };
+                    
+                    // 사용자 정보 저장
+                    localStorage.setItem('kakaoUser', JSON.stringify(mockKakaoUser));
+                    localStorage.setItem('authToken', 'kakao_token_' + Date.now());
+                    
+                    appState.user = mockKakaoUser;
+                    appState.isLoggedIn = true;
+                    appState.isFirstTime = false;
+                    
+                    // UI 업데이트
+                    updateUserUI(mockKakaoUser);
+                    document.getElementById('setupScreen').classList.remove('show');
+                    
+                    showToast(`${mockKakaoUser.nickname}님 환영합니다! 🎉`);
+                    showMainApp();
+                    
+                    resolve();
+                }, 2000);
+            });
+        }
+
+        // 게스트 모드 시작
+        function startAsGuest() {
+            const guestUser = {
+                id: 'guest_' + Date.now(),
+                nickname: '게스트',
+                profile_image: '👤',
+                loginType: 'guest',
+                registeredAt: new Date().toISOString()
+            };
+            
+            // 세션만 저장 (브라우저 닫으면 삭제)
+            sessionStorage.setItem('guestUser', JSON.stringify(guestUser));
+            
+            appState.user = guestUser;
+            appState.isLoggedIn = false; // 게스트는 로그인 상태 아님
+            appState.isFirstTime = false;
+            
+            updateUserUI(guestUser, true);
+            document.getElementById('setupScreen').classList.remove('show');
+            
+            showToast('게스트 모드로 시작합니다 👋');
+            showMainApp();
+        }
+
+        // 사용자 UI 업데이트
+        function updateUserUI(user, isGuest = false) {
+            const userInfo = document.getElementById('userInfo');
+            const authBtn = document.getElementById('authBtn');
+            const userAvatar = document.getElementById('userAvatar');
+            const userName = document.getElementById('userName');
+            
+            if (user) {
+                userAvatar.textContent = user.profile_image || '👤';
+                userName.textContent = user.nickname;
+                userInfo.style.display = 'flex';
+                
+                if (isGuest) {
+                    authBtn.textContent = '로그인';
+                    authBtn.onclick = () => showSetupScreen();
+                    authBtn.style.display = 'block';
+                } else {
+                    authBtn.textContent = '로그아웃';
+                    authBtn.onclick = logout;
+                    authBtn.style.display = 'block';
+                }
+            } else {
+                userInfo.style.display = 'none';
+                authBtn.textContent = '로그인';
+                authBtn.onclick = () => showSetupScreen();
+                authBtn.style.display = 'block';
+            }
+        }
+
+        // 환영 콘텐츠 업데이트
+        function updateWelcomeContent() {
+            const welcomeTitle = document.getElementById('welcomeTitle');
+            const welcomeDesc = document.getElementById('welcomeDesc');
+            const aiDescription = document.getElementById('aiDescription');
+            
+            if (appState.user) {
+                if (appState.isPWA) {
+                    welcomeTitle.textContent = `${appState.user.nickname}님의 스마트 관리`;
+                    welcomeDesc.textContent = '앱에서 더욱 편리하게 이용하세요';
+                    aiDescription.textContent = '앱에서 모든 기능을 자유롭게 사용하세요';
+                } else {
+                    welcomeTitle.textContent = `${appState.user.nickname}님 환영합니다!`;
+                    welcomeDesc.textContent = '앱으로 설치하면 더욱 편리해요';
+                    aiDescription.textContent = '홈 화면에 추가하여 앱처럼 사용해보세요';
+                }
+            }
+        }
+
+        // 설치 프롬프트 표시
+        function showInstallPrompt() {
+            if (appState.installPromptShown || appState.isPWA) return;
+            
+            document.getElementById('installPrompt').classList.add('show');
+            appState.installPromptShown = true;
+            
+            // 3초 후 자동 숨김
+            setTimeout(() => {
+                if (document.getElementById('installPrompt').classList.contains('show')) {
+                    dismissInstallPrompt();
+                }
+            }, 8000);
+        }
+
+        // 앱 설치
+        async function installApp() {
+            if (!deferredPrompt) {
+                showToast('설치가 지원되지 않는 브라우저입니다');
+                return;
+            }
+            
+            try {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                
+                if (outcome === 'accepted') {
+                    showToast('🎉 앱 설치 완료! 홈 화면에서 확인하세요');
+                    localStorage.setItem('appInstalled', 'true');
+                    dismissInstallPrompt();
+                } else {
+                    showToast('앱 설치가 취소되었습니다');
+                }
+                
+                deferredPrompt = null;
+            } catch (error) {
+                console.error('설치 실패:', error);
+                showToast('설치 중 오류가 발생했습니다');
+            }
+        }
+
+        // 설치 프롬프트 숨김
+        function dismissInstallPrompt() {
+            document.getElementById('installPrompt').classList.remove('show');
+            localStorage.setItem('installPromptDismissed', Date.now().toString());
+        }
+
+        // 로그아웃
+        function logout() {
+            if (!confirm('정말 로그아웃하시겠습니까?')) return;
+            
+            // 데이터 정리
+            localStorage.removeItem('kakaoUser');
+            localStorage.removeItem('authToken');
+            sessionStorage.removeItem('guestUser');
+            
+            appState.user = null;
+            appState.isLoggedIn = false;
+            
+            showToast('로그아웃되었습니다');
+            
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+        }
+
+        // 인증 처리
+        function handleAuth() {
+            if (appState.isLoggedIn) {
+                logout();
+            } else {
+                showSetupScreen();
+            }
+        }
+
+        // 대화창 인터페이스 열기
+        function openChatInterface() {
+            document.getElementById('chatOverlay').classList.add('show');
+            document.body.style.overflow = 'hidden';
+            
+            // AI 상태 표시
+            showAIStatus('AI 시스템 활성화 중...', 'searching');
+            
+            setTimeout(() => {
+                document.getElementById('chatInput').focus();
+                showAIStatus('GPT-4 & S3 연동 준비 완료', 'thinking');
+                
+                setTimeout(() => {
+                    hideAIStatus();
+                }, 2000);
+            }, 300);
+            
+            showToast('🤖 AI 도우미: GPT-4 + S3 데이터 연동 활성화');
+        }
+
+        // AI 상태 표시
+        function showAIStatus(message, type = 'searching') {
+            let statusElement = document.querySelector('.ai-status');
+            
+            if (!statusElement) {
+                statusElement = document.createElement('div');
+                statusElement.className = 'ai-status';
+                document.querySelector('.chat-header').appendChild(statusElement);
+            }
+            
+            statusElement.className = `ai-status ${type}`;
+            statusElement.innerHTML = `
+                <div class="status-spinner"></div>
+                ${message}
+            `;
+            
+            statusElement.style.display = 'flex';
+        }
+
+        // AI 상태 숨김
+        function hideAIStatus() {
+            const statusElement = document.querySelector('.ai-status');
+            if (statusElement) {
+                statusElement.style.display = 'none';
+            }
+        }
+
+        // 채팅 메시지 전송 (개선된 버전)
+        async function sendChatMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // 사용자 메시지 추가
+            addChatMessage(message, 'user');
+            input.value = '';
+            
+            // AI 처리 상태 표시
+            showAIStatus('S3 데이터 검색 중...', 'searching');
+            
+            // 로딩 메시지 추가
+            const loadingId = addChatLoadingMessage();
+            
+            try {
+                // 1단계: S3 검색 상태 업데이트
+                setTimeout(() => {
+                    showAIStatus('GPT-4 분석 중...', 'thinking');
+                }, 1000);
+                
+                // 2단계: AI 응답 생성
+                const botResponse = await generateBotResponse(message);
+                
+                // 3단계: 완료 상태
+                showAIStatus('응답 완료', 'thinking');
+                
+                // 로딩 메시지 제거 및 응답 표시
+                removeChatLoadingMessage(loadingId);
+                addChatMessage(botResponse, 'bot');
+                
+                // 상태 숨김
+                setTimeout(() => {
+                    hideAIStatus();
+                }, 1500);
+                
+            } catch (error) {
+                console.error('채팅 응답 오류:', error);
+                
+                showAIStatus('오류 발생', 'error');
+                removeChatLoadingMessage(loadingId);
+                addChatMessage('😅 죄송해요, AI 서버 연결에 문제가 있습니다.<br><br>🔧 **문제 해결 방법:**<br>• 잠시 후 다시 시도<br>• 인터넷 연결 확인<br>• 페이지 새로고침', 'bot');
+                
+                setTimeout(() => {
+                    hideAIStatus();
+                }, 3000);
+            }
+        }
+
+        // 대화창 닫기
+        function closeChatInterface() {
+            document.getElementById('chatOverlay').classList.remove('show');
+            document.body.style.overflow = ''; // 스크롤 복원
+        }
+
+        // 채팅 메시지 전송
+        function sendChatMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // 사용자 메시지 추가
+            addChatMessage(message, 'user');
+            input.value = '';
+            
+            // 봇 응답 시뮬레이션
+            setTimeout(() => {
+                const botResponse = generateBotResponse(message);
+                addChatMessage(botResponse, 'bot');
+            }, 1000);
+        }
+
+        // 채팅 메시지 추가
+        function addChatMessage(content, type) {
+            const messagesArea = document.getElementById('chatMessagesArea');
+            const messageElement = document.createElement('div');
+            messageElement.className = `chat-message ${type}`;
+            
+            const currentTime = new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+            const avatar = type === 'user' ? '👤' : '🤖';
+            
+            messageElement.innerHTML = `
+                <div class="message-avatar">${avatar}</div>
+                <div class="message-bubble">
+                    ${content}
+                    <div class="message-time">${currentTime}</div>
+                </div>
+            `;
+            
+            messagesArea.appendChild(messageElement);
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+        }
+
+        // 빠른 메시지 전송
+        function sendQuickMessage(message) {
+            document.getElementById('chatInput').value = message;
+            sendChatMessage();
+        }
+
+        // AI 설정 및 API 구성
+        const AI_CONFIG = {
+            // OpenAI GPT 설정
+            openai: {
+                apiKey: null, // 환경변수에서 로드 예정
+                model: 'gpt-4',
+                endpoint: 'https://api.openai.com/v1/chat/completions'
+            },
+            // AWS S3 설정
+            s3: {
+                bucketName: 'inventory-data-bucket',
+                region: 'ap-northeast-2',
+                endpoint: null // 백엔드에서 처리
+            },
+            // 백엔드 API 엔드포인트
+            backend: {
+                chatEndpoint: `${API_URL || ''}/chat/ai-assistant`,
+                s3SearchEndpoint: `${API_URL || ''}/data/s3-search`,
+                inventoryEndpoint: `${API_URL || ''}/inventory/query`
+            }
+        };
+
+        // 봇 응답 생성 (GPT/LLM 연동)
+        async function generateBotResponse(userMessage) {
+            const message = userMessage.toLowerCase();
+            
+            try {
+                // 1단계: S3 데이터 우선 검토
+                const s3Results = await searchS3Data(userMessage);
+                
+                // 2단계: GPT/LLM에 컨텍스트와 함께 요청
+                const aiResponse = await callAIWithContext(userMessage, s3Results);
+                
+                return aiResponse;
+                
+            } catch (error) {
+                console.error('AI 응답 생성 실패:', error);
+                // 오류 시 기본 응답으로 fallback
+                return generateFallbackResponse(userMessage);
+            }
+        }
+
+        // S3 데이터 검색
+        async function searchS3Data(query) {
+            try {
+                console.log('🔍 S3 데이터 검색 중...', query);
+                
+                const response = await fetch(AI_CONFIG.backend.s3SearchEndpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('authToken') || 'demo-token'}`
+                    },
+                    body: JSON.stringify({
+                        query: query,
+                        searchType: 'inventory',
+                        includeMetadata: true,
+                        maxResults: 10
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('✅ S3 데이터 검색 완료:', data.results?.length || 0, '건');
+                    return data.results || [];
+                } else {
+                    console.warn('⚠️ S3 검색 실패:', response.status);
+                    return [];
+                }
+                
+            } catch (error) {
+                console.error('❌ S3 검색 오류:', error);
+                // 오류 시 로컬 데이터라도 검색
+                return searchLocalData(query);
+            }
+        }
+
+        // 로컬 데이터 검색 (S3 실패 시 대체)
+        function searchLocalData(query) {
+            try {
+                const localItems = JSON.parse(localStorage.getItem('inventoryItems') || '[]');
+                const localCategories = JSON.parse(localStorage.getItem('categories') || '[]');
+                const localLocations = JSON.parse(localStorage.getItem('locations') || '[]');
+                
+                const results = [];
+                
+                // 물품 검색
+                localItems.forEach(item => {
+                    if (item.name.toLowerCase().includes(query.toLowerCase()) ||
+                        (item.description && item.description.toLowerCase().includes(query.toLowerCase()))) {
+                        results.push({
+                            type: 'item',
+                            data: item,
+                            relevance: calculateRelevance(query, item.name)
+                        });
+                    }
+                });
+                
+                // 카테고리 검색
+                localCategories.forEach(category => {
+                    if (category.name.toLowerCase().includes(query.toLowerCase())) {
+                        results.push({
+                            type: 'category',
+                            data: category,
+                            relevance: calculateRelevance(query, category.name)
+                        });
+                    }
+                });
+                
+                // 위치 검색
+                localLocations.forEach(location => {
+                    if (location.name.toLowerCase().includes(query.toLowerCase())) {
+                        results.push({
+                            type: 'location',
+                            data: location,
+                            relevance: calculateRelevance(query, location.name)
+                        });
+                    }
+                });
+                
+                // 관련성순 정렬
+                results.sort((a, b) => b.relevance - a.relevance);
+                
+                console.log('📦 로컬 데이터 검색 결과:', results.length, '건');
+                return results.slice(0, 10); // 상위 10개만 반환
+                
+            } catch (error) {
+                console.error('로컬 데이터 검색 오류:', error);
+                return [];
+            }
+        }
+
+        // 관련성 점수 계산
+        function calculateRelevance(query, text) {
+            const queryLower = query.toLowerCase();
+            const textLower = text.toLowerCase();
+            
+            if (textLower === queryLower) return 100;
+            if (textLower.includes(queryLower)) return 80;
+            if (textLower.startsWith(queryLower)) return 90;
+            if (textLower.endsWith(queryLower)) return 70;
+            
+            // 부분 일치 점수
+            const words = queryLower.split(' ');
+            let matchCount = 0;
+            words.forEach(word => {
+                if (textLower.includes(word)) matchCount++;
+            });
+            
+            return (matchCount / words.length) * 50;
+        }
+
+        // GPT/LLM에 컨텍스트와 함께 요청
+        async function callAIWithContext(userMessage, s3Results) {
+            try {
+                console.log('🤖 GPT/LLM 요청 중...', userMessage);
+                
+                // 컨텍스트 구성
+                const context = buildContextFromS3Results(s3Results);
+                
+                const response = await fetch(AI_CONFIG.backend.chatEndpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('authToken') || 'demo-token'}`
+                    },
+                    body: JSON.stringify({
+                        message: userMessage,
+                        context: context,
+                        conversationId: getConversationId(),
+                        options: {
+                            model: AI_CONFIG.openai.model,
+                            temperature: 0.7,
+                            maxTokens: 500,
+                            includeInventoryData: true
+                        }
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('✅ GPT/LLM 응답 완료');
+                    
+                    // 응답에 액션이 포함된 경우 처리
+                    if (data.actions && data.actions.length > 0) {
+                        await processAIActions(data.actions);
+                    }
+                    
+                    return formatAIResponse(data.response, s3Results);
+                } else {
+                    throw new Error(`AI API 오류: ${response.status}`);
+                }
+                
+            } catch (error) {
+                console.error('❌ GPT/LLM 요청 실패:', error);
+                // 오류 시 S3 데이터를 활용한 기본 응답
+                return generateContextualResponse(userMessage, s3Results);
+            }
+        }
+
+        // S3 결과에서 컨텍스트 구성
+        function buildContextFromS3Results(s3Results) {
+            if (!s3Results || s3Results.length === 0) {
+                return {
+                    hasData: false,
+                    summary: '등록된 데이터가 없습니다.'
+                };
+            }
+            
+            const context = {
+                hasData: true,
+                totalResults: s3Results.length,
+                items: [],
+                categories: [],
+                locations: [],
+                summary: ''
+            };
+            
+            s3Results.forEach(result => {
+                switch (result.type) {
+                    case 'item':
+                        context.items.push({
+                            name: result.data.name,
+                            quantity: result.data.quantity,
+                            location: result.data.locationName,
+                            category: result.data.categoryName
+                        });
+                        break;
+                    case 'category':
+                        context.categories.push(result.data.name);
+                        break;
+                    case 'location':
+                        context.locations.push(result.data.name);
+                        break;
+                }
+            });
+            
+            // 컨텍스트 요약 생성
+            context.summary = `현재 ${context.items.length}개 물품, ${context.categories.length}개 카테고리, ${context.locations.length}개 위치가 관련되어 있습니다.`;
+            
+            return context;
+        }
+
+        // 대화 ID 생성/가져오기
+        function getConversationId() {
+            let conversationId = sessionStorage.getItem('chatConversationId');
+            if (!conversationId) {
+                conversationId = 'chat_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                sessionStorage.setItem('chatConversationId', conversationId);
+            }
+            return conversationId;
+        }
+
+        // AI 응답 포맷팅
+        function formatAIResponse(response, s3Results) {
+            let formattedResponse = response;
+            
+            // S3 결과가 있는 경우 관련 데이터 표시
+            if (s3Results && s3Results.length > 0) {
+                const hasItems = s3Results.some(r => r.type === 'item');
+                
+                if (hasItems) {
+                    formattedResponse += '<br><br>📦 **관련 물품:**<br>';
+                    s3Results.filter(r => r.type === 'item').slice(0, 3).forEach((result, index) => {
+                        const item = result.data;
+                        formattedResponse += `${index + 1}. **${item.name}** (${item.quantity || 0}${item.unit || '개'})<br>`;
+                        if (item.locationName) {
+                            formattedResponse += `&nbsp;&nbsp;&nbsp;📍 ${item.locationName}<br>`;
+                        }
+                    });
+                }
+            }
+            
+            return formattedResponse;
+        }
+
+        // AI 액션 처리
+        async function processAIActions(actions) {
+            for (const action of actions) {
+                try {
+                    switch (action.type) {
+                        case 'add_item':
+                            await executeAddItem(action.params);
+                            break;
+                        case 'update_quantity':
+                            await executeUpdateQuantity(action.params);
+                            break;
+                        case 'search_items':
+                            await executeSearchItems(action.params);
+                            break;
+                        case 'show_stats':
+                            await executeShowStats(action.params);
+                            break;
+                        default:
+                            console.warn('알 수 없는 액션:', action.type);
+                    }
+                } catch (error) {
+                    console.error('액션 실행 실패:', action.type, error);
+                }
+            }
+        }
+
+        // 액션 실행 함수들
+        async function executeAddItem(params) {
+            console.log('➕ 물품 추가 액션:', params);
+            // 실제 물품 추가 로직 구현
+            showToast(`✅ ${params.name} ${params.quantity}${params.unit || '개'} 추가됨`);
+        }
+
+        async function executeUpdateQuantity(params) {
+            console.log('📝 수량 업데이트 액션:', params);
+            // 실제 수량 업데이트 로직 구현
+            showToast(`📊 ${params.name} 수량이 업데이트됨`);
+        }
+
+        async function executeSearchItems(params) {
+            console.log('🔍 검색 액션:', params);
+            // 실제 검색 로직 구현
+        }
+
+        async function executeShowStats(params) {
+            console.log('📈 통계 표시 액션:', params);
+            // 실제 통계 표시 로직 구현
+        }
+
+        // 컨텍스트 기반 기본 응답 (AI API 실패시)
+        function generateContextualResponse(userMessage, s3Results) {
+            const message = userMessage.toLowerCase();
+            
+            // S3 결과가 있는 경우 활용
+            if (s3Results && s3Results.length > 0) {
+                const items = s3Results.filter(r => r.type === 'item');
+                
+                if (message.includes('재고') || message.includes('현황')) {
+                    let response = `📊 **검색 결과 (${items.length}개 물품)**<br><br>`;
+                    items.slice(0, 5).forEach((result, index) => {
+                        const item = result.data;
+                        response += `${index + 1}. **${item.name}**: ${item.quantity || 0}${item.unit || '개'}<br>`;
+                        if (item.locationName) {
+                            response += `&nbsp;&nbsp;&nbsp;📍 ${item.locationName}<br>`;
+                        }
+                    });
+                    return response;
+                }
+                
+                if (message.includes('어디') || message.includes('위치')) {
+                    const firstItem = items[0];
+                    if (firstItem) {
+                        return `📍 **${firstItem.data.name}**은(는) **${firstItem.data.locationName || '위치미설정'}**에 있습니다.<br><br>수량: ${firstItem.data.quantity || 0}${firstItem.data.unit || '개'}`;
+                    }
+                }
+            }
+            
+            // 기본 응답 (기존 로직)
+            return generateFallbackResponse(userMessage);
+        }
+
+        // 기본 응답 (완전 fallback)
+        function generateFallbackResponse(userMessage) {
+            const message = userMessage.toLowerCase();
+            
+            if (message.includes('재고') || message.includes('현황')) {
+                return `📊 **현재 재고 현황**<br><br>• 전체 물품: **0개**<br>• 카테고리: **0개**<br>• 보관 위치: **0개**<br><br>🔍 S3 데이터를 검색했지만 관련 정보를 찾을 수 없습니다.<br>물품을 먼저 등록해주세요! 😊`;
+            }
+            
+            if (message.includes('추가') || message.includes('등록')) {
+                return `➕ **물품 추가 방법**<br><br>1. 하단의 ➕ 버튼 클릭<br>2. 물품 정보 입력<br>3. S3에 자동 저장<br><br>또는 "라면 5개 추가해줘"라고 말해주시면<br>AI가 자동으로 등록해드려요! 🤖`;
+            }
+            
+            if (message.includes('도움') || message.includes('help')) {
+                return `❓ **AI 물품관리 사용법**<br><br>🤖 **AI 기능**: GPT-4 연동으로 자연스러운 대화<br>☁️ **S3 연동**: 클라우드에서 데이터 검색<br>📦 **물품 관리**: "우유 어디 있어?" 같은 자연어<br>📊 **실시간 분석**: 재고 현황 및 통계<br><br>💡 **예시**: "냉장고에 뭐가 있어?", "라면 재고 확인"`;
+            }
+            
+            return `🤖 **AI 분석 중...**<br><br>"${userMessage}"에 대해 S3 데이터를 검색했습니다.<br><br>💡 더 정확한 답변을 위해:<br>• "재고 현황"<br>• "냉장고에 뭐 있어?"<br>• "라면 3개 추가해줘"<br><br>이런 식으로 구체적으로 말해보세요! 😊`;
+        }
+
+        // 대화창에서 메시지 전송 시 로딩 표시 추가
+        async function sendChatMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // 사용자 메시지 추가
+            addChatMessage(message, 'user');
+            input.value = '';
+            
+            // AI 응답 로딩 표시
+            const loadingId = addChatLoadingMessage();
+            
+            try {
+                // GPT/LLM 및 S3 검색
+                const botResponse = await generateBotResponse(message);
+                
+                // 로딩 메시지 제거
+                removeChatLoadingMessage(loadingId);
+                
+                // 봇 응답 추가
+                addChatMessage(botResponse, 'bot');
+                
+            } catch (error) {
+                console.error('채팅 응답 오류:', error);
+                
+                // 로딩 메시지 제거
+                removeChatLoadingMessage(loadingId);
+                
+                // 오류 메시지 추가
+                addChatMessage('죄송해요, 응답 중 오류가 발생했습니다. 😅<br>잠시 후 다시 시도해주세요.', 'bot');
+            }
+        }
+
+        // 채팅 로딩 메시지 추가
+        function addChatLoadingMessage() {
+            const messagesArea = document.getElementById('chatMessagesArea');
+            const loadingElement = document.createElement('div');
+            const loadingId = 'loading-' + Date.now();
+            
+            loadingElement.id = loadingId;
+            loadingElement.className = 'chat-message bot';
+            loadingElement.innerHTML = `
+                <div class="message-avatar">🤖</div>
+                <div class="message-bubble">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div class="typing-dots">
+                            <span></span><span></span><span></span>
+                        </div>
+                        <span style="font-size: 12px; color: #666;">AI 분석 중...</span>
+                    </div>
+                </div>
+            `;
+            
+            messagesArea.appendChild(loadingElement);
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+            
+            return loadingId;
+        }
+
+        // 채팅 로딩 메시지 제거
+        function removeChatLoadingMessage(loadingId) {
+            const loadingElement = document.getElementById(loadingId);
+            if (loadingElement) {
+                loadingElement.remove();
+            }
+        }
+
+        // 채팅 입력 키 처리
+        function handleChatKeyPress(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendChatMessage();
+            }
+        }
+
+        // AI 어시스턴트 열기 (기존 함수 - 대화창으로 리다이렉트)
+        function openAssistant() {
+            openChatInterface();
+        }
+
+        // 토스트 메시지
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            if (toast) {
+                toast.textContent = message;
+                toast.classList.add('show');
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 3000);
+            }
+        }
+
+        // 네비게이션 처리 (로그인 체크 비활성화)
+        function setupNavigation() {
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // TODO: 로그인 체크 나중에 활성화
+                    const pageTitle = this.textContent.trim();
+                    
+                    // 네비게이션 활성화
+                    document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    showToast(`${pageTitle} 페이지로 이동`);
+                    
+                    /*
+                    // 실제 구현 코드 (나중에 활성화)
+                    const protectedPages = ['위치', '카테고리', '재고관리', '물품추가', '설정'];
+                    const pageTitle = this.textContent.trim();
+                    
+                    if (protectedPages.includes(pageTitle) && !appState.isLoggedIn) {
+                        showToast('🔐 로그인이 필요한 기능입니다');
+                        showSetupScreen();
+                        return;
+                    }
+                    
+                    document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    showToast(`${pageTitle} 페이지로 이동`);
+                    */
+                });
+            });
+        }
+
+        // 앱 업데이트 체크
+        function checkForUpdates() {
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.ready.then(registration => {
+                    registration.addEventListener('updatefound', () => {
+                        const newWorker = registration.installing;
+                        newWorker.addEventListener('statechange', () => {
+                            if (newWorker.state === 'installed') {
+                                if (navigator.serviceWorker.controller) {
+                                    showToast('🔄 새 버전이 있습니다. 새로고침하세요!');
+                                }
+                            }
+                        });
+                    });
+                });
+            }
+        }
+
+        // 오프라인 상태 감지
+        function setupOfflineDetection() {
+            window.addEventListener('online', () => {
+                showToast('🌐 온라인 상태가 복구되었습니다');
+            });
+            
+            window.addEventListener('offline', () => {
+                showToast('📱 오프라인 모드로 전환되었습니다');
+            });
+        }
+
+        // 카카오 SDK 초기화 (실제 구현시)
+        function initKakaoSDK() {
+            // 실제 카카오 JavaScript SDK 초기화
+            /*
+            if (!window.Kakao.isInitialized()) {
+                window.Kakao.init('YOUR_KAKAO_APP_KEY');
+            }
+            */
+        }
+
+        // 페이지 로드 시 실행
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeApp();
+            setupNavigation();
+            checkForUpdates();
+            setupOfflineDetection();
+            
+            // 카카오 SDK 로드 (실제 구현시 필요)
+            // initKakaoSDK();
+        });
+
+        // Service Worker 등록
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(registration => {
+                        console.log('SW 등록 성공:', registration);
+                        
+                        // 업데이트 확인
+                        registration.addEventListener('updatefound', () => {
+                            showToast('앱 업데이트를 확인하고 있습니다...');
+                        });
+                    })
+                    .catch(error => {
+                        console.log('SW 등록 실패:', error);
+                    });
+            });
+        }
+
+        // 앱 상태 변경 감지
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
+                // 앱이 포그라운드로 올라왔을 때
+                if (appState.isPWA) {
+                    console.log('PWA 앱 활성화');
+                }
+            }
+        });
+
+        // 개발자 도구용 디버그 함수들
+        window.appDebug = {
+            getState: () => appState,
+            simulateKakaoLogin: () => startKakaoLogin(),
+            forceInstallPrompt: () => showInstallPrompt(),
+            clearData: () => {
+                localStorage.clear();
+                sessionStorage.clear();
+                location.reload();
+            },
+            mockInstallPrompt: () => {
+                deferredPrompt = {
+                    prompt: () => Promise.resolve(),
+                    userChoice: Promise.resolve({ outcome: 'accepted' })
+                };
+                showInstallPrompt();
+            }
+        };
+
+        // PWA 설치 완료 감지
+        window.addEventListener('appinstalled', () => {
+            showToast('🎉 앱이 성공적으로 설치되었습니다!');
+            localStorage.setItem('appInstalled', 'true');
+            appState.isPWA = true;
+        });
     </script>
 </body>
 </html>
