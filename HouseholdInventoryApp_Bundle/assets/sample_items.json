@@ -1,0 +1,10 @@
+[
+  {
+    "id": 1,
+    "name": "우유",
+    "category": "식료품",
+    "color": "흰색",
+    "brand": "서울우유",
+    "quantity": 2
+  }
+]

@@ -1,0 +1,31 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'providers/inventory_provider.dart';
+import 'providers/ai_provider.dart';
+import 'providers/data_storage.dart';
+import 'screens/start_screen.dart';
+
+void main() {
+  runApp(const HouseholdInventoryApp());
+}
+
+class HouseholdInventoryApp extends StatelessWidget {
+  const HouseholdInventoryApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => InventoryProvider()),
+        ChangeNotifierProvider(create: (_) => AiProvider()),
+        Provider(create: (_) => DataStorage()),
+      ],
+      child: MaterialApp(
+        title: 'Household Inventory App',
+        theme: ThemeData(primarySwatch: Colors.indigo),
+        home: const StartScreen(),
+        debugShowCheckedModeBanner: false,
+      ),
+    );
+  }
+}

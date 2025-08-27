@@ -1,0 +1,40 @@
+import 'package:flutter/material.dart';
+import '../../../services/nlp_service.dart';
+import '../../../domain/usecases/inventory/add_item_usecase.dart';
+import '../../../models/item.dart';
+
+class ConversationProvider extends ChangeNotifier {
+  final NlpService nlpService;
+  final AddItemUseCase addItemUseCase;
+
+  final List<String> _messages = [];
+  List<String> get messages => _messages;
+
+  ConversationProvider({
+    required this.nlpService,
+    required this.addItemUseCase,
+  });
+
+  void handleUserInput(String input) {
+    _messages.add("👤 $input");
+
+    final result = nlpService.parseCommand(input);
+    if (result.startsWith("add:")) {
+      final name = result.split(":")[1];
+      final item = Item(
+        id: DateTime.now().millisecondsSinceEpoch,
+        name: name,
+        category: '자동분류',
+        color: '미정',
+        brand: '미정',
+        quantity: 1,
+      );
+      addItemUseCase.execute(item);
+      _messages.add("🤖 '$name'을(를) 목록에 추가했어요.");
+    } else {
+      _messages.add("🤖 명령을 이해하지 못했어요.");
+    }
+
+    notifyListeners();
+  }
+}

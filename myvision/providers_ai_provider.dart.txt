@@ -1,0 +1,18 @@
+// lib/providers/ai_provider.dart
+import 'package:flutter/material.dart';
+import '../models/item.dart';
+
+class AiProvider extends ChangeNotifier {
+  List<Item> _recommendations = [];
+
+  List<Item> get recommendations => _recommendations;
+
+  void setRecommendations(List<Item> items) {
+    _recommendations = items;
+    notifyListeners();
+- **Flutter 3.19+**
+- `provider`, `sqflite`, `shared_preferences`
+- `tflite_flutter`, `google_mlkit_text_recognition`
+- `flutter_tts`, `speech_to_text`
+- `flutter_local_notifications`, `workmanager`
+- Clean Architecture 구조 (presentation, domain, data 레이어 분리)

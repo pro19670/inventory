@@ -1,0 +1,25 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:household_inventory_app/models/item.dart';
+import 'package:household_inventory_app/providers/inventory_provider.dart';
+import 'package:household_inventory_app/domain/usecases/inventory/add_item_usecase.dart';
+
+void main() {
+  test('AddItemUseCase adds item to provider', () {
+    final provider = InventoryProvider();
+    final usecase = AddItemUseCase(provider);
+
+    final item = Item(
+      id: 1,
+      name: '테스트우유',
+      category: '식품',
+      color: '흰색',
+      brand: '테스트브랜드',
+      quantity: 2,
+    );
+
+    usecase.execute(item);
+
+    expect(provider.items.length, 1);
+    expect(provider.items.first.name, '테스트우유');
+  });
+}

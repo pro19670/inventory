@@ -1,0 +1,62 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../../models/item.dart';
+import '../../../providers/inventory_provider.dart';
+
+class AddItemDialog extends StatefulWidget {
+  const AddItemDialog({super.key});
+
+  @override
+  State<AddItemDialog> createState() => _AddItemDialogState();
+}
+
+class _AddItemDialogState extends State<AddItemDialog> {
+  final _nameController = TextEditingController();
+  final _categoryController = TextEditingController();
+  final _colorController = TextEditingController();
+  final _brandController = TextEditingController();
+  final _quantityController = TextEditingController(text: '1');
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('물품 추가'),
+      content: SingleChildScrollView(
+        child: Column(
+          children: [
+            TextField(controller: _nameController, decoration: const InputDecoration(labelText: '이름')),
+            TextField(controller: _categoryController, decoration: const InputDecoration(labelText: '카테고리')),
+            TextField(controller: _colorController, decoration: const InputDecoration(labelText: '색상')),
+            TextField(controller: _brandController, decoration: const InputDecoration(labelText: '브랜드')),
+            TextField(
+              controller: _quantityController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(labelText: '수량'),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('취소'),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            final item = Item(
+              id: DateTime.now().millisecondsSinceEpoch,
+              name: _nameController.text,
+              category: _categoryController.text,
+              color: _colorController.text,
+              brand: _brandController.text,
+              quantity: int.tryParse(_quantityController.text) ?? 1,
+            );
+            Provider.of<InventoryProvider>(context, listen: false).addItem(item);
+            Navigator.of(context).pop();
+          },
+          child: const Text('추가'),
+        ),
+      ],
+    );
+  }
+}

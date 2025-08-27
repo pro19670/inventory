@@ -1,0 +1,19 @@
+class LabelMapper {
+  static final Map<String, Map<String, String>> labelToItem = {
+    'label_0': {
+      'name': '우유',
+      'category': '식품',
+      'color': '흰색',
+      'brand': '서울우유',
+    },
+    'label_1': {
+      'name': '계란',
+      'category': '식품',
+      'color': '흰색',
+      'brand': '청란',
+    },
+    // 추가 라벨 매핑
+  };
+
+  static Map<String, String>? mapLabel(String label) => labelToItem[label];
+}

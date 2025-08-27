@@ -1,0 +1,47 @@
+name: household_inventory_app
+description: A smart AI-integrated household inventory management app.
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.1.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  provider: ^6.0.5
+  shared_preferences: ^2.2.1
+  sqflite: ^2.3.0
+  path_provider: ^2.1.1
+  permission_handler: ^11.0.1
+  image_picker: ^1.0.4
+  tflite_flutter: ^0.10.4
+  tflite_flutter_helper: ^0.3.2
+  google_mlkit_text_recognition: ^0.8.0
+  mobile_scanner: ^3.3.0
+  flutter_local_notifications: ^16.3.0
+  android_alarm_manager_plus: ^3.0.4
+  workmanager: ^0.5.1
+  http: ^1.1.0
+  logger: ^2.0.2
+  url_launcher: ^6.1.10
+  flutter_tts: ^4.0.2
+  speech_to_text: ^6.3.0
+  cupertino_icons: ^1.0.6
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/icons/
+    - assets/fonts/
+    - assets/data/ai_models/
+    - assets/data/labels/
+    - assets/data/initial_data.json
+    - assets/data/recommendation_rules.json
+    - assets/data/nlp_model.tflite
+    - assets/l10n/
+
+
+

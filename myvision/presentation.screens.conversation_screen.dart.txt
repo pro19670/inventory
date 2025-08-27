@@ -1,0 +1,101 @@
+# HouseholdInventoryApp – AI & 인벤토리 통합 전체 구조도 (완전 상세 버전)
+
+```
+HouseholdInventoryApp/
+│
+├── .gitignore                        # Git 버전 관리 제외 파일
+├── pubspec.yaml                      # 의존성 및 프로젝트 설정
+├── README.md                         # 프로젝트 소개 문서
+│
+├── assets/                           # 정적 자산 (모델, 이미지, json 등)
+│   ├── model.tflite                  # TFLite 분류 모델
+│   ├── labels.txt                    # TFLite 분류 라벨 목록
+│   ├── kcbox_folders.json            # 폴더 구조 저장용 데이터
+│   └── kcbox_stock_history.json      # 재고 기록 저장 파일
+│
+├── lib/                              # 애플리케이션 소스 코드
+│   ├── main.dart                     # 앱 시작점, 라우팅 정의
+│
+│   ├── models/                       # 데이터 모델 정의
+│   │   ├── item.dart                     # 물품 모델
+│   │   ├── location.dart                 # 위치 모델
+│   │   ├── storage.dart                  # 보관장소 모델
+│   │   └── room.dart                     # 방 모델
+│
+│   ├── providers/                    # 상태 관리 로직
+│   │   ├── inventory_provider.dart       # 인벤토리 상태 (추가/수정/삭제)
+│   │   ├── ai_provider.dart              # AI 추천 상태 관리
+│   │   └── data_storage.dart             # 데이터 저장/로드 (SharedPreferences 등)
+│
+│   ├── screens/                      # 주요 UI 화면
+│   │   ├── start_screen.dart              # 시작화면 (홈)
+│   │   ├── room_list_screen.dart         # 방 목록
+│   │   ├── storage_list_screen.dart      # 보관장소 목록
+│   │   ├── location_list_screen.dart     # 위치 목록
+│   │   ├── item_list_screen.dart         # 물품 목록
+│   │   ├── item_detail_screen.dart       # 물품 상세 보기
+│   │   └── add_item_from_image_screen.dart # 이미지로 물품 추가
+│
+│   ├── ai/                           # AI 기능 모듈
+│   │   ├── vision/                      # 이미지 분석
+│   │   │   ├── item_classifier.dart         # TFLite 모델 실행 클래스
+│   │   │   └── label_mapper.dart           # 라벨 → 물품 속성 매핑
+│   │   ├── recommendation/             # 추천 알고리즘
+│   │   │   ├── outfit_recommender.dart     # 옷 코디 추천
+│   │   │   ├── grocery_recommender.dart    # 식재료 추천
+│   │   │   └── item_usage_predictor.dart   # 소비량 예측
+│   │   └── nlp/                         # 음성/텍스트 명령 처리
+│   │       └── command_parser.dart          # 명령어 분석기
+│
+│   ├── widgets/                      # 재사용 UI 위젯
+│   │   ├── add/                          # 추가 다이얼로그
+│   │   │   ├── add_item_dialog.dart
+│   │   │   ├── add_room_dialog.dart
+│   │   │   ├── add_storage_dialog.dart
+│   │   │   └── add_location_dialog.dart
+│   │   ├── rename/                       # 이름 수정 다이얼로그
+│   │   │   ├── rename_item_dialog.dart
+│   │   │   ├── rename_room_dialog.dart
+│   │   │   ├── rename_storage_dialog.dart
+│   │   │   └── rename_location_dialog.dart
+│   │   ├── delete/                       # 삭제 다이얼로그
+│   │   │   ├── confirmation/
+│   │   │   │   ├── delete_confirmation_dialog.dart
+│   │   │   │   └── delete_all_confirmation_dialog.dart
+│   │   │   ├── delete_item_dialog.dart
+│   │   │   ├── delete_room_dialog.dart
+│   │   │   ├── delete_storage_dialog.dart
+│   │   │   └── delete_location_dialog.dart
+│   │   ├── display/                      # 정보 표시 UI
+│   │   │   └── total_count_display.dart     # 총 개수 표시
+│   │   └── smart/                         # AI 연동 UI
+│   │       ├── ai_recommendation_card.dart   # 추천 결과 카드
+│   │       ├── voice_input_button.dart       # 음성 입력 버튼
+│   │       └── smart_camera_button.dart      # AI 사진 분석 버튼
+```
+
+---
+
+## 📊 기능 흐름 요약
+
+### 1. 이미지 인식 흐름
+- `smart_camera_button.dart` → `item_classifier.dart` → `label_mapper.dart` → `add_item_dialog.dart` 자동 채움
+
+### 2. 음성 명령 흐름
+- `voice_input_button.dart` → STT → `command_parser.dart` → 물품 자동 처리
+
+### 3. 추천 흐름
+- 날씨 연동 → `outfit_recommender.dart`
+- 보유 식재료 기반 → `grocery_recommender.dart`
+- 결과는 `ai_provider.dart` → `ai_recommendation_card.dart`에 표시
+
+### 4. 데이터 저장 흐름
+- `inventory_provider.dart`로 상태 유지
+- `data_storage.dart`로 SharedPreferences 또는 파일에 저장/로드
+
+---
+
+이 구조는 Flutter 기반에서 AI, IoT 인벤토리, 사용자 맞춤 추천까지 모두 확장 가능한 설계를 반영한 최적화 구조입니다.
+
+다음 단계로 원하는 기능부터 실 구현 들어가실 수 있어요.
+

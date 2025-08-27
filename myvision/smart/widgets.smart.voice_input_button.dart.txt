@@ -1,0 +1,43 @@
+import 'package:flutter/material.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
+
+class VoiceInputButton extends StatefulWidget {
+  final void Function(String) onTextRecognized;
+
+  const VoiceInputButton({super.key, required this.onTextRecognized});
+
+  @override
+  State<VoiceInputButton> createState() => _VoiceInputButtonState();
+}
+
+class _VoiceInputButtonState extends State<VoiceInputButton> {
+  final stt.SpeechToText _speech = stt.SpeechToText();
+  bool _isListening = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      icon: Icon(_isListening ? Icons.mic : Icons.mic_none),
+      onPressed: () async {
+        if (!_isListening) {
+          bool available = await _speech.initialize();
+          if (available) {
+            setState(() => _isListening = true);
+            await _speech.listen(
+              onResult: (result) {
+                if (result.finalResult) {
+                  widget.onTextRecognized(result.recognizedWords);
+                  setState(() => _isListening = false);
+                  _speech.stop();
+                }
+              },
+            );
+          }
+        } else {
+          _speech.stop();
+          setState(() => _isListening = false);
+        }
+      },
+    );
+  }
+}

@@ -1,0 +1,26 @@
+import 'dart:io';
+import 'package:tflite_flutter/tflite_flutter.dart';
+import 'package:tflite_flutter_helper/tflite_flutter_helper.dart';
+
+class ItemClassifier {
+  late Interpreter interpreter;
+
+  Future<void> loadModel() async {
+    interpreter = await Interpreter.fromAsset('data/ai_models/item_classifier.tflite');
+  }
+
+  List<double> preprocessImage(File image) {
+    // 이미지 전처리 로직 필요 (예: resize, normalize)
+    // 예시: 224 x 224 크기의 RGB 정규화된 float list 리턴
+    return List<double>.filled(224 * 224 * 3, 0.0); // 실제 이미지 전처리로 대체 필요
+  }
+
+  String classify(File image) {
+    final input = preprocessImage(image);
+    final output = List.filled(1 * 10, 0.0).reshape([1, 10]);
+    interpreter.run([input], output);
+    final maxIndex = output[0].indexOf(output[0].reduce((a, b) => a > b ? a : b));
+    return 'label_$maxIndex'; // 실제 라벨 매핑 필요
+  }
+}
+

@@ -1,0 +1,32 @@
+
+// lib/providers/inventory_provider.dart
+# README.md
+
+# HouseholdInventoryApp
+
+**AI 기반 스마트 재고 관리 시스템**
+
+Flutter로 구
+import '../models/item.dart';
+
+class InventoryProvider extends ChangeNotifier {
+  final List<Item> _items = [];
+
+  List<Item> get items => _items;
+
+  void addItem(Item item) {
+    _items.add(item);
+    notifyListeners();
+  }
+
+  void removeItem(int id) {
+    _items.removeWhere((item) => item.id == id);
+    notifyListeners();
+  }
+
+  void updateItem(Item updatedItem) {
+    final index = _items.indexWhere((item) => item.id == updatedItem.id);
+    if (index != -1) {
+      _items[index] = updatedItem;
+      notifyListeners();
+    }

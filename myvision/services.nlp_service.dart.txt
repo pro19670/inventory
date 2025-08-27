@@ -1,0 +1,19 @@
+class NlpService {
+  /// 간단한 자연어 명령 분석 함수
+  String parseCommand(String input) {
+    input = input.trim();
+    if (input.contains("추가") || input.contains("넣어") || input.contains("더해")) {
+      final name = _extractItemName(input);
+      if (name.isNotEmpty) return 'add:$name';
+    }
+    return 'unknown';
+  }
+
+  String _extractItemName(String input) {
+    final keywordIndex = input.indexOf("추가");
+    if (keywordIndex > 0) {
+      return input.substring(0, keywordIndex).trim();
+    }
+    return input.replaceAll(RegExp(r'(추가|넣어|더해)'), '').trim();
+  }
+}
