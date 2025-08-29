@@ -1,1 +1,1342 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Humin - 나의 디지털 아바타</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 414px;
+            margin: 0 auto;
+            background: #f5f5f5;
+            min-height: 100vh;
+            position: relative;
+        }
+
+
+
+        /* 헤더 */
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            text-align: center;
+            color: white;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .login-btn {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .login-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+
+
+        /* 주요 섹션 */
+        .main-section {
+            background: white;
+            margin: 0 20px 20px 20px;
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .section-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .section-title {
+            flex: 1;
+        }
+
+        .section-title h2 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .section-subtitle {
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        /* 나의 삶의 터전 */
+        .living-space {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .space-main {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .add-space-btn {
+            width: 50px;
+            height: 50px;
+            border: 2px dashed #d1d5db;
+            border-radius: 12px;
+            background: #f9fafb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #9ca3af;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .add-space-btn:hover {
+            border-color: #667eea;
+            color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .home-box {
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+            border: 1px solid #d1d5db;
+            padding: 15px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .home-box:hover {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .space-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .space-item {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .space-item:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .space-item .icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .space-item .name {
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        /* 물품 현황판 */
+        .status-overview {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .status-image {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+        }
+
+        .status-info h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .status-desc {
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .status-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .status-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 15px 10px;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .status-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .status-card.normal {
+            border-color: #10b981;
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+        }
+
+        .status-card.warning {
+            border-color: #f59e0b;
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+        }
+
+        .status-card.danger {
+            border-color: #ef4444;
+            background: linear-gradient(135deg, #fef2f2 0%, #fecaca 100%);
+        }
+
+        .status-card .count {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .status-card .label {
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-card.normal .count {
+            color: #059669;
+        }
+
+        .status-card.warning .count {
+            color: #d97706;
+        }
+
+        .status-card.danger .count {
+            color: #dc2626;
+        }
+
+        /* 부족한 물품 알림 */
+        .low-stock-items {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .low-stock-item {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            padding: 15px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .low-stock-item:hover {
+            background: #fef2f2;
+            border-color: #ef4444;
+            transform: translateX(5px);
+        }
+
+        .item-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .item-icon {
+            font-size: 20px;
+        }
+
+        .item-details h4 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #dc2626;
+            margin-bottom: 2px;
+        }
+
+        .item-status {
+            font-size: 12px;
+            color: #7f1d1d;
+        }
+
+        .item-action {
+            color: #dc2626;
+            font-size: 18px;
+        }
+
+        /* 하단 네비게이션 */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 414px;
+            background: white;
+            border-top: 1px solid #e5e7eb;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            padding: 8px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 50px;
+        }
+
+        .nav-item:hover {
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .nav-item.active {
+            color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .nav-icon {
+            font-size: 24px;
+        }
+
+        .nav-label {
+            font-size: 10px;
+            font-weight: 500;
+        }
+
+        /* 채팅 인터페이스 */
+        .chat-interface {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 414px;
+            background: white;
+            border-top: 1px solid #e5e7eb;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .chat-input {
+            flex: 1;
+            border: 1px solid #d1d5db;
+            padding: 12px 15px;
+            border-radius: 25px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .chat-input:focus {
+            border-color: #667eea;
+        }
+
+        .chat-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-btn {
+            width: 44px;
+            height: 44px;
+            border: none;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .chat-btn:hover {
+            transform: scale(1.1);
+        }
+
+        /* 모달 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 320px;
+        }
+
+        .modal h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .modal input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .modal-btn.primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .modal-btn.secondary {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .modal-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        /* 대화창 스타일 */
+        .chat-container {
+            margin-top: 20px;
+        }
+
+        .example-questions {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .example-questions h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 12px;
+        }
+
+        .question-item {
+            color: #667eea;
+            font-size: 13px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .question-item:hover {
+            background: rgba(102, 126, 234, 0.1);
+            transform: translateX(5px);
+        }
+
+        .question-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .chat-messages {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 15px;
+            background: #fafafa;
+        }
+
+        .message {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            align-items: flex-start;
+        }
+
+        .message:last-child {
+            margin-bottom: 0;
+        }
+
+        .message-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .ai-message .message-avatar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .user-message .message-avatar {
+            background: #e5e7eb;
+        }
+
+        .user-message {
+            flex-direction: row-reverse;
+        }
+
+        .user-message .message-content {
+            text-align: right;
+        }
+
+        .message-content {
+            flex: 1;
+            background: white;
+            padding: 12px 15px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .user-message .message-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .message-content p {
+            margin-bottom: 8px;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .message-content p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* AI 채팅 카드 */
+        .ai-chat-card {
+            background: white;
+            margin: 20px;
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .ai-chat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .ai-chat-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+        }
+
+        .ai-chat-info h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #374151;
+        }
+
+        .ai-chat-subtitle {
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        /* 슬라이드 대화창 (카카오톡 스타일) */
+        .chat-slide {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 100%;
+            max-width: 414px;
+            height: 100vh;
+            background: white;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            transition: right 0.3s ease;
+            box-shadow: -4px 0 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .chat-slide.open {
+            right: 0;
+        }
+
+        .chat-slide-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .chat-slide-header h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0;
+            flex: 1;
+            text-align: center;
+        }
+
+        .back-chat {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .back-chat:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .header-spacer {
+            width: 36px;
+            height: 36px;
+        }
+
+        .chat-slide-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f8fafc;
+        }
+
+        .chat-slide-input {
+            background: white;
+            padding: 20px;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .chat-slide-input .chat-input {
+            flex: 1;
+            border: 1px solid #d1d5db;
+            padding: 12px 15px;
+            border-radius: 25px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .chat-slide-input .chat-input:focus {
+            border-color: #667eea;
+        }
+
+        .chat-send-btn {
+            width: 44px;
+            height: 44px;
+            border: none;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        /* 반응형 */
+        @media (max-width: 414px) {
+            .container {
+                margin: 0;
+                border-radius: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+
+
+        <!-- 헤더 -->
+        <div class="header">
+            <h1>AI물품관리</h1>
+            <button class="login-btn" onclick="showLogin()">로그인</button>
+        </div>
+
+    <!-- 슬라이드 대화창 (카카오톡 스타일) -->
+    <div id="chatSlide" class="chat-slide">
+        <div class="chat-slide-header">
+            <button class="back-chat" onclick="closeChatSlide()">←</button>
+            <h3>AI 도우미와 대화</h3>
+            <div class="header-spacer"></div>
+        </div>
+        <div class="chat-slide-content">
+            <div class="example-questions">
+                <h3>예시 질문:</h3>
+                <div class="question-item" onclick="askExampleSlide('휴지 재고 확인해주세요')">
+                    • "휴지 재고 확인해주세요"
+                </div>
+                <div class="question-item" onclick="askExampleSlide('물건 추가하는 방법 알려주세요')">
+                    • "물건 추가하는 방법 알려주세요"
+                </div>
+                <div class="question-item" onclick="askExampleSlide('오늘 사용한 물품 목록 보여주세요')">
+                    • "오늘 사용한 물품 목록 보여주세요"
+                </div>
+            </div>
+
+            <div class="chat-messages" id="chatMessagesSlide">
+                <div class="message ai-message">
+                    <div class="message-avatar">🤖</div>
+                    <div class="message-content">
+                        <p>안녕하세요! 😊 AI물품관리 도우미입니다.</p>
+                        <p>현재 오프라인 모드로 제한적인 응답만 가능합니다.</p>
+                        <p>기본적인 질문은 언제든 해주세요!</p>
+                    </div>
+                    <div class="message-time">오전 12:01</div>
+                </div>
+            </div>
+        </div>
+        <div class="chat-slide-input">
+            <input type="text" class="chat-input" placeholder="메시지를 입력하세요..." id="chatInputSlide">
+            <button class="chat-send-btn" onclick="sendMessageSlide()">📝</button>
+        </div>
+    </div>
+
+
+
+        <!-- AI 도우미와 대화 (간단한 카드) -->
+        <div class="ai-chat-card" onclick="openChatSlide()">
+            <div class="ai-chat-icon">💬</div>
+            <div class="ai-chat-info">
+                <h3>AI 도우미와 대화</h3>
+                <div class="ai-chat-subtitle">궁금한 것을 물어보세요</div>
+            </div>
+        </div>
+
+        <!-- 나의 삶의 터전 -->
+        <div class="main-section">
+            <div class="section-header">
+                <div class="section-icon">🌍</div>
+                <div class="section-title">
+                    <h2>나의 삶의 터전</h2>
+                    <div class="section-subtitle">공간별 물품 관리</div>
+                </div>
+                <button class="add-space-btn" onclick="openAddSpaceModal()" title="공간 추가">
+                    🏠
+                </button>
+            </div>
+
+            <div class="home-box" onclick="openSpaceDetail('우리집')">
+                🏠 우리집
+            </div>
+
+            <div class="space-grid" id="spaceGrid">
+                <div class="space-item" onclick="openSpaceDetail('거실')">
+                    <div class="icon">🛋️</div>
+                    <div class="name">거실</div>
+                </div>
+                <div class="space-item" onclick="openSpaceDetail('침실')">
+                    <div class="icon">🛏️</div>
+                    <div class="name">침실</div>
+                </div>
+                <div class="space-item" onclick="openSpaceDetail('주방')">
+                    <div class="icon">🍳</div>
+                    <div class="name">주방</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 물품 현황판 -->
+        <div class="main-section">
+            <div class="section-header">
+                <div class="status-image">📊</div>
+                <div class="section-title">
+                    <h2>물품 현황판</h2>
+                    <div class="section-subtitle">실시간 재고 현황</div>
+                </div>
+                <button class="icon-btn" onclick="refreshInventory()" title="새로고침">🔄</button>
+            </div>
+
+            <div class="status-cards">
+                <div class="status-card normal" onclick="viewStatusDetail('normal')">
+                    <div class="count">47</div>
+                    <div class="label">정상</div>
+                </div>
+                <div class="status-card warning" onclick="viewStatusDetail('warning')">
+                    <div class="count">8</div>
+                    <div class="label">주의</div>
+                </div>
+                <div class="status-card danger" onclick="viewStatusDetail('danger')">
+                    <div class="count">3</div>
+                    <div class="label">부족</div>
+                </div>
+            </div>
+
+            <div class="low-stock-items">
+                <div class="low-stock-item" onclick="handleLowStockItem('휴지')">
+                    <div class="item-info">
+                        <div class="item-icon">🧻</div>
+                        <div class="item-details">
+                            <h4>휴지 재고 확인해주세요</h4>
+                            <div class="item-status">마지막 교체: 3일 전</div>
+                        </div>
+                    </div>
+                    <div class="item-action">⚠️</div>
+                </div>
+
+                <div class="low-stock-item" onclick="handleLowStockItem('물')">
+                    <div class="item-info">
+                        <div class="item-icon">🚰</div>
+                        <div class="item-details">
+                            <h4>물건 추가하는 방법 알려주세요</h4>
+                            <div class="item-status">설정 가이드 필요</div>
+                        </div>
+                    </div>
+                    <div class="item-action">❓</div>
+                </div>
+
+                <div class="low-stock-item" onclick="handleLowStockItem('세제')">
+                    <div class="item-info">
+                        <div class="item-icon">🧽</div>
+                        <div class="item-details">
+                            <h4>오늘 사용한 물품 목록 보여주세요</h4>
+                            <div class="item-status">사용 기록 확인</div>
+                        </div>
+                    </div>
+                    <div class="item-action">📋</div>
+                </div>
+            </div>
+        </div>
+
+
+
+        <!-- 슬라이드 대화창 -->
+        <div id="chatSlide" class="chat-slide">
+            <div class="chat-slide-header">
+                <h3>AI 도우미와 대화</h3>
+                <button class="close-chat" onclick="closeChatSlide()">×</button>
+            </div>
+            <div class="chat-slide-content">
+                <div class="example-questions">
+                    <h3>예시 질문:</h3>
+                    <div class="question-item" onclick="askExampleSlide('휴지 재고 확인해주세요')">
+                        • "휴지 재고 확인해주세요"
+                    </div>
+                    <div class="question-item" onclick="askExampleSlide('물건 추가하는 방법 알려주세요')">
+                        • "물건 추가하는 방법 알려주세요"
+                    </div>
+                    <div class="question-item" onclick="askExampleSlide('오늘 사용한 물품 목록 보여주세요')">
+                        • "오늘 사용한 물품 목록 보여주세요"
+                    </div>
+                </div>
+
+                <div class="chat-messages" id="chatMessagesSlide">
+                    <div class="message ai-message">
+                        <div class="message-avatar">🤖</div>
+                        <div class="message-content">
+                            <p>안녕하세요! 😊 AI물품관리 도우미입니다.</p>
+                            <p>현재 오프라인 모드로 제한적인 응답만 가능합니다.</p>
+                            <p>기본적인 질문은 언제든 해주세요!</p>
+                        </div>
+                        <div class="message-time">오전 12:01</div>
+                    </div>
+                </div>
+            </div>
+            <div class="chat-slide-input">
+                <input type="text" class="chat-input" placeholder="메시지를 입력하세요..." id="chatInputSlide">
+                <button class="chat-send-btn" onclick="sendMessageSlide()">📝</button>
+            </div>
+        </div>
+
+        <!-- 채팅 인터페이스 -->
+        <div class="chat-interface">
+            <input type="text" class="chat-input" placeholder="메시지를 입력하세요..." id="chatInput">
+            <div class="chat-actions">
+                <button class="chat-btn" onclick="sendMessage()" title="전송">📝</button>
+                <button class="chat-btn" onclick="openVoiceChat()" title="음성">🎙️</button>
+            </div>
+        </div>
+
+        <!-- 하단 네비게이션 -->
+        <div class="bottom-nav">
+            <div class="nav-item active" onclick="showHome()">
+                <div class="nav-icon">🏠</div>
+                <div class="nav-label">홈</div>
+            </div>
+            <div class="nav-item" onclick="showLocation()">
+                <div class="nav-icon">📍</div>
+                <div class="nav-label">위치</div>
+            </div>
+            <div class="nav-item" onclick="showCategory()">
+                <div class="nav-icon">🏷️</div>
+                <div class="nav-label">카테고리</div>
+            </div>
+            <div class="nav-item" onclick="showInventory()">
+                <div class="nav-icon">📦</div>
+                <div class="nav-label">재고관리</div>
+            </div>
+            <div class="nav-item" onclick="showItems()">
+                <div class="nav-icon">➕</div>
+                <div class="nav-label">물품추가</div>
+            </div>
+            <div class="nav-item" onclick="showSettings()">
+                <div class="nav-icon">⚙️</div>
+                <div class="nav-label">설정</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 공간 추가 모달 -->
+    <div id="addSpaceModal" class="modal">
+        <div class="modal-content">
+            <h3>새 공간 추가</h3>
+            <input type="text" id="spaceName" placeholder="공간 이름을 입력하세요">
+            <input type="text" id="spaceIcon" placeholder="아이콘 (예: 🚿)">
+            <div class="modal-buttons">
+                <button class="modal-btn secondary" onclick="closeAddSpaceModal()">취소</button>
+                <button class="modal-btn primary" onclick="addNewSpace()">추가</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 전역 변수
+        let spaces = ['거실', '침실', '주방'];
+        let spaceIcons = {'거실': '🛋️', '침실': '🛏️', '주방': '🍳'};
+
+        // 로그인 모달
+        function showLogin() {
+            alert('로그인 기능은 개발 중입니다.');
+        }
+
+        // AI 도우미 기능 (삭제됨)
+        // function deleteItems() {
+        //     alert('선택한 항목을 삭제하시겠습니까?');
+        // }
+
+        // function openSettings() {
+        //     alert('설정 화면으로 이동합니다.');
+        // }
+
+        // 공간 관리
+        function openAddSpaceModal() {
+            document.getElementById('addSpaceModal').style.display = 'block';
+        }
+
+        function closeAddSpaceModal() {
+            document.getElementById('addSpaceModal').style.display = 'none';
+            document.getElementById('spaceName').value = '';
+            document.getElementById('spaceIcon').value = '';
+        }
+
+        function addNewSpace() {
+            const spaceName = document.getElementById('spaceName').value.trim();
+            const spaceIcon = document.getElementById('spaceIcon').value.trim() || '🏠';
+            
+            if (spaceName) {
+                spaces.push(spaceName);
+                spaceIcons[spaceName] = spaceIcon;
+                updateSpaceGrid();
+                closeAddSpaceModal();
+                alert(`${spaceName} 공간이 추가되었습니다.`);
+            } else {
+                alert('공간 이름을 입력하세요.');
+            }
+        }
+
+        function updateSpaceGrid() {
+            const grid = document.getElementById('spaceGrid');
+            grid.innerHTML = '';
+            
+            spaces.forEach(space => {
+                const spaceItem = document.createElement('div');
+                spaceItem.className = 'space-item';
+                spaceItem.onclick = () => openSpaceDetail(space);
+                spaceItem.innerHTML = `
+                    <div class="icon">${spaceIcons[space] || '🏠'}</div>
+                    <div class="name">${space}</div>
+                `;
+                grid.appendChild(spaceItem);
+            });
+        }
+
+        function openSpaceDetail(spaceName) {
+            alert(`${spaceName} 상세 화면으로 이동합니다.`);
+        }
+
+        // 물품 현황 관리
+        function refreshInventory() {
+            alert('재고를 새로고침합니다.');
+            // 여기에 실제 새로고침 로직 구현
+        }
+
+        function viewStatusDetail(status) {
+            let message = '';
+            switch(status) {
+                case 'normal':
+                    message = '정상 상태인 물품 47개를 확인합니다.';
+                    break;
+                case 'warning':
+                    message = '주의가 필요한 물품 8개를 확인합니다.';
+                    break;
+                case 'danger':
+                    message = '부족한 물품 3개를 확인합니다.';
+                    break;
+            }
+            alert(message);
+        }
+
+        function handleLowStockItem(itemName) {
+            const actions = ['주문하기', '재고 업데이트', '알림 설정'];
+            const action = actions[Math.floor(Math.random() * actions.length)];
+            alert(`${itemName}에 대한 ${action} 기능을 실행합니다.`);
+        }
+
+        // 개선된 대화창 연결 시스템
+        function openChatSlide() {
+            // 모바일/데스크톱 환경에 따라 다른 방식 적용
+            if (window.innerWidth <= 414) {
+                // 모바일: 전체 화면으로 이동
+                window.location.href = 'chat-window.html';
+            } else {
+                // 데스크톱: 팝업 창으로 열기
+                const chatWindow = window.open(
+                    'chat-window.html',
+                    'ChatWindow',
+                    'width=414,height=800,scrollbars=no,resizable=no,toolbar=no,location=no,directories=no,status=no,menubar=no'
+                );
+                
+                // 창이 닫힐 때 메인 앱 새로고침 (선택사항)
+                const checkClosed = setInterval(() => {
+                    if (chatWindow.closed) {
+                        clearInterval(checkClosed);
+                        console.log('대화창이 닫혔습니다.');
+                        // 필요시 메인 앱 상태 업데이트
+                    }
+                }, 1000);
+            }
+        }
+
+        // PWA 환경 감지 및 대응
+        function detectEnvironment() {
+            const isPWA = window.matchMedia('(display-mode: standalone)').matches;
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            
+            return { isPWA, isMobile };
+        }
+
+        // 메시지 전달 시스템 (부모-자식 창 간 통신)
+        function setupChatCommunication() {
+            window.addEventListener('message', (event) => {
+                if (event.data.type === 'CHAT_CLOSED') {
+                    console.log('대화창에서 닫기 신호 받음');
+                    // 필요시 메인 앱 상태 업데이트
+                }
+                
+                if (event.data.type === 'CHAT_MESSAGE_SENT') {
+                    console.log('새 메시지 전송됨:', event.data.message);
+                    // 알림 배지 업데이트 등
+                }
+            });
+        }
+
+        function askExampleSlide(question) {
+            document.getElementById('chatInputSlide').value = question;
+            sendMessageSlide();
+        }
+
+        function sendMessageSlide() {
+            const input = document.getElementById('chatInputSlide');
+            const message = input.value.trim();
+            if (message) {
+                addMessageSlide(message, 'user');
+                input.value = '';
+                
+                // AI 응답 시뮬레이션
+                setTimeout(() => {
+                    let response = getAIResponse(message);
+                    addMessageSlide(response, 'ai');
+                }, 1000);
+            }
+        }
+
+        function addMessageSlide(text, sender) {
+            const messagesContainer = document.getElementById('chatMessagesSlide');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            
+            const currentTime = new Date().toLocaleTimeString('ko-KR', {
+                hour12: true,
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            messageDiv.innerHTML = `
+                <div class="message-avatar">${sender === 'ai' ? '🤖' : '👤'}</div>
+                <div class="message-content">
+                    <p>${text}</p>
+                </div>
+                <div class="message-time">${currentTime}</div>
+            `;
+            
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // 채팅 기능
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            if (message) {
+                addMessage(message, 'user');
+                input.value = '';
+                
+                // AI 응답 시뮬레이션
+                setTimeout(() => {
+                    let response = getAIResponse(message);
+                    addMessage(response, 'ai');
+                }, 1000);
+            }
+        }
+
+        function addMessage(text, sender) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            
+            const currentTime = new Date().toLocaleTimeString('ko-KR', {
+                hour12: true,
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            messageDiv.innerHTML = `
+                <div class="message-avatar">${sender === 'ai' ? '🤖' : '👤'}</div>
+                <div class="message-content">
+                    <p>${text}</p>
+                </div>
+                <div class="message-time">${currentTime}</div>
+            `;
+            
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function getAIResponse(message) {
+            const responses = {
+                '휴지 재고 확인해주세요': '현재 화장실 휴지가 부족한 상태입니다. 마지막 교체가 3일 전이었네요. 새로 구매하시는 것을 추천드립니다!',
+                '물건 추가하는 방법 알려주세요': '물품을 추가하려면 하단의 "물품추가" 버튼을 눌러주세요. 바코드 스캔이나 직접 입력으로 쉽게 등록할 수 있습니다.',
+                '오늘 사용한 물품 목록 보여주세요': '오늘 사용하신 물품: 치약, 샴푸, 세제, 휴지, 커피 등이 있습니다. 자세한 사용 내역을 보려면 재고관리 메뉴를 확인해주세요.'
+            };
+            
+            return responses[message] || '죄송합니다. 현재 오프라인 모드에서는 제한적인 응답만 가능합니다. 온라인 연결 후 더 자세한 도움을 드릴 수 있습니다.';
+        }
+
+        function openVoiceChat() {
+            alert('음성 채팅을 시작합니다.');
+        }
+
+        // 네비게이션
+        function showHome() {
+            setActiveNav(0);
+            alert('홈 화면입니다.');
+        }
+
+        function showLocation() {
+            setActiveNav(1);
+            alert('위치 화면으로 이동합니다.');
+        }
+
+        function showCategory() {
+            setActiveNav(2);
+            alert('카테고리 화면으로 이동합니다.');
+        }
+
+        function showInventory() {
+            setActiveNav(3);
+            alert('재고관리 화면으로 이동합니다.');
+        }
+
+        function showItems() {
+            setActiveNav(4);
+            alert('물품추가 화면으로 이동합니다.');
+        }
+
+        function showSettings() {
+            setActiveNav(5);
+            alert('설정 화면으로 이동합니다.');
+        }
+
+        function setActiveNav(index) {
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach((item, i) => {
+                if (i === index) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+        }
+
+        // 초기화 및 통신 설정
+        document.addEventListener('DOMContentLoaded', function() {
+            // 슬라이드 채팅 입력만 유지
+            const chatInputSlide = document.getElementById('chatInputSlide');
+            if (chatInputSlide) {
+                chatInputSlide.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        sendMessageSlide();
+                    }
+                });
+            }
+
+            // 대화창 통신 설정
+            setupChatCommunication();
+            
+            updateSpaceGrid();
+            console.log('Humin 앱이 로드되었습니다.');
+        });
+
+        // 모달 외부 클릭 시 닫기
+        window.addEventListener('click', function(e) {
+            const modal = document.getElementById('addSpaceModal');
+            if (e.target === modal) {
+                closeAddSpaceModal();
+            }
+        });
+
+        // 초기화
+        // document.addEventListener('DOMContentLoaded', function() {
+        //     updateSpaceGrid();
+        //     console.log('Humin 앱이 로드되었습니다.');
+        // });
+    </script>
+</body>
+</html>
